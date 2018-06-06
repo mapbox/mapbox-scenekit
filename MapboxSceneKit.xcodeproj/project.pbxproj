@@ -34,6 +34,9 @@
 		81A4372520A243E100F42A53 /* AsyncOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81A4372420A243E100F42A53 /* AsyncOperation.swift */; };
 		81A4372A20A2444B00F42A53 /* HTTPRequestOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81A4372920A2444B00F42A53 /* HTTPRequestOperation.swift */; };
 		81CCF68720AA99CD00194B22 /* CGExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81CCF68620AA99CD00194B22 /* CGExtensions.swift */; };
+		F44BB60520C75CBF00CE41C6 /* DemoExtrusionViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = F44BB60420C75CBF00CE41C6 /* DemoExtrusionViewController.m */; };
+		F44BB60A20C7951900CE41C6 /* Mapbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F44BB60920C7951900CE41C6 /* Mapbox.framework */; };
+		F44BB60B20C7952900CE41C6 /* Mapbox.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F44BB60920C7951900CE41C6 /* Mapbox.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -55,6 +58,7 @@
 			files = (
 				81293C0020B4B3D20014A17A /* MapboxMobileEvents.framework in Embed Frameworks */,
 				81293BF120B4A29C0014A17A /* MapboxSceneKit.framework in Embed Frameworks */,
+				F44BB60B20C7952900CE41C6 /* Mapbox.framework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -89,6 +93,10 @@
 		81A4372420A243E100F42A53 /* AsyncOperation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AsyncOperation.swift; sourceTree = "<group>"; };
 		81A4372920A2444B00F42A53 /* HTTPRequestOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTTPRequestOperation.swift; sourceTree = "<group>"; };
 		81CCF68620AA99CD00194B22 /* CGExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CGExtensions.swift; sourceTree = "<group>"; };
+		F44BB60220C75CBF00CE41C6 /* Examples-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Examples-Bridging-Header.h"; sourceTree = "<group>"; };
+		F44BB60320C75CBF00CE41C6 /* DemoExtrusionViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DemoExtrusionViewController.h; sourceTree = "<group>"; };
+		F44BB60420C75CBF00CE41C6 /* DemoExtrusionViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DemoExtrusionViewController.m; sourceTree = "<group>"; };
+		F44BB60920C7951900CE41C6 /* Mapbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Mapbox.framework; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -98,6 +106,7 @@
 			files = (
 				81293BFF20B4B3D20014A17A /* MapboxMobileEvents.framework in Frameworks */,
 				81293BEC20B4A1FB0014A17A /* MapboxSceneKit.framework in Frameworks */,
+				F44BB60A20C7951900CE41C6 /* Mapbox.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -120,6 +129,8 @@
 				81293BC820B4A1AE0014A17A /* DemoHeightmapViewController.swift */,
 				81293BD120B4A1AE0014A17A /* DemoPlacementViewController.swift */,
 				817BC08D20BDC071005A015D /* DemoARViewController.swift */,
+				F44BB60320C75CBF00CE41C6 /* DemoExtrusionViewController.h */,
+				F44BB60420C75CBF00CE41C6 /* DemoExtrusionViewController.m */,
 				817BC08F20BDC413005A015D /* FocusSquare.swift */,
 				81293BD220B4A1AE0014A17A /* TerrainDemoScene.swift */,
 				81293BCB20B4A1AE0014A17A /* ProgressCompositor.swift */,
@@ -128,6 +139,7 @@
 				81293BCD20B4A1AE0014A17A /* LaunchScreen.storyboard */,
 				81293BCF20B4A1AE0014A17A /* Main.storyboard */,
 				81293BD420B4A1AE0014A17A /* Info.plist */,
+				F44BB60220C75CBF00CE41C6 /* Examples-Bridging-Header.h */,
 			);
 			path = Examples;
 			sourceTree = "<group>";
@@ -135,6 +147,7 @@
 		81293BEB20B4A1FB0014A17A /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				F44BB60920C7951900CE41C6 /* Mapbox.framework */,
 				81293BFD20B4B3C10014A17A /* MapboxMobileEvents.framework */,
 			);
 			name = Frameworks;
@@ -344,6 +357,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				81293BF320B4A35C0014A17A /* DemoStyleViewController.swift in Sources */,
+				F44BB60520C75CBF00CE41C6 /* DemoExtrusionViewController.m in Sources */,
 				81293BF820B4A35C0014A17A /* TerrainDemoScene.swift in Sources */,
 				81293BF720B4A35C0014A17A /* ProgressCompositor.swift in Sources */,
 				8190075F20C07FAD002F23C3 /* AppDelegate.swift in Sources */,
@@ -408,9 +422,11 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = JVL9YPNS8B;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/Carthage/Build/iOS",
+					"$(PROJECT_DIR)",
 				);
 				INFOPLIST_FILE = Examples/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -420,6 +436,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.mapbox.scenekit.Examples;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OBJC_BRIDGING_HEADER = "Examples/Examples-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 4.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -433,9 +450,11 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = JVL9YPNS8B;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/Carthage/Build/iOS",
+					"$(PROJECT_DIR)",
 				);
 				INFOPLIST_FILE = Examples/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -445,6 +464,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.mapbox.scenekit.Examples;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OBJC_BRIDGING_HEADER = "Examples/Examples-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				SWIFT_VERSION = 4.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -574,9 +594,10 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
-				CODE_SIGN_IDENTITY = "";
+				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
 				DEFINES_MODULE = YES;
+				DEVELOPMENT_TEAM = JVL9YPNS8B;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
@@ -608,6 +629,7 @@
 				CODE_SIGN_IDENTITY = "";
 				CODE_SIGN_STYLE = Automatic;
 				DEFINES_MODULE = YES;
+				DEVELOPMENT_TEAM = JVL9YPNS8B;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";

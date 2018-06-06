@@ -4,16 +4,29 @@ import SceneKit
 /**
  Basic setup of camrea and lighting nodes for non-AR demo scenes.
  **/
+@objc(MBTerrainDemoScene)
 final class TerrainDemoScene: SCNScene {
-    let cameraNode: SCNNode = Camera()
-    let directionalLight: SCNNode = DirectionalLight()
+    @objc public let cameraNode: SCNNode = Camera()
+    @objc public let directionalLight: SCNNode = DirectionalLight()
+    @objc public var floorColor: UIColor = UIColor.lightGray {
+        didSet {
+            floorNode.floorMaterial.diffuse.contents = floorColor
+        }
+    }
+    @objc public var floorReflectivity: CGFloat = 0.1 {
+        didSet {
+            floorNode.floor.reflectivity = floorReflectivity
+        }
+    }
+    
+    fileprivate let floorNode: FloorNode = FloorNode()
 
     override init() {
         super.init()
 
         addDebugGuide()
 
-        rootNode.addChildNode(FloorNode())
+        rootNode.addChildNode(floorNode)
         rootNode.addChildNode(AmbientLight())
         rootNode.addChildNode(directionalLight)
         directionalLight.position = SCNVector3Make(0, 5000, 0)
@@ -89,12 +102,14 @@ fileprivate final class AmbientLight: SCNNode {
 }
 
 fileprivate final class FloorNode: SCNNode {
+    let floorMaterial: SCNMaterial = SCNMaterial()
+    let floor: SCNFloor = SCNFloor()
+    
     override init() {
-        let floorMaterial = SCNMaterial()
         floorMaterial.diffuse.contents = UIColor.lightGray
         floorMaterial.locksAmbientWithDiffuse = true
         floorMaterial.isDoubleSided = true
-        let floor = SCNFloor()
+        
         floor.materials = [floorMaterial]
         floor.reflectivity = 0.1
 
