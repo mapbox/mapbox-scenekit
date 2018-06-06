@@ -35,8 +35,6 @@
 		81A4372A20A2444B00F42A53 /* HTTPRequestOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81A4372920A2444B00F42A53 /* HTTPRequestOperation.swift */; };
 		81CCF68720AA99CD00194B22 /* CGExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81CCF68620AA99CD00194B22 /* CGExtensions.swift */; };
 		F44BB60520C75CBF00CE41C6 /* DemoExtrusionViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = F44BB60420C75CBF00CE41C6 /* DemoExtrusionViewController.m */; };
-		F44BB60A20C7951900CE41C6 /* Mapbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F44BB60920C7951900CE41C6 /* Mapbox.framework */; };
-		F44BB60B20C7952900CE41C6 /* Mapbox.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F44BB60920C7951900CE41C6 /* Mapbox.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -58,7 +56,6 @@
 			files = (
 				81293C0020B4B3D20014A17A /* MapboxMobileEvents.framework in Embed Frameworks */,
 				81293BF120B4A29C0014A17A /* MapboxSceneKit.framework in Embed Frameworks */,
-				F44BB60B20C7952900CE41C6 /* Mapbox.framework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -96,7 +93,6 @@
 		F44BB60220C75CBF00CE41C6 /* Examples-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Examples-Bridging-Header.h"; sourceTree = "<group>"; };
 		F44BB60320C75CBF00CE41C6 /* DemoExtrusionViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DemoExtrusionViewController.h; sourceTree = "<group>"; };
 		F44BB60420C75CBF00CE41C6 /* DemoExtrusionViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DemoExtrusionViewController.m; sourceTree = "<group>"; };
-		F44BB60920C7951900CE41C6 /* Mapbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Mapbox.framework; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -106,7 +102,6 @@
 			files = (
 				81293BFF20B4B3D20014A17A /* MapboxMobileEvents.framework in Frameworks */,
 				81293BEC20B4A1FB0014A17A /* MapboxSceneKit.framework in Frameworks */,
-				F44BB60A20C7951900CE41C6 /* Mapbox.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -147,7 +142,6 @@
 		81293BEB20B4A1FB0014A17A /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				F44BB60920C7951900CE41C6 /* Mapbox.framework */,
 				81293BFD20B4B3C10014A17A /* MapboxMobileEvents.framework */,
 			);
 			name = Frameworks;
@@ -340,10 +334,12 @@
 			);
 			inputPaths = (
 				"$(SRCROOT)/Carthage/Build/iOS/MapboxMobileEvents.framework",
+				"$(SRCROOT)/Carthage/Build/iOS/Mapbox.framework",
 			);
 			name = "Copy Carthage Dependencies";
 			outputPaths = (
 				"$(BUILT_PRODUCTS_DIR)/$(FRAMEWORKS_FOLDER_PATH)/MapboxMobileEvents.framework",
+				"$(BUILT_PRODUCTS_DIR)/$(FRAMEWORKS_FOLDER_PATH)/Mapbox.framework",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;

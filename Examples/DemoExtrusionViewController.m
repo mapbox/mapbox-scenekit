@@ -7,21 +7,17 @@
 //
 
 #import <Mapbox/Mapbox.h>
+#import <MapboxSceneKit/MapboxSceneKit-Swift.h>
 #import <SceneKit/SceneKit.h>
 
-#import "Examples-Swift.h"
-
-#import <MapboxSceneKit/MapboxSceneKit-Swift.h>
-
 #import "DemoExtrusionViewController.h"
+#import "Examples-Swift.h"
 
 @interface DemoExtrusionViewController () <MGLMapViewDelegate>
 
 @property (nonatomic) MGLMapView *mapView;
 @property (nonatomic) MBTerrainDemoScene *terrainDemoScene;
 @property (nonatomic) MBTerrainNode *terrainNode;
-
-@property (nonatomic) BOOL isAnimating;
 
 @end
 
@@ -36,9 +32,6 @@
     self.mapView.delegate = self;
     [self.view addSubview:self.mapView];
     self.mapView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-    [self.mapView setCenterCoordinate:CLLocationCoordinate2DMake(37.747706422053454, -122.45031891542874)
-                            zoomLevel:13
-                             animated:NO];
     
     _sceneView.frame = CGRectMake(0, 0, CGRectGetWidth(self.view.bounds), CGRectGetHeight(self.view.bounds) / 2.0);
     _sceneView.userInteractionEnabled = YES;
@@ -58,22 +51,26 @@
     _sceneView.defaultCameraController.interactionMode = SCNInteractionModeOrbitTurntable;
     _sceneView.defaultCameraController.inertiaEnabled = true;
     _sceneView.showsStatistics = true;
+
+    [self.mapView setCenterCoordinate:CLLocationCoordinate2DMake(37.747706422053454, -122.45031891542874)
+                            zoomLevel:13
+                             animated:NO];
 }
 
 #pragma mark SceneKit Setup Methods
 
 - (NSArray<SCNMaterial *> *)_defaultMaterials
 {
-    SCNMaterial *groundImage = [SCNMaterial new];
+    SCNMaterial *groundImage = [SCNMaterial material];
     groundImage.diffuse.contents = [UIColor darkGrayColor];
     groundImage.name = @"Ground texture";
     
-    SCNMaterial *sideMaterial = [SCNMaterial new];
+    SCNMaterial *sideMaterial = [SCNMaterial material];
     sideMaterial.diffuse.contents = [UIColor darkGrayColor];
     sideMaterial.doubleSided = true;
     sideMaterial.name = @"Side";
     
-    SCNMaterial *bottomMaterial = [SCNMaterial new];
+    SCNMaterial *bottomMaterial = [SCNMaterial material];
     bottomMaterial.diffuse.contents = [UIColor blackColor];
     bottomMaterial.name = @"Bottom";
     
@@ -108,8 +105,6 @@
     _terrainDemoScene.cameraNode.position = SCNVector3Make(boundingBoxMax.x * 2, 2000, boundingBoxMax.z * 2.0);
     if (@available(iOS 11.0, *)) {
         [_terrainDemoScene.cameraNode lookAt:_terrainNode.position];
-    } else {
-        // Fallback on earlier versions
     }
     
     [_terrainNode fetchTerrainHeightsWithMinWallHeight:50.0 enableDynamicShadows:YES progress:^(float progress, NSInteger total) {

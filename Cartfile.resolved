@@ -1,1 +1,2 @@
+binary "https://www.mapbox.com/ios-sdk/Mapbox-iOS-SDK.json" "4.0.2"
 github "mapbox/mapbox-events-ios" "v0.4.0"
