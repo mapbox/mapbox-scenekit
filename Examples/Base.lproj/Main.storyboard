@@ -119,7 +119,7 @@
                                             </subviews>
                                         </tableViewCellContentView>
                                         <connections>
-                                            <segue destination="q3o-mf-I3x" kind="show" id="f3v-DS-Syg"/>
+                                            <segue destination="q3o-mf-I3x" kind="showDetail" id="f3v-DS-Syg"/>
                                         </connections>
                                     </tableViewCell>
                                 </cells>
@@ -386,10 +386,10 @@
             </objects>
             <point key="canvasLocation" x="2162" y="535"/>
         </scene>
-        <!--Demo Extrusion View Controller-->
+        <!--Extrusion-->
         <scene sceneID="3jw-uy-cMD">
             <objects>
-                <viewController id="5Ox-00-GDz" customClass="DemoExtrusionViewController" sceneMemberID="viewController">
+                <viewController title="Extrusion" id="5Ox-00-GDz" customClass="DemoExtrusionViewController" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="k2X-Ab-IAc">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -402,7 +402,7 @@
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <viewLayoutGuide key="safeArea" id="pAB-Z3-NJB"/>
                     </view>
-                    <navigationItem key="navigationItem" id="6TE-b9-MG6"/>
+                    <navigationItem key="navigationItem" title="Map Extrusion" id="6TE-b9-MG6"/>
                     <connections>
                         <outlet property="sceneView" destination="HZx-fr-wmQ" id="eG4-b6-fI2"/>
                     </connections>

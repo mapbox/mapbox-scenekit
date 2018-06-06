@@ -57,6 +57,12 @@
                              animated:NO];
 }
 
+- (void)viewDidLayoutSubviews
+{
+    _mapView.frame = CGRectMake(0, CGRectGetHeight(self.view.bounds) / 2.0, CGRectGetWidth(self.view.bounds), CGRectGetHeight(self.view.bounds) / 2.0);
+    _sceneView.frame = CGRectMake(0, 0, CGRectGetWidth(self.view.bounds), CGRectGetHeight(self.view.bounds) / 2.0);
+}
+
 #pragma mark SceneKit Setup Methods
 
 - (NSArray<SCNMaterial *> *)_defaultMaterials
@@ -112,7 +118,7 @@
         NSLog(@"terrain height fetch completed");
     }];
     
-    [_terrainNode fetchTerrainTexture:@"mapbox/satellite-v9" zoom:14 progress:^(float progress, NSInteger total) {
+    [_terrainNode fetchTerrainTexture:@"mapbox/satellite-v9" zoom:self.mapView.zoomLevel progress:^(float progress, NSInteger total) {
     } completion:^(UIImage * _Nullable image) {
         NSLog(@"terrain texture fetch completed");
         self.terrainNode.geometry.materials[4].diffuse.contents = image;
