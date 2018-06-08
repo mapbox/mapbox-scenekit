@@ -6,8 +6,11 @@ Pod::Spec.new do |s|
   s.version = "0.1.0"
   s.summary = "Scene Kit toolkit for Mapbox."
 
-  s.description  = <<-DESC
-                   DESC
+  s.description  = "Using Swift, bringing our rich 3D terrain into your iOS app is easy. 
+                  SceneKit SDK benefits from Apple’s toolchain and tight integration with 
+                  ARKit. Using Apple's built-in Scene Kit frameworks means you can leverage 
+                  compelling virtual terrain experiences without bloating your app's size."
+
 
   # ―――  Spec License  ――――――――――――――――――――――――――――――――――――――――――――――――――――――――――― #
 
@@ -17,6 +20,7 @@ Pod::Spec.new do |s|
 
   s.author = { "Mapbox" => "mobile@mapbox.com" }
   s.social_media_url = "https://twitter.com/mapbox"
+  s.homepage = "mapbox.com"
 
   # ――― Platform Specifics ――――――――――――――――――――――――――――――――――――――――――――――――――――――― #
 
