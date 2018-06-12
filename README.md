@@ -4,7 +4,7 @@
 
 Using Swift, bringing our rich 3D terrain into your iOS app is easy. SceneKit SDK benefits from Apple’s toolchain and tight integration with ARKit. Using Apple's built-in Scene Kit frameworks means you can leverage compelling virtual terrain experiences without bloating your app's size.
 
-**Note this SDK is in it's beta phase and will be under heavy development as we move towards our 1.0**
+**Note this SDK is in its beta phase and will be under heavy development as we move towards our 1.0**
 
 ## Requirements
 
@@ -18,7 +18,7 @@ To install Mapbox Scene Kit using [CocoaPods](https://cocoapods.org/):
 
 1. Create a [Podfile](https://guides.cocoapods.org/syntax/podfile.html) with the following specification:
    ```ruby
-   pod 'MapboxSceneKit', '~> 0.1'
+   pod 'MapboxSceneKit', :git => 'https://github.com/mapbox/mapbox-scenekit.git'
    ```
 
 1. Run `pod repo update && pod install` and open the resulting Xcode workspace.
@@ -29,7 +29,7 @@ Alternatively, to install Mapbox SceneKit using [Carthage](https://github.com/Ca
 
 1. Create a [Cartfile](https://github.com/Carthage/Carthage/blob/master/Documentation/Artifacts.md#github-repositories) with the following dependency:
    ```cartfile
-   github "mapbox/mapbox-scenekit" ~> 0.1
+   github "mapbox/mapbox-scenekit"
    ```
 
 1. Run `carthage update --platform iOS` to build just the iOS dependencies.
@@ -55,4 +55,4 @@ We welcome feedback and code contributions! Please see [CONTRIBUTING.md](./CONTR
 
 ## License
 
-Mapbox Navigation SDK for iOS is released under the ISC License. See [LICENSE.md](https://github.com/mapbox/mapbox-scenekit/blob/master/LICENSE.md) for details.
+Mapbox SceneKit SDK for iOS is released under the ISC License. See [LICENSE.md](https://github.com/mapbox/mapbox-scenekit/blob/master/LICENSE.md) for details.
