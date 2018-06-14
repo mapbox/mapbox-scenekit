@@ -53,6 +53,8 @@ Alternatively, to install Mapbox SceneKit using [Carthage](https://github.com/Ca
 
 We welcome feedback and code contributions! Please see [CONTRIBUTING.md](./CONTRIBUTING.md) for details.
 
+You can join our Gitter community at [Gitter](https://gitter.im/mapbox-scenekit-sdk/Lobby)
+
 ## License
 
 Mapbox SceneKit SDK for iOS is released under the ISC License. See [LICENSE.md](https://github.com/mapbox/mapbox-scenekit/blob/master/LICENSE.md) for details.
