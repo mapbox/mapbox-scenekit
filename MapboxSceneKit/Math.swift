@@ -1,5 +1,6 @@
 import Foundation
 import CoreLocation
+import CoreGraphics
 
 internal class Math {
     static func degreesToRadians(_ degrees: Double) -> Double {
