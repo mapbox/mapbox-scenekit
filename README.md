@@ -36,6 +36,8 @@ Alternatively, to install Mapbox SceneKit using [Carthage](https://github.com/Ca
 
 1. Follow the rest of [Carthage’s iOS integration instructions](https://github.com/Carthage/Carthage#if-youre-building-for-ios-tvos-or-watchos). Your application target’s Embedded Frameworks should include MapboxSceneKit.framework.
 
+1. In `Info.plist`, add `MGLMapboxAccessToken` with your [Mapbox Access Token](https://www.mapbox.com/studio/account/tokens/) as the value.
+
 1. Include `import MapboxSceneKit` at the top of your ViewController.
 
 ## Configuration
