@@ -36,6 +36,8 @@ Alternatively, to install Mapbox SceneKit using [Carthage](https://github.com/Ca
 
 1. Follow the rest of [Carthage’s iOS integration instructions](https://github.com/Carthage/Carthage#if-youre-building-for-ios-tvos-or-watchos). Your application target’s Embedded Frameworks should include MapboxSceneKit.framework.
 
+1. Include `import MapboxSceneKit` at the top of your ViewController.
+
 ## Configuration
 
 1. Mapbox APIs and vector tiles require a Mapbox account and API access token. In the project editor, select the application target, then go to the Info tab. Under the “Custom iOS Target Properties” section, set `MGLMapboxAccessToken` to your access token. You can obtain an access token from the [Mapbox account page](https://www.mapbox.com/account/access-tokens/).
