@@ -29,7 +29,7 @@ Alternatively, to install Mapbox SceneKit using [Carthage](https://github.com/Ca
 
 1. Create a [Cartfile](https://github.com/Carthage/Carthage/blob/master/Documentation/Artifacts.md#github-repositories) with the following dependency:
    ```cartfile
-   github "mapbox/mapbox-scenekit"
+   github "mapbox/mapbox-scenekit" "master"
    ```
 
 1. Run `carthage update --platform iOS` to build just the iOS dependencies.
