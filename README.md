@@ -19,9 +19,13 @@ To install Mapbox Scene Kit using [CocoaPods](https://cocoapods.org/):
 1. Create a [Podfile](https://guides.cocoapods.org/syntax/podfile.html) with the following specification:
    ```ruby
    pod 'MapboxSceneKit', :git => 'https://github.com/mapbox/mapbox-scenekit.git'
+   pod 'MapboxMobileEvents'
    ```
+   The platform specified in your Podfile should be `:iOS '11'`
 
 1. Run `pod repo update && pod install` and open the resulting Xcode workspace.
+
+1. In `Info.plist`, add `MGLMapboxAccessToken` with your [Mapbox Access Token](https://www.mapbox.com/studio/account/tokens/) as the value.
 
 ### Using Carthage
 
@@ -39,10 +43,6 @@ Alternatively, to install Mapbox SceneKit using [Carthage](https://github.com/Ca
 1. In `Info.plist`, add `MGLMapboxAccessToken` with your [Mapbox Access Token](https://www.mapbox.com/studio/account/tokens/) as the value.
 
 1. Include `import MapboxSceneKit` at the top of your ViewController.
-
-## Configuration
-
-1. Mapbox APIs and vector tiles require a Mapbox account and API access token. In the project editor, select the application target, then go to the Info tab. Under the “Custom iOS Target Properties” section, set `MGLMapboxAccessToken` to your access token. You can obtain an access token from the [Mapbox account page](https://www.mapbox.com/account/access-tokens/).
 
 ## Examples
 
