@@ -111,24 +111,18 @@ class DemoPlacementViewController: UIViewController {
         let firstLocation: CLLocation = CLLocation(latitude: latlons.first!.0, longitude: latlons.first!.1)
         let lastLocation: CLLocation = CLLocation(latitude: latlons.last!.0, longitude: latlons.last!.1)
 
-        let firstPosition = terrainNode.convertPosition(terrainNode.positionForLocation(firstLocation), to: nil)
-        let lastPosition = terrainNode.convertPosition(terrainNode.positionForLocation(lastLocation), to: nil)
+//        let firstPosition = terrainNode.convertPosition(terrainNode.positionForLocation(firstLocation), to: nil)
+//        let lastPosition = terrainNode.convertPosition(terrainNode.positionForLocation(lastLocation), to: nil)
 
-//        positionArray.append(firstPosition)
-//        positionArray.append(lastPosition)
-
-//        let locationPath = UIBezierPath()
-
-//        locationPath.move(to: CGPoint(x: CGFloat(firstPosition.x), y: CGFloat(firstPosition.z)))
 
         for latlon in latlons {
             let location: CLLocation = CLLocation(latitude: latlon.0, longitude: latlon.1)
             let sphere = SCNNode(geometry: SCNBox(width: 25.0, height: 25.0, length: 25.0, chamferRadius: 0.0))
             sphere.geometry?.firstMaterial?.diffuse.contents = UIColor.white.withAlphaComponent(0.85)
-            var position = terrainNode.convertPosition(terrainNode.positionForLocation(location), to: nil)
+            let position = terrainNode.convertPosition(terrainNode.positionForLocation(location), to: nil)
 //            position.y = firstPosition.y
             sphere.position = position
-//            sceneView?.scene?.rootNode.addChildNode(sphere)
+            sceneView?.scene?.rootNode.addChildNode(sphere)
             positionArray.append(position)
 
 //            locationPath.addLine(to: CGPoint(x: CGFloat(position.x), y: CGFloat(position.z)))
@@ -137,7 +131,9 @@ class DemoPlacementViewController: UIViewController {
 //        locationPath.close()
 
         var subsampledPoints: [SCNVector3] = []
-        for i in stride(from: 0, to: positionArray.count-1, by: 10) {
+
+        subsampledPoints.append(positionArray.first!)
+        for i in stride(from: 0, to: positionArray.count-1, by: 1) {
             subsampledPoints.append(positionArray[i])
         }
 
@@ -167,61 +163,42 @@ class DemoPlacementViewController: UIViewController {
 //        }
 
         let bezierSpline = BezierSpline3D(curvePoints: subsampledPoints)
-        let segments = bezierSpline.splineSegments
 
-//        let spline = Spline(points: positionArray, method: .Cubic)
         let cone = SCNCone(topRadius: 1, bottomRadius: 20, height: 100)//SCNBox(width: 60, height: 60, length: 60, chamferRadius: 0)
-//        cone.firstMaterial?.emission.contents = UIColor.purple.withAlphaComponent(0.5)
         cone.firstMaterial?.diffuse.contents = UIColor.purple.withAlphaComponent(0.9)
+
+        let coneCount = positionArray.count / 6
+        for i in 0..<coneCount {
+            let coneNode = SCNNode(geometry: cone)
+            coneNode.position = bezierSpline.evaluate(progress: CGFloat(i) / CGFloat(coneCount))
+            coneNode.position.y += 300
+            sceneView?.scene?.rootNode.addChildNode(coneNode)
+        }
+
+        #if false
+        //        let spline = Spline(points: positionArray, method: .Cubic)
+
         var nodes = [SCNNode]()
 //        for i in 0..<positionArray.count {
         for i in stride(from: 0, to: subsampledPoints.count-1, by: 1) {
             let coneNode = SCNNode(geometry: cone)
-            let time = CGFloat(i) / CGFloat(subsampledPoints.count - 1)
-            coneNode.position = bezierSpline.evaluate(time: time)
-            coneNode.position.y += 300
-//            coneNode.constraints = [SCNBillboardConstraint()]
-//            coneNode.eulerAngles = spline.evaluateRotation(time: time, axis: .All)
+            let progress = CGFloat(i) / CGFloat(subsampledPoints.count - 1)
+            coneNode.position = bezierSpline.evaluate(progress: progress)
             sceneView?.scene?.rootNode.addChildNode(coneNode)
-//            coneNode.transform = SCNMatrix4MakeRotation(Float.random(in: 0...Float.pi/4.0), 1, 0, 0)
-//            let rotation = bezierSpline.evaluateRotation(time: time) //Float.random(in: 0...Float.pi/4.0)
-//            coneNode.rotation = SCNVector4(x: 0, y: 0, z: 1, w: rotation.z)
-//            coneNode.rotation = coneNode.rotation + SCNVector4(x: 1, y: 0, z: 0, w: rotation.x)
-//            coneNode.rotation = coneNode.rotation + SCNVector4(x: 0, y: 1, z: 0, w: rotation.y)
-//coneNode.simdLook(at: startSphere.simdPosition)
-//            let rotation = Float.random(in: 0...Float.pi/4)
-//            coneNode.localRotate(by: SCNVector4(0, 0, rotation, rotation))
             nodes.append(coneNode)
         }
 
         for i in 0..<nodes.count-1 {
             let currentNode = nodes[i]
             let nextNode = nodes[i+1]
-
-//            let orientationConstraint = SCNLookAtConstraint(target: nextNode)
-//            orientationConstraint.isGimbalLockEnabled = true
-//            currentNode.constraints = [orientationConstraint]
-//            nextNode.constraints = [SCNLookAtConstraint(currentNode)]
             let cylinderNode = self.makeCylinder(positionStart: currentNode.position, positionEnd: nextNode.position, radius: 10, color: UIColor.green)
             sceneView?.scene?.rootNode.addChildNode(cylinderNode)
             currentNode.worldOrientation = cylinderNode.worldOrientation
         }
 
-        let markerHeight = CGFloat(10)
-        for segment in segments {
-            let sphereMarker = SCNNode(geometry: SCNSphere(radius: markerHeight))
-            sphereMarker.geometry?.firstMaterial?.diffuse.contents = UIColor.yellow.withAlphaComponent(0.8)
-            sphereMarker.position = segment.controlPoint1
-            sceneView?.scene?.rootNode.addChildNode(sphereMarker)
-
-            let squareMarker = SCNNode(geometry: SCNBox(width: markerHeight, height: markerHeight, length: markerHeight, chamferRadius: 0))
-            squareMarker.geometry?.firstMaterial?.diffuse.contents = UIColor.cyan.withAlphaComponent(0.8)
-            squareMarker.position = segment.controlPoint2
-            sceneView?.scene?.rootNode.addChildNode(squareMarker)
-        }
-
         let cylinderNode = self.makeCylinder(positionStart: startSphere.position, positionEnd: endSphere.position, radius: 10, color: UIColor.green)
         sceneView?.scene?.rootNode.addChildNode(cylinderNode)
+        #endif
     }
 
     func makeCylinder(positionStart: SCNVector3, positionEnd: SCNVector3, radius: CGFloat , color: UIColor) -> SCNNode

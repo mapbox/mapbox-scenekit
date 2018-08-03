@@ -11,6 +11,8 @@ import UIKit
 
 public struct BezierSplineSegment
 {
+    let curvePoint1: SCNVector3
+    let curvePoint2: SCNVector3
     let controlPoint1: SCNVector3
     let controlPoint2: SCNVector3
 }
@@ -29,6 +31,7 @@ public class BezierSpline3D {
         generateControlPointsFromCurvePoints(curvePoints: curvePoints)
     }
 
+    // Based on https://github.com/Ramshandilya/Bezier
     private func generateControlPointsFromCurvePoints(curvePoints: [SCNVector3]) -> Void {
         //Number of Segments
         let count = curvePoints.count - 1
@@ -152,7 +155,7 @@ public class BezierSpline3D {
                 if i == count-1 {
                     let P3 = curvePoints[i+1]
 
-                    guard let P1 = firstControlPoints[i] else{
+                    guard let P1 = firstControlPoints[i] else {
                         continue
                     }
 
@@ -181,7 +184,7 @@ public class BezierSpline3D {
         for i in 0..<count {
             if let firstControlPoint = firstControlPoints[i],
                 let secondControlPoint = secondControlPoints[i] {
-                let segment = BezierSplineSegment(controlPoint1: firstControlPoint, controlPoint2: secondControlPoint)
+                let segment = BezierSplineSegment(curvePoint1: curvePoints[i], curvePoint2: curvePoints[i+1], controlPoint1: firstControlPoint, controlPoint2: secondControlPoint)
                 self.splineSegments.append(segment)
                 controlPoints?.append(firstControlPoint)
                 controlPoints?.append(secondControlPoint)
@@ -189,13 +192,23 @@ public class BezierSpline3D {
         }
     }
 
-    public func evaluate(time: CGFloat) -> SCNVector3 { // Time between 0 and 1
-        let (_, intTime, t) = getTimeProperties(time: time, paddedVertices: 1)
+    public func evaluate(progress: CGFloat) -> SCNVector3 { // Normalized progress through the spline points
+        let (_, spineSegmentStartIndex, t) = getProgressProperties(progress: progress, paddedVertices: 1)
 
-        let p0 = curvePoints[intTime]
-        let p1 = curvePoints[intTime + 1]
-        let p2 = curvePoints[intTime + 2]
-        let p3 = curvePoints[intTime + 3]
+        let p0 = curvePoints[spineSegmentStartIndex]
+        let p1 = curvePoints[spineSegmentStartIndex + 1]
+        let p2 = curvePoints[spineSegmentStartIndex + 2]
+        let p3 = curvePoints[spineSegmentStartIndex + 3]
+
+        #if false
+        let oneMinusT = Float(1.0 - t);
+        let firstTerm = p0 * (oneMinusT * oneMinusT * oneMinusT)
+        let secondTerm = p1 * (3.0 * oneMinusT * oneMinusT * t)
+        let thirdTerm = p2 * (3.0 * oneMinusT * t * t)
+        let fourthTerm = p3 * (t * t * t)
+        return  firstTerm + secondTerm + thirdTerm + fourthTerm
+
+        #else
 
         var a0, a1, a2, a3: SCNVector3
         a0 = p3 - p2 - p0 + p1
@@ -203,24 +216,22 @@ public class BezierSpline3D {
         a2 = p2 - p0
         a3 = p1
 
+        // a0 * (t^3) + a1 * (t^2) + a2 * t + a3
+        //
+        // (p3 - p2 - p0 + p1)*(t^3) + (p0 - p1 - (p3 - p2 - p0 + p1))*(t^2)) + (p2 - p0)*(t) + p1
+        // (p3 - p2 - p0 + p1)*(t^3) + (2p0 - p3 + p2)(t^2) + p2t - p0t + p1
+        // (p3*t^3 - p2*t^3 - p0*t^3 + p1*t^3 + 2p0*t^2 - p3*t^2 + p2&t^2 + p2*t - p0*t + p1
+        // (p3*t^3 - p3*t^2) + (-p2*t^3 p2*t^2 + p2*t) + p1*t^3 + p1 + (-p0*t^3 + 2p0*t^2 - p0*t)
+        // t^2(p3*t - p3) + t(-p2*t^2 + p2*t + p2) + p1(t^3 + 1) + p0*t*(-t^2 + t - 1)
+        // t^2(p3*t - p3) + p2*t(-t^2 + t + 1) + p1(t^3 + 1) + p0*t*(-t^2 + t - 1)
         return (a0 * CGFloat(pow(t, 3))) + (a1 * CGFloat(pow(t, 2))) + (a2 * CGFloat(t)) + (a3)
+        #endif
     }
 
-    public func evaluateRotation(time: CGFloat, samplePrecision precision: CGFloat = 1) -> SCNVector3 {
-        // Find two positions on either side of the time to attempt to approximate the angle; this could be done better and more efficiently
-        let range = 1 / CGFloat(curvePoints.count) / precision // The range at which to sample
-        let vector = evaluate(time: time + range) - evaluate(time: time - range) // The approximate derivative of the point
-        return SCNVector3(
-            atan2(vector.y, vector.z),
-            atan2(vector.x, vector.z),
-            atan2(vector.x, vector.y)
-        )
-    }
-
-    private func getTimeProperties(time: CGFloat, paddedVertices pad: Int = 0) -> (CGFloat, Int, CGFloat) { // paddedVertices is the number of unused vertices on the ends
-        let absoluteTime = min(max(time, 0), 1) * CGFloat(curvePoints.count - 1 - pad * 2) // Time throughout the entire curve
-        let intTime: Int = min(Int(absoluteTime), curvePoints.count - 2 - pad * 2) // Integer time for the starting index
-        let t = absoluteTime - CGFloat(intTime) // The time to evaluate the curve at
-        return (absoluteTime, intTime, t)
+    private func getProgressProperties(progress: CGFloat, paddedVertices pad: Int = 0) -> (CGFloat, Int, Float) { // paddedVertices is the number of unused vertices on the ends
+        let absoluteProgress = min(max(progress, 0), 1) * CGFloat(curvePoints.count - 1 - pad * 2) // progress through the curvePoints
+        let spineSegmentStartIndex: Int = min(Int(absoluteProgress), curvePoints.count - 2 - pad * 2) // Integer time for the index of the starting curvePoint
+        let t = Float(absoluteProgress) - Float(spineSegmentStartIndex) // The time to evaluate the curve at
+        return (absoluteProgress, spineSegmentStartIndex, t)
     }
 }
