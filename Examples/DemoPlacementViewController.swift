@@ -111,29 +111,26 @@ class DemoPlacementViewController: UIViewController {
         let firstLocation: CLLocation = CLLocation(latitude: latlons.first!.0, longitude: latlons.first!.1)
         let lastLocation: CLLocation = CLLocation(latitude: latlons.last!.0, longitude: latlons.last!.1)
 
-//        let firstPosition = terrainNode.convertPosition(terrainNode.positionForLocation(firstLocation), to: nil)
-//        let lastPosition = terrainNode.convertPosition(terrainNode.positionForLocation(lastLocation), to: nil)
+        // change the stride if you want to use fewwer of the passed in lat/lon pairs
+        let latlonDataPointStride = 1
 
-
-        for latlon in latlons {
+        for i in stride(from: 0, to: latlons.count-1, by: latlonDataPointStride) {
+            let latlon = latlons[i]
             let location: CLLocation = CLLocation(latitude: latlon.0, longitude: latlon.1)
             let sphere = SCNNode(geometry: SCNBox(width: 25.0, height: 25.0, length: 25.0, chamferRadius: 0.0))
             sphere.geometry?.firstMaterial?.diffuse.contents = UIColor.white.withAlphaComponent(0.85)
             let position = terrainNode.convertPosition(terrainNode.positionForLocation(location), to: nil)
-//            position.y = firstPosition.y
             sphere.position = position
             sceneView?.scene?.rootNode.addChildNode(sphere)
             positionArray.append(position)
-
-//            locationPath.addLine(to: CGPoint(x: CGFloat(position.x), y: CGFloat(position.z)))
         }
 
-//        locationPath.close()
-
+        // optionally subsample the 3D positions to see how the Bezier curve fitting changes
+        let subsampleStride = 1
         var subsampledPoints: [SCNVector3] = []
 
         subsampledPoints.append(positionArray.first!)
-        for i in stride(from: 0, to: positionArray.count-1, by: 1) {
+        for i in stride(from: 0, to: positionArray.count-1, by: subsampleStride) {
             subsampledPoints.append(positionArray[i])
         }
 
@@ -144,119 +141,26 @@ class DemoPlacementViewController: UIViewController {
         startSphere.position = terrainNode.convertPosition(terrainNode.positionForLocation(firstLocation), to: nil)
         sceneView?.scene?.rootNode.addChildNode(startSphere)
 
-//        positionArray.append(startSphere.position)
-
-
         let endSphere = SCNNode(geometry: SCNSphere(radius: 60.0))
         endSphere.geometry?.firstMaterial?.diffuse.contents = UIColor.red
         endSphere.position = terrainNode.convertPosition(terrainNode.positionForLocation(lastLocation), to: nil)
         sceneView?.scene?.rootNode.addChildNode(endSphere)
         subsampledPoints.append(endSphere.position)
 
-//        let midLocationIndex = latlons.count / 2
-//        let midLocation: CLLocation = CLLocation(latitude: latlons[midLocationIndex].0, longitude: latlons[midLocationIndex].1)
-//        movingNode = SCNNode(geometry: SCNSphere(radius: 200.0))
-//        if let movingNode = movingNode {
-//            movingNode.geometry?.firstMaterial?.diffuse.contents = UIColor.cyan
-//            movingNode.position = terrainNode.convertPosition(terrainNode.positionForLocation(firstLocation), to: nil)
-//            sceneView?.scene?.rootNode.addChildNode(movingNode)
-//        }
-
+        // construct the Bezier with the (optionally) subsampled data points
         let bezierSpline = BezierSpline3D(curvePoints: subsampledPoints)
 
-        let cone = SCNCone(topRadius: 1, bottomRadius: 20, height: 100)//SCNBox(width: 60, height: 60, length: 60, chamferRadius: 0)
+        let cone = SCNCone(topRadius: 1, bottomRadius: 20, height: 100)
         cone.firstMaterial?.diffuse.contents = UIColor.purple.withAlphaComponent(0.9)
 
-        let coneCount = positionArray.count / 6
+        // evaluate the position at points along the spline.
+        // chaning the 'coneCount' will sample more points evenly along the spline
+        let coneCount = subsampledPoints.count
         for i in 0..<coneCount {
             let coneNode = SCNNode(geometry: cone)
             coneNode.position = bezierSpline.evaluate(progress: CGFloat(i) / CGFloat(coneCount))
             coneNode.position.y += 300
             sceneView?.scene?.rootNode.addChildNode(coneNode)
         }
-
-        #if false
-        //        let spline = Spline(points: positionArray, method: .Cubic)
-
-        var nodes = [SCNNode]()
-//        for i in 0..<positionArray.count {
-        for i in stride(from: 0, to: subsampledPoints.count-1, by: 1) {
-            let coneNode = SCNNode(geometry: cone)
-            let progress = CGFloat(i) / CGFloat(subsampledPoints.count - 1)
-            coneNode.position = bezierSpline.evaluate(progress: progress)
-            sceneView?.scene?.rootNode.addChildNode(coneNode)
-            nodes.append(coneNode)
-        }
-
-        for i in 0..<nodes.count-1 {
-            let currentNode = nodes[i]
-            let nextNode = nodes[i+1]
-            let cylinderNode = self.makeCylinder(positionStart: currentNode.position, positionEnd: nextNode.position, radius: 10, color: UIColor.green)
-            sceneView?.scene?.rootNode.addChildNode(cylinderNode)
-            currentNode.worldOrientation = cylinderNode.worldOrientation
-        }
-
-        let cylinderNode = self.makeCylinder(positionStart: startSphere.position, positionEnd: endSphere.position, radius: 10, color: UIColor.green)
-        sceneView?.scene?.rootNode.addChildNode(cylinderNode)
-        #endif
-    }
-
-    func makeCylinder(positionStart: SCNVector3, positionEnd: SCNVector3, radius: CGFloat , color: UIColor) -> SCNNode
-    {
-        let height = Float(GLKVector3Distance(SCNVector3ToGLKVector3(positionStart), SCNVector3ToGLKVector3(positionEnd)))
-        let startNode = SCNNode()
-        let endNode = SCNNode()
-
-        startNode.position = positionStart
-        endNode.position = positionEnd
-
-        let zAxisNode = SCNNode()
-        zAxisNode.eulerAngles.x = Float.pi/2.0
-
-        let cylinderGeometry = SCNCylinder(radius: radius, height: CGFloat(height))
-        cylinderGeometry.firstMaterial?.diffuse.contents = color
-        let cylinder = SCNNode(geometry: cylinderGeometry)
-
-        cylinder.position.y = -height/2
-        zAxisNode.addChildNode(cylinder)
-
-        let returnNode = SCNNode()
-
-        if (positionStart.x > 0.0 && positionStart.y < 0.0 && positionStart.z < 0.0 && positionEnd.x > 0.0 && positionEnd.y < 0.0 && positionEnd.z > 0.0)
-        {
-            endNode.addChildNode(zAxisNode)
-            endNode.constraints = [ SCNLookAtConstraint(target: startNode) ]
-            returnNode.addChildNode(endNode)
-
-        }
-        else if (positionStart.x < 0.0 && positionStart.y < 0.0 && positionStart.z < 0.0 && positionEnd.x < 0.0 && positionEnd.y < 0.0 && positionEnd.z > 0.0)
-        {
-            endNode.addChildNode(zAxisNode)
-            endNode.constraints = [ SCNLookAtConstraint(target: startNode) ]
-            returnNode.addChildNode(endNode)
-
-        }
-        else if (positionStart.x < 0.0 && positionStart.y > 0.0 && positionStart.z < 0.0 && positionEnd.x < 0.0 && positionEnd.y > 0.0 && positionEnd.z > 0.0)
-        {
-            endNode.addChildNode(zAxisNode)
-            endNode.constraints = [ SCNLookAtConstraint(target: startNode) ]
-            returnNode.addChildNode(endNode)
-
-        }
-        else if (positionStart.x > 0.0 && positionStart.y > 0.0 && positionStart.z < 0.0 && positionEnd.x > 0.0 && positionEnd.y > 0.0 && positionEnd.z > 0.0)
-        {
-            endNode.addChildNode(zAxisNode)
-            endNode.constraints = [ SCNLookAtConstraint(target: startNode) ]
-            returnNode.addChildNode(endNode)
-
-        }
-        else
-        {
-            startNode.addChildNode(zAxisNode)
-            startNode.constraints = [ SCNLookAtConstraint(target: endNode) ]
-            returnNode.addChildNode(startNode)
-        }
-
-        return returnNode
     }
 }
