@@ -19,6 +19,7 @@ class ProgressCompositor {
     }
 
     func updateProgress(handlerID: Int, progress: Float, total: Int) {
+        guard progressHandlers.count > handlerID else { return }
         progressHandlers[handlerID] = (progress, total)
         let newProgress = currentProgress()
         progressUpdater(newProgress)
