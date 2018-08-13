@@ -112,7 +112,7 @@ class DemoPlacementViewController: UIViewController {
         let lastLocation: CLLocation = CLLocation(latitude: latlons.last!.0, longitude: latlons.last!.1)
 
         // change the stride if you want to use fewwer of the passed in lat/lon pairs
-        let latlonDataPointStride = 1
+        let latlonDataPointStride = 30
 
         for i in stride(from: 0, to: latlons.count-1, by: latlonDataPointStride) {
             let latlon = latlons[i]
@@ -156,11 +156,15 @@ class DemoPlacementViewController: UIViewController {
         // evaluate the position at points along the spline.
         // chaning the 'coneCount' will sample more points evenly along the spline
         let coneCount = subsampledPoints.count
-        for i in 0..<coneCount {
+        for i in 0..<subsampledPoints.count {
             let coneNode = SCNNode(geometry: cone)
             coneNode.position = bezierSpline.evaluate(progress: CGFloat(i) / CGFloat(coneCount))
             coneNode.position.y += 300
             sceneView?.scene?.rootNode.addChildNode(coneNode)
         }
+        
+        let route = LineNode(positions: subsampledPoints, startRadius: 100, endRadius: 100, startColor: UIColor.green, endColor: UIColor.red)
+        sceneView?.scene?.rootNode.addChildNode(route)
+        route.position.y += 300
     }
 }
