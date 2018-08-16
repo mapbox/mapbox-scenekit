@@ -9,42 +9,44 @@
 import Foundation
 import SceneKit
 
-class LineNode: SCNNode {
+@objc(MBPolylineNode)
+public class PolylineNode: SCNNode {
     
-    var positions : [SCNVector3] = [SCNVector3Zero]
-    var startRadius : CGFloat = 0.1
-    var endRadius : CGFloat = 0.5
-    var startColor : UIColor = UIColor.yellow
-    var endColor : UIColor = UIColor.white
-    var pointScaleFactor : CGFloat = 1.0
+    private var positions : [SCNVector3] = [SCNVector3Zero]
+    private var startRadius : CGFloat = 0.1
+    private var endRadius : CGFloat = 0.5
+    private var startColor : UIColor = UIColor.yellow
+    private var endColor : UIColor = UIColor.white
+    
+    //Flag indicating whether the radius should be used to handle overlap/z-fighting per-pixel. Greatly improves visual quality of lines intersecting with other geometry, but at some cost to performance.
+    //TODO: It's possible to set this flag per-vertex to further optimize performance.
+    private var handleGeometryOverlap : Bool = true
     
     //derived from position/radius
     private var verts : [SCNVector3]! //components -> quads
-    private var normals : [SCNVector3]! //we use the normal magnitude to pass the line radius to the geometry shader
+    private var normals : [SCNVector3]! //Appears as 'neighbors' in the vertex input. Used to pass the line segment(direction and magnitude) to each vertex.
     private var indices: [Int32]!
     private var uvs : [CGPoint]! //uv per vert, indicating the corner of the quad
     private var colors : [SCNVector4]! //vertex colors
-    private var lineDimensions : [CGPoint]! //line radius captured in y value
-    private var neighbors : [SCNVector3]! //neighboring component stored as texCoords, for screen-space comparisons in the shader
+    private var lineParams : [CGPoint]! //line radius captured in y value
     
-    override init() {
-        super.init()
-    }
-    
-    convenience init( positions: [SCNVector3],
+    @objc
+    public init( positions: [SCNVector3],
                       startRadius: CGFloat, endRadius: CGFloat,
-                      startColor: UIColor, endColor: UIColor) {
-        self.init()
+                      startColor: UIColor, endColor: UIColor,
+                      handleGeometryOverlap: Bool = true) {
+        super.init()
         self.positions = positions
         self.startRadius = startRadius
         self.endRadius = endRadius
         self.startColor = startColor
         self.endColor = endColor
+        self.handleGeometryOverlap = handleGeometryOverlap
         createLine()
     }
     
-    func createLine(){
-
+    private func createLine(){
+        
         self.geometry = generateGeometry()
         
         //assign materials
@@ -65,11 +67,9 @@ class LineNode: SCNNode {
         verts = []
         uvs = []
         colors = []
-        lineDimensions = []
+        lineParams = []
         normals = []
         indices = []
-
-        neighbors = []
         
         //step forward through positions and add lines first
         for (index, position) in positions.enumerated() where index != 0{
@@ -80,7 +80,7 @@ class LineNode: SCNNode {
         }
         
         //step backwards and add caps
-        //we want the vertex transforms calculate for the lines first, so the cap alphas appear correctly.
+        //we want the vertex transforms calculate for the lines first, alpha transparency appears correctly on the caps.
         for (index, position) in positions.enumerated().reversed(){
             //add a cap at the new position
             addCap(atPosition: position, withIndex: index )
@@ -91,7 +91,7 @@ class LineNode: SCNNode {
         let normalSource = SCNGeometrySource(normals: normals)
         let uvSource = SCNGeometrySource(textureCoordinates: uvs)
         let colorSource = SCNGeometrySource(colors: colors)
-        let lineDimensionSource = SCNGeometrySource(textureCoordinates: lineDimensions)
+        let lineDimensionSource = SCNGeometrySource(textureCoordinates: lineParams)
         let elements = SCNGeometryElement(indices: indices, primitiveType: .triangles)
         return SCNGeometry(sources: [vertSource, normalSource, uvSource, lineDimensionSource, colorSource], elements: [elements])
     }
@@ -114,9 +114,11 @@ class LineNode: SCNNode {
         let color = getColor(atPositionIndex: index).asSCNVector()
         colors.append(contentsOf: [color, color, color, color])
         
-        //set line dimensions
+        //set line radius and geometry overlap settings
+        let handleOverlapFlag : CGFloat = handleGeometryOverlap ? 1.0 : 0.0
         let radius = getLineRadius(atPositionIndex: index)
-        lineDimensions.append(contentsOf: [radius, radius, radius, radius])
+        let lineParam = CGPoint(x: handleOverlapFlag, y: radius)
+        lineParams.append(contentsOf: [lineParam, lineParam, lineParam, lineParam])
         
         //add incices
         indices.append(contentsOf: [Int32(vertIndex),
@@ -147,10 +149,13 @@ class LineNode: SCNNode {
         let toColor = getColor(atPositionIndex: index).asSCNVector()
         colors.append(contentsOf: [fromColor, fromColor, toColor, toColor])
         
-        //set line dimensions
+        //set line radius and geometry overlap settings
+        let handleOverlapFlag : CGFloat = handleGeometryOverlap ? 1.0 : 0.0
         let fromRadius = getLineRadius(atPositionIndex: index - 1)
         let toRadius = getLineRadius(atPositionIndex: index)
-        lineDimensions.append(contentsOf: [fromRadius, fromRadius, toRadius, toRadius])
+        let fromParam = CGPoint(x: handleOverlapFlag, y: fromRadius)
+        let toParam = CGPoint(x: handleOverlapFlag, y: toRadius)
+        lineParams.append(contentsOf: [fromParam, fromParam, toParam, toParam])
         
         //add incices
         indices.append(contentsOf: [Int32(vertIndex),
@@ -172,15 +177,15 @@ class LineNode: SCNNode {
     }
     
     //TODO: get lineradius from curve
-    private func getLineRadius(atPositionIndex index: Int ) -> CGPoint{
+    private func getLineRadius(atPositionIndex index: Int ) -> CGFloat{
         
         let totalPositions = positions.count
         let progress = CGFloat.map(value: CGFloat(index),
                                    low1: 0, high1: CGFloat(totalPositions), //map from total postions
-                                    low2: 0, high2: 1) //to a 0-1 range
+            low2: 0, high2: 1) //to a 0-1 range
         
         let radius = CGFloat.lerp(from: startRadius, to: endRadius, withProgress: progress)
-        return CGPoint(x: 0.0, y: radius)
+        return radius
     }
     
     //TODO: get colors from curve, currently just linear interpolation between start and end colors
@@ -189,12 +194,12 @@ class LineNode: SCNNode {
         let totalPositions = positions.count
         let progress = CGFloat.map(value: CGFloat(index),
                                    low1: 0, high1: CGFloat(totalPositions), //map from total postions
-                                   low2: 0, high2: 1) //to a 0-1 range
+            low2: 0, high2: 1) //to a 0-1 range
         
         return UIColor.lerp(from: startColor, to: endColor, withProgress: progress)
     }
-
-
+    
+    
     
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
@@ -263,5 +268,5 @@ fileprivate extension CGFloat {
     static func map( value: CGFloat, low1: CGFloat, high1: CGFloat, low2: CGFloat, high2: CGFloat) -> CGFloat{
         return low2 + (value - low1) * (high2 - low2) / (high1 - low1)
     }
-
+    
 }

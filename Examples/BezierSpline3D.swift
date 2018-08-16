@@ -9,7 +9,7 @@
 import SceneKit
 import UIKit
 
-public class BezierSpline3D {
+internal class BezierSpline3D {
     public let curvePoints: [SCNVector3]
 
     public init(curvePoints: [SCNVector3]) {

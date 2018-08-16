@@ -149,22 +149,9 @@ class DemoPlacementViewController: UIViewController {
 
         // construct the Bezier with the (optionally) subsampled data points
         let bezierSpline = BezierSpline3D(curvePoints: subsampledPoints)
-
-        let cone = SCNCone(topRadius: 1, bottomRadius: 20, height: 100)
-        cone.firstMaterial?.diffuse.contents = UIColor.purple.withAlphaComponent(0.9)
-
-        // evaluate the position at points along the spline.
-        // chaning the 'coneCount' will sample more points evenly along the spline
-        let coneCount = subsampledPoints.count
-        for i in 0..<subsampledPoints.count {
-            let coneNode = SCNNode(geometry: cone)
-            coneNode.position = bezierSpline.evaluate(progress: CGFloat(i) / CGFloat(coneCount))
-            coneNode.position.y += 300
-            sceneView?.scene?.rootNode.addChildNode(coneNode)
-        }
         
-        let route = LineNode(positions: subsampledPoints, startRadius: 100, endRadius: 100, startColor: UIColor.green, endColor: UIColor.red)
+        let route = PolylineNode(positions: subsampledPoints, startRadius: CGFloat(50.0), endRadius: CGFloat(100.0), startColor: UIColor.white, endColor: UIColor.red)
         sceneView?.scene?.rootNode.addChildNode(route)
-        route.position.y += 300
+        route.position.y += 50
     }
 }
