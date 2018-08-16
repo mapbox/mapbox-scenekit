@@ -42,10 +42,10 @@ public class PolylineNode: SCNNode {
         self.startColor = startColor
         self.endColor = endColor
         self.handleGeometryOverlap = handleGeometryOverlap
-        createLine()
+        setMaterial()
     }
     
-    private func createLine(){
+    private func setMaterial(){
         
         self.geometry = generateGeometry()
         
