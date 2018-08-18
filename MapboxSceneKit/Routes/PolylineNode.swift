@@ -8,6 +8,7 @@
 
 import Foundation
 import SceneKit
+import Metal
 
 @objc(MBPolylineNode)
 public class PolylineNode: SCNNode {
@@ -49,9 +50,9 @@ public class PolylineNode: SCNNode {
         
         self.geometry = generateGeometry()
         
-        //assign materials
+        //assign materials using the scenekit metal library
         let lineMaterial = SCNMaterial()
-        let program = SCNProgram()
+        let program = SCNProgram(withLibraryForClass: type(of: self))
         program.fragmentFunctionName = "lineFrag"
         program.vertexFunctionName = "lineVert"
         program.isOpaque = false
