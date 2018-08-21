@@ -10,6 +10,16 @@ import Foundation
 import SceneKit
 import Metal
 
+/// PolylineNode generates line geometry through a list of positions, and uses a Metal Shader to give that geometry a set radius in screen-space. Not compatible with iOS simulator builds.
+///
+/// - Parameters:
+///   - positions: The list of SCNVector3 positions. The line is drawn through each position consectutively from 0...n
+///   - startRadius: The width of the initial point of the line. Linearly interpolated from start to end positions.
+///   - endRadius: The width of the final point of the line. Linearly interpolated from start to end positions.
+///   - startColor: The color of the initial point of the line. Linearly interpolated through RGB color space from start to end.
+///   - endColor: The color of the final point of the line. Linearly interpolated through RGB color space from start to end.
+///   - handleGeometryOverlap: !Experimental! Flag indicating whether the line radius should be used to handle overlap/z-fighting per-pixel. Greatly improves visual quality of lines intersecting with other geometry, but at some cost to performance. May create graphical artifacts on some devices.
+
 @objc(MBPolylineNode)
 public class PolylineNode: SCNNode {
     
@@ -19,9 +29,8 @@ public class PolylineNode: SCNNode {
     private var startColor : UIColor = UIColor.yellow
     private var endColor : UIColor = UIColor.white
     
-    //Flag indicating whether the radius should be used to handle overlap/z-fighting per-pixel. Greatly improves visual quality of lines intersecting with other geometry, but at some cost to performance.
     //TODO: It's possible to set this flag per-vertex to further optimize performance.
-    private var handleGeometryOverlap : Bool = true
+    private var handleGeometryOverlap : Bool = false
     
     //derived from position/radius
     private var verts : [SCNVector3]! //components -> quads
@@ -75,15 +84,12 @@ public class PolylineNode: SCNNode {
         //step forward through positions and add lines first
         for (index, position) in positions.enumerated() where index != 0{
             let lastPosition = positions[index - 1]
-            
-            //add a line to the new position
             addLine(from: lastPosition, to: position, withIndex: index)
         }
         
         //step backwards and add caps
-        //we want the vertex transforms calculate for the lines first, alpha transparency appears correctly on the caps.
+        //we want the vertex transforms calculate for the lines first, so that alpha transparency appears correctly on the caps.
         for (index, position) in positions.enumerated().reversed(){
-            //add a cap at the new position
             addCap(atPosition: position, withIndex: index )
         }
         
