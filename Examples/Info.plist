@@ -21,7 +21,7 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>MGLMapboxAccessToken</key>
-	<string>pk.eyJ1IjoiYXZpLWMiLCJhIjoiY2plbWQ2OGdzMGpoaDMzcDlxa3hsMTV3byJ9._Qlqbj9BgdHdbCiKir7LjQ</string>
+	<string>PASTE MAPBOX ACCESS TOKEN HERE</string>
 	<key>NSCameraUsageDescription</key>
 	<string>AR Viewing</string>
 	<key>UILaunchStoryboardName</key>
