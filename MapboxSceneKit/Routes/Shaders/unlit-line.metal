@@ -27,8 +27,7 @@ typedef struct {
     float2 lineParams [[ attribute(SCNVertexSemanticTexcoord1) ]];
 } VertexInput;
 
-struct Vertex
-{
+struct Vertex {
     float4 position [[position]];
     half4 color;
     float2 texCoords;
@@ -59,9 +58,9 @@ vertex Vertex lineVert(VertexInput in [[ stage_in ]],
     
     float2 perpVec = normalize(pVec).yx;
     perpVec.y *= -1;
-    perpVec.xy *=  (2 * (in.texCoords.x - .5)) * (2 * (in.texCoords.y - .5));
+    perpVec.xy *= (2 * (in.texCoords.x - .5)) * (2 * (in.texCoords.y - .5));
     
-    //1.95 because the caps look better slightly small
+    //less than 2 because the caps look better slightly small
     float2 capVec = 1.98 * (in.texCoords.xy - .5);
     
     // get aspect ratio by applying the projection transform to a 1,1,1 vector.
@@ -73,25 +72,20 @@ vertex Vertex lineVert(VertexInput in [[ stage_in ]],
     //if cap, 1, else 0
     vert.capFlag = 1 - vert.capFlag;
     
-    
-    if( shouldModifyDepthBuffer ){
-        
+    if( shouldModifyDepthBuffer ) {
         //define a depth offset to use as the pipe thickness in the fragment shader when adjusting the output depth value
         float offsetAngleModifier;
-        if( vert.capFlag < 1){
+        if(vert.capFlag < 1) {
             //increase the maximum depth offset as the incident angle of the pipe increases
             offsetAngleModifier = mix(0.02, abs(pVec.z) , abs(normalize(pVec).z));
-        }else{
+        } else {
             //use a static offset for caps
             offsetAngleModifier = 0.02;
         }
         vert.zOffset = (expandDistance * offsetAngleModifier) / vert.position.w;
-    }
-    else
-    {
+    } else {
         vert.zOffset = 0;
     }
-    
     
     return vert;
 }
@@ -99,41 +93,35 @@ vertex Vertex lineVert(VertexInput in [[ stage_in ]],
 struct FragmentOutput {
     // color attachment 0
     half4 color [[color(0)]];
-    // depth, offset
+    // depth offset
     float d [[depth(less)]];
 };
 
-
-
-fragment FragmentOutput lineFrag(Vertex in [[stage_in]])
-{
+fragment FragmentOutput lineFrag(Vertex in [[stage_in]]) {
     FragmentOutput output;
     
     //Adds a circular alpha mask to caps, creating a cylinder effect
     float lineAlpha = 1 - step(1, length(in.texCoords * 2 - float2(1.0, 1.0))) * in.capFlag;
     
-    if( lineAlpha < 1 ){
+    if( lineAlpha < 1 ) {
         discard_fragment();
     }
     //premultiply alpha
     output.color = lineAlpha * in.color;
     
-    if(in.zOffset > 0){
-        
+    if( in.zOffset > 0 ) {
         //offset the z value of the fragment by the line width to create a cylinder effect when intersecting with other geometry.
         float modifiedOffset;
-        if( in.capFlag < 0.5){
+        if( in.capFlag < 0.5 ) {
             //displace in the virtical axis only for pipes
             modifiedOffset = sinpi(in.texCoords.x) * in.zOffset;
-        }else{
+        } else {
             //use a round 2D offset for caps
             modifiedOffset = cospi((saturate(length(in.texCoords - float2(.5, .5))))) * in.zOffset;
         }
         output.d = in.position.z - modifiedOffset;
-        
-    }
-    else
-    {
+
+    } else {
         output.d = in.position.z;
     }
     

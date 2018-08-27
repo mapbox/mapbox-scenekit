@@ -117,7 +117,6 @@ public class PolylineNode: SCNNode {
         uvs.append(contentsOf: billboardUVs())
         
         //set Color
-        //TODO: set vertex colors from some gradient
         let color = getColor(atPositionIndex: index).asSCNVector()
         colors.append(contentsOf: [color, color, color, color])
         
@@ -127,13 +126,8 @@ public class PolylineNode: SCNNode {
         let lineParam = CGPoint(x: handleOverlapFlag, y: radius)
         lineParams.append(contentsOf: [lineParam, lineParam, lineParam, lineParam])
         
-        //add incices
-        indices.append(contentsOf: [Int32(vertIndex),
-                                    Int32(vertIndex + 1),
-                                    Int32(vertIndex + 2),
-                                    Int32(vertIndex + 3),
-                                    Int32(vertIndex + 2),
-                                    Int32(vertIndex + 1)])
+        //add indices
+        indices.append(contentsOf: getQuadIndices(fromIndex: vertIndex))
         
     }
     
@@ -151,7 +145,6 @@ public class PolylineNode: SCNNode {
         uvs.append(contentsOf: billboardUVs())
         
         //set Color
-        //TODO: set vertex colors
         let fromColor = getColor(atPositionIndex: index - 1).asSCNVector()
         let toColor = getColor(atPositionIndex: index).asSCNVector()
         colors.append(contentsOf: [fromColor, fromColor, toColor, toColor])
@@ -164,13 +157,18 @@ public class PolylineNode: SCNNode {
         let toParam = CGPoint(x: handleOverlapFlag, y: toRadius)
         lineParams.append(contentsOf: [fromParam, fromParam, toParam, toParam])
         
-        //add incices
-        indices.append(contentsOf: [Int32(vertIndex),
-                                    Int32(vertIndex + 1),
-                                    Int32(vertIndex + 2),
-                                    Int32(vertIndex + 3),
-                                    Int32(vertIndex + 2),
-                                    Int32(vertIndex + 1)])
+        //add indices
+        indices.append(contentsOf: getQuadIndices(fromIndex: vertIndex))
+    }
+    
+    //return indices for two joined triangles, creating a quad
+    private func getQuadIndices(fromIndex vertIndex: Int) -> [Int32]{
+        return [Int32(vertIndex),
+                Int32(vertIndex + 1),
+                Int32(vertIndex + 2),
+                Int32(vertIndex + 3),
+                Int32(vertIndex + 2),
+                Int32(vertIndex + 1)]
     }
     
     private func billboardUVs() -> [CGPoint]{
@@ -183,7 +181,6 @@ public class PolylineNode: SCNNode {
         return [uvSet1, uvSet2, uvSet3, uvSet4]
     }
     
-    //TODO: get lineradius from curve
     private func getLineRadius(atPositionIndex index: Int ) -> CGFloat{
         
         let totalPositions = positions.count
@@ -195,7 +192,6 @@ public class PolylineNode: SCNNode {
         return radius
     }
     
-    //TODO: get colors from curve, currently just linear interpolation between start and end colors
     private func getColor(atPositionIndex index: Int) -> UIColor{
         
         let totalPositions = positions.count
@@ -240,7 +236,6 @@ fileprivate extension UIColor {
     }
     
     //interpolate from -> to in RGB colorspace given some 0.0 - 1.0 progress value.
-    //TODO: HSV would probably look better
     class func lerp( from: UIColor, to: UIColor, withProgress progress: CGFloat) -> UIColor{
         var r1 : CGFloat = 0
         var g1 : CGFloat = 0

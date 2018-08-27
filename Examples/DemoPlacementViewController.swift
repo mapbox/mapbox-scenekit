@@ -12,8 +12,6 @@ class DemoPlacementViewController: UIViewController {
     @IBOutlet private weak var sceneView: SCNView?
     @IBOutlet private weak var progressView: UIProgressView?
 
-    var movingNode: SCNNode? = nil
-
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -31,8 +29,8 @@ class DemoPlacementViewController: UIViewController {
         sceneView.defaultCameraController.inertiaEnabled = true
         sceneView.showsStatistics = true
 
+        //Whistler Mountain, British Columbia
         let diffLat = 50.120873988090956 - 50.044660402821592
-
         let terrainNode = TerrainNode(minLat: 50.044660402821592 + diffLat/2, maxLat: 50.120873988090956,
                                       minLon: -122.99017089272466 , maxLon: -122.86824490727534 )
         terrainNode.position = SCNVector3(0, 500, 0)
@@ -104,7 +102,9 @@ class DemoPlacementViewController: UIViewController {
 
         ///Create an array of CLLocation objects to generate a polyline
         var locationArray: [CLLocation] = []
-        // change the stride if you want to use fewer of the lat/lon pairs
+        
+        // stride is the number of points in the location array to skip for every point in the final polyline.
+        // higher stride gives a polyline with fewer points.
         let latlonDataPointStride = 30
         for i in stride(from: 0, to: latlons.count-1, by: latlonDataPointStride) {
             let latlon = latlons[i]

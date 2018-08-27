@@ -23,12 +23,8 @@ extension TerrainNode {
         
         //TODO: check along lines between coordinates for intersections with terrain geometry, and add points to avoid those interasections.
         
-        
-        let lineNode = PolylineNode(positions: scenePositions, startRadius: startRadius, endRadius: endRadius, startColor: startColor, endColor: endColor, handleGeometryOverlap: false)
+        let lineNode = PolylineNode( positions: scenePositions, startRadius: startRadius, endRadius: endRadius, startColor: startColor, endColor: endColor, handleGeometryOverlap: false )
         self.addChildNode(lineNode)
         return lineNode
-        
     }
-    
-    
 }
