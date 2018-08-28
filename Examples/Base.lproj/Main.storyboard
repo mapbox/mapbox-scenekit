@@ -1,12 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="14113" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="3jn-yz-y0n">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="14313.3.2" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="3jn-yz-y0n">
     <device id="retina4_7" orientation="portrait">
         <adaptation id="fullscreen"/>
     </device>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14088"/>
-        <capability name="Constraints to layout margins" minToolsVersion="6.0"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14283.1"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -158,7 +157,7 @@
                 <splitViewController id="3jn-yz-y0n" sceneMemberID="viewController">
                     <connections>
                         <segue destination="9zj-K7-8JK" kind="relationship" relationship="masterViewController" id="2qp-qS-nnQ"/>
-                        <segue destination="PbG-YX-uXu" kind="relationship" relationship="detailViewController" id="fzi-HY-jfV"/>
+                        <segue destination="yEN-30-N1M" kind="relationship" relationship="detailViewController" id="gWq-bg-mh3"/>
                     </connections>
                 </splitViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="DPH-lk-nx0" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -350,7 +349,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="5wc-x9-rkE" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="1244" y="1343"/>
+            <point key="canvasLocation" x="1244" y="1342.5787106446778"/>
         </scene>
         <!--Navigation Controller-->
         <scene sceneID="5tI-sI-e1B">
@@ -472,10 +471,10 @@
                                 </userDefinedRuntimeAttributes>
                             </visualEffectView>
                             <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="Move iPhone" translatesAutoresizingMaskIntoConstraints="NO" id="Jhx-jZ-QaO">
-                                <rect key="frame" x="150" y="273.5" width="74" height="120"/>
+                                <rect key="frame" x="150.5" y="273.5" width="74" height="120"/>
                             </imageView>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="ImG-VX-8sM">
-                                <rect key="frame" x="163" y="603" width="48" height="48"/>
+                                <rect key="frame" x="163.5" y="603" width="48" height="48"/>
                                 <state key="normal" image="Place"/>
                                 <connections>
                                     <action selector="place:" destination="LGO-U1-K7T" eventType="touchUpInside" id="z1M-eJ-1xV"/>
@@ -526,7 +525,7 @@
                 </navigationController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="fmh-qq-IZx" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="236" y="535"/>
+            <point key="canvasLocation" x="262" y="535"/>
         </scene>
         <!--Navigation Controller-->
         <scene sceneID="xtz-bu-2v0">
@@ -552,6 +551,6 @@
         <image name="Place" width="48" height="48"/>
     </resources>
     <inferredMetricsTieBreakers>
-        <segue reference="qi7-dQ-lUz"/>
+        <segue reference="gWq-bg-mh3"/>
     </inferredMetricsTieBreakers>
 </document>

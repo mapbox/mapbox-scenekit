@@ -33,7 +33,13 @@
 		81A4372520A243E100F42A53 /* AsyncOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81A4372420A243E100F42A53 /* AsyncOperation.swift */; };
 		81A4372A20A2444B00F42A53 /* HTTPRequestOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81A4372920A2444B00F42A53 /* HTTPRequestOperation.swift */; };
 		81CCF68720AA99CD00194B22 /* CGExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81CCF68620AA99CD00194B22 /* CGExtensions.swift */; };
+		95B4F9E02125EE6100918673 /* PolylineNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95ABF79B21150EF800E5247F /* PolylineNode.swift */; };
+		95B4F9E42126063E00918673 /* BezierSpline3D.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4B463CD211371700093F585 /* BezierSpline3D.swift */; };
+		95B4F9E62126066D00918673 /* TerrainNodeExtension+Routes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95B4F9E52126066D00918673 /* TerrainNodeExtension+Routes.swift */; };
+		95C395E521278FAB007A1C6D /* unlit-line.metal in Sources */ = {isa = PBXBuildFile; fileRef = 95ABF79E21150EF800E5247F /* unlit-line.metal */; };
+		95C395E821279ED2007A1C6D /* SCNProgramExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95C395E721279ED2007A1C6D /* SCNProgramExtensions.swift */; };
 		F44BB60520C75CBF00CE41C6 /* DemoExtrusionViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = F44BB60420C75CBF00CE41C6 /* DemoExtrusionViewController.m */; };
+		F4B463CA211125500093F585 /* SCNVector3Extension+Operators.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4B463C9211125500093F585 /* SCNVector3Extension+Operators.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -88,9 +94,15 @@
 		81A4372420A243E100F42A53 /* AsyncOperation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AsyncOperation.swift; sourceTree = "<group>"; };
 		81A4372920A2444B00F42A53 /* HTTPRequestOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTTPRequestOperation.swift; sourceTree = "<group>"; };
 		81CCF68620AA99CD00194B22 /* CGExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CGExtensions.swift; sourceTree = "<group>"; };
+		95ABF79B21150EF800E5247F /* PolylineNode.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PolylineNode.swift; sourceTree = "<group>"; };
+		95ABF79E21150EF800E5247F /* unlit-line.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; path = "unlit-line.metal"; sourceTree = "<group>"; };
+		95B4F9E52126066D00918673 /* TerrainNodeExtension+Routes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TerrainNodeExtension+Routes.swift"; sourceTree = "<group>"; };
+		95C395E721279ED2007A1C6D /* SCNProgramExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SCNProgramExtensions.swift; sourceTree = "<group>"; };
 		F44BB60220C75CBF00CE41C6 /* Examples-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Examples-Bridging-Header.h"; sourceTree = "<group>"; };
 		F44BB60320C75CBF00CE41C6 /* DemoExtrusionViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DemoExtrusionViewController.h; sourceTree = "<group>"; };
 		F44BB60420C75CBF00CE41C6 /* DemoExtrusionViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DemoExtrusionViewController.m; sourceTree = "<group>"; };
+		F4B463C9211125500093F585 /* SCNVector3Extension+Operators.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "SCNVector3Extension+Operators.swift"; sourceTree = "<group>"; };
+		F4B463CD211371700093F585 /* BezierSpline3D.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BezierSpline3D.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -117,6 +129,7 @@
 		81293BC720B4A1AE0014A17A /* Examples */ = {
 			isa = PBXGroup;
 			children = (
+				F4B463C9211125500093F585 /* SCNVector3Extension+Operators.swift */,
 				81293BD320B4A1AE0014A17A /* AppDelegate.swift */,
 				81293BC920B4A1AE0014A17A /* DemoStyleViewController.swift */,
 				81293BC820B4A1AE0014A17A /* DemoHeightmapViewController.swift */,
@@ -150,6 +163,7 @@
 			children = (
 				81CCF68620AA99CD00194B22 /* CGExtensions.swift */,
 				81A4372020A241E200F42A53 /* SCNExtensions.swift */,
+				95C395E721279ED2007A1C6D /* SCNProgramExtensions.swift */,
 			);
 			path = Extensions;
 			sourceTree = "<group>";
@@ -181,6 +195,7 @@
 				814F3BD420ADF1B40006DDFD /* MapboxImageAPI.swift */,
 				81A4371620A1FAB700F42A53 /* Math.swift */,
 				814F3BD820AE02E60006DDFD /* Extensions */,
+				95B4F9E22126043300918673 /* Routes */,
 				81A4372820A2440D00F42A53 /* Tile Fetching */,
 				81A436C020A1F68500F42A53 /* Info.plist */,
 			);
@@ -196,6 +211,25 @@
 				81A4372420A243E100F42A53 /* AsyncOperation.swift */,
 			);
 			path = "Tile Fetching";
+			sourceTree = "<group>";
+		};
+		95ABF79C21150EF800E5247F /* Shaders */ = {
+			isa = PBXGroup;
+			children = (
+				95ABF79E21150EF800E5247F /* unlit-line.metal */,
+			);
+			path = Shaders;
+			sourceTree = "<group>";
+		};
+		95B4F9E22126043300918673 /* Routes */ = {
+			isa = PBXGroup;
+			children = (
+				95ABF79C21150EF800E5247F /* Shaders */,
+				95ABF79B21150EF800E5247F /* PolylineNode.swift */,
+				F4B463CD211371700093F585 /* BezierSpline3D.swift */,
+				95B4F9E52126066D00918673 /* TerrainNodeExtension+Routes.swift */,
+			);
+			path = Routes;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -358,6 +392,7 @@
 				8190075F20C07FAD002F23C3 /* AppDelegate.swift in Sources */,
 				81293BF420B4A35C0014A17A /* DemoHeightmapViewController.swift in Sources */,
 				817BC09220BDC435005A015D /* SCNExtensions.swift in Sources */,
+				F4B463CA211125500093F585 /* SCNVector3Extension+Operators.swift in Sources */,
 				817BC09020BDC413005A015D /* FocusSquare.swift in Sources */,
 				817BC08E20BDC071005A015D /* DemoARViewController.swift in Sources */,
 				81293BF520B4A35C0014A17A /* DemoPlacementViewController.swift in Sources */,
@@ -369,8 +404,13 @@
 			buildActionMask = 2147483647;
 			files = (
 				81A436C820A1F6BC00F42A53 /* TerrainNode.swift in Sources */,
+				95B4F9E02125EE6100918673 /* PolylineNode.swift in Sources */,
 				81A4371720A1FAB700F42A53 /* Math.swift in Sources */,
+				95C395E521278FAB007A1C6D /* unlit-line.metal in Sources */,
+				95B4F9E62126066D00918673 /* TerrainNodeExtension+Routes.swift in Sources */,
 				814D9F2720A48538008E6848 /* ImageBuilder.swift in Sources */,
+				95B4F9E42126063E00918673 /* BezierSpline3D.swift in Sources */,
+				95C395E821279ED2007A1C6D /* SCNProgramExtensions.swift in Sources */,
 				81A4372120A241E200F42A53 /* SCNExtensions.swift in Sources */,
 				81A4372A20A2444B00F42A53 /* HTTPRequestOperation.swift in Sources */,
 				81A4372520A243E100F42A53 /* AsyncOperation.swift in Sources */,
@@ -417,7 +457,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = JVL9YPNS8B;
+				DEVELOPMENT_TEAM = GJZR2MEM28;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/Carthage/Build/iOS",
@@ -445,7 +485,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = JVL9YPNS8B;
+				DEVELOPMENT_TEAM = GJZR2MEM28;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/Carthage/Build/iOS",
@@ -592,7 +632,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
 				DEFINES_MODULE = YES;
-				DEVELOPMENT_TEAM = JVL9YPNS8B;
+				DEVELOPMENT_TEAM = GJZR2MEM28;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
@@ -624,7 +664,7 @@
 				CODE_SIGN_IDENTITY = "";
 				CODE_SIGN_STYLE = Automatic;
 				DEFINES_MODULE = YES;
-				DEVELOPMENT_TEAM = JVL9YPNS8B;
+				DEVELOPMENT_TEAM = GJZR2MEM28;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
