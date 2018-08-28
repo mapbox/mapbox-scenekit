@@ -45,6 +45,26 @@ func SCNVector3Normalize(vector: SCNVector3) -> SCNVector3 {
     return vector / SCNVector3Length(vector: vector)
 }
 
+func + (left: SCNVector3, right: SCNVector3) -> SCNVector3 {
+    return SCNVector3Make(left.x + right.x, left.y + right.y, left.z + right.z)
+}
+
+func += ( left: inout SCNVector3, right: SCNVector3) {
+    left = left + right
+}
+
+func - (left: SCNVector3, right: SCNVector3) -> SCNVector3 {
+    return SCNVector3Make(left.x - right.x, left.y - right.y, left.z - right.z)
+}
+
+func -= ( left: inout SCNVector3, right: SCNVector3) {
+    left = left - right
+}
+
+func * (left: SCNVector3, right: SCNVector3) -> SCNVector3 {
+    return SCNVector3Make(left.x * right.x, left.y * right.y, left.z * right.z)
+}
+
 func *= ( left: inout SCNVector3, right: SCNVector3) {
     left = left * right
 }
@@ -55,6 +75,10 @@ func * (vector: SCNVector3, scalar: Float) -> SCNVector3 {
 
 func *= ( vector: inout SCNVector3, scalar: Float) {
     vector = vector * scalar
+}
+
+func / (left: SCNVector3, right: SCNVector3) -> SCNVector3 {
+    return SCNVector3Make(left.x / right.x, left.y / right.y, left.z / right.z)
 }
 
 func /= ( left: inout SCNVector3, right: SCNVector3) {

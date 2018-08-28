@@ -5,8 +5,7 @@ import CoreLocation
 internal final class MapboxHTTPAPI {
     private static var operationQueue: OperationQueue = {
         var operationQueue = OperationQueue()
-        var underlyingDispatchQueue = DispatchQueue(label: "com.mapbox.scenekit.api", attributes: [.concurrent])
-        operationQueue.underlyingQueue = underlyingDispatchQueue
+        operationQueue.underlyingQueue = DispatchQueue(label: "com.mapbox.scenekit.api", attributes: [.concurrent])
         operationQueue.name = "Mapbox API Queue"
         operationQueue.maxConcurrentOperationCount = 10
         return operationQueue
@@ -20,7 +19,7 @@ internal final class MapboxHTTPAPI {
 
     func tileset(_ tileset: String, zoomLevel z: Int, xTile x: Int, yTile y: Int, format: String, completion: @escaping (_ image: UIImage?) -> Void) -> UUID? {
         guard let url = URL(string: "https://api.mapbox.com/v4/\(tileset)/\(z)/\(x)/\(y).\(format)?access_token=\(accessToken)") else {
-            NSLog("Couldn't get URL for fetch task: https://api.mapbox.com/v4/\(tileset)/\(z)/\(x)/\(y).\(format)?access_token=\(accessToken)")
+            NSLog("Couldn't get URL for fetch task")
             return nil
         }
 
@@ -47,8 +46,7 @@ internal final class MapboxHTTPAPI {
 
     func style(_ style: String, zoomLevel z: Int, centerLat: CLLocationDegrees, centerLon: CLLocationDegrees, tileSize: CGSize, completion: @escaping (_ image: UIImage?) -> Void) -> UUID? {
         guard let url = URL(string: "https://api.mapbox.com/styles/v1/\(style)/static/\(centerLon),\(centerLat),\(z)/\(Int(tileSize.width))x\(Int(tileSize.height))?access_token=\(accessToken)&attribution=false&logo=false") else {
-//            NSLog("Couldn't get URL for fetch task")
-            NSLog("Couldn't get URL for fetch task: https://api.mapbox.com/styles/v1/\(style)/static/\(centerLon),\(centerLat),\(z)/\(Int(tileSize.width))x\(Int(tileSize.height))?access_token=\(accessToken)&attribution=false&logo=false")
+            NSLog("Couldn't get URL for fetch task")
             return nil
         }
 
