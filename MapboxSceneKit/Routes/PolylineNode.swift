@@ -23,22 +23,20 @@ import Metal
 @objc(MBPolylineNode)
 public class PolylineNode: SCNNode {
     
-    private var positions : [SCNVector3] = [SCNVector3Zero]
-    private var startRadius : CGFloat = 0.1
-    private var endRadius : CGFloat = 0.5
-    private var startColor : UIColor = UIColor.yellow
-    private var endColor : UIColor = UIColor.white
+    private var positions: [SCNVector3] = [SCNVector3Zero]
+    private var startRadius: CGFloat = 0.1
+    private var endRadius: CGFloat = 0.5
+    private var startColor: UIColor = UIColor.yellow
+    private var endColor: UIColor = UIColor.white
+    private var handleGeometryOverlap: Bool = false
     
-    //TODO: It's possible to set this flag per-vertex to further optimize performance.
-    private var handleGeometryOverlap : Bool = false
-    
-    //derived from position/radius
-    private var verts : [SCNVector3]! //components -> quads
-    private var normals : [SCNVector3]! //Appears as 'neighbors' in the vertex input. Used to pass the line segment(direction and magnitude) to each vertex.
+    //derived from position, radius, and color settings
+    private var verts: [SCNVector3]! //components -> quads
+    private var normals: [SCNVector3]! //Appears as 'neighbors' in the vertex input. Used to pass the line segment(direction and magnitude) to each vertex.
     private var indices: [Int32]!
-    private var uvs : [CGPoint]! //uv per vert, indicating the corner of the quad
-    private var colors : [SCNVector4]! //vertex colors
-    private var lineParams : [CGPoint]! //line radius captured in y value
+    private var uvs: [CGPoint]! //uv per vert, indicating the corner of the quad
+    private var colors: [SCNVector4]! //vertex colors
+    private var lineParams: [CGPoint]! //line radius captured in y value
     
     @objc
     public init( positions: [SCNVector3],
@@ -121,14 +119,14 @@ public class PolylineNode: SCNNode {
         colors.append(contentsOf: [color, color, color, color])
         
         //set line radius and geometry overlap settings
-        let handleOverlapFlag : CGFloat = handleGeometryOverlap ? 1.0 : 0.0
+        let handleOverlapFlag: CGFloat = handleGeometryOverlap ? 1.0 : 0.0
         let radius = getLineRadius(atPositionIndex: index)
         let lineParam = CGPoint(x: handleOverlapFlag, y: radius)
         lineParams.append(contentsOf: [lineParam, lineParam, lineParam, lineParam])
         
         //add indices
         indices.append(contentsOf: getQuadIndices(fromIndex: vertIndex))
-        
+
     }
     
     private func addLine(from: SCNVector3, to: SCNVector3, withIndex index: Int){

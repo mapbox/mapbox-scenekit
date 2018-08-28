@@ -1,8 +1,9 @@
 //
-//  SCNVector3+Magic.swift
+//  SCNVector3 Operator Extensions
 //
 //  Created by Nathan Flurry on 4/23/16.
 //  Copyright © 2016 Nathan Flurry. All rights reserved.
+//  https://github.com/NathanFlurry/SceneKit-Splines
 //
 
 import SceneKit

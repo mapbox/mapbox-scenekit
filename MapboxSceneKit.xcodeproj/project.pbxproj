@@ -39,7 +39,7 @@
 		95C395E521278FAB007A1C6D /* unlit-line.metal in Sources */ = {isa = PBXBuildFile; fileRef = 95ABF79E21150EF800E5247F /* unlit-line.metal */; };
 		95C395E821279ED2007A1C6D /* SCNProgramExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95C395E721279ED2007A1C6D /* SCNProgramExtensions.swift */; };
 		F44BB60520C75CBF00CE41C6 /* DemoExtrusionViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = F44BB60420C75CBF00CE41C6 /* DemoExtrusionViewController.m */; };
-		F4B463CA211125500093F585 /* SCNVector3+Magic.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4B463C9211125500093F585 /* SCNVector3+Magic.swift */; };
+		F4B463CA211125500093F585 /* SCNVector3Extension+Operators.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4B463C9211125500093F585 /* SCNVector3Extension+Operators.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -101,7 +101,7 @@
 		F44BB60220C75CBF00CE41C6 /* Examples-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Examples-Bridging-Header.h"; sourceTree = "<group>"; };
 		F44BB60320C75CBF00CE41C6 /* DemoExtrusionViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DemoExtrusionViewController.h; sourceTree = "<group>"; };
 		F44BB60420C75CBF00CE41C6 /* DemoExtrusionViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DemoExtrusionViewController.m; sourceTree = "<group>"; };
-		F4B463C9211125500093F585 /* SCNVector3+Magic.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "SCNVector3+Magic.swift"; sourceTree = "<group>"; };
+		F4B463C9211125500093F585 /* SCNVector3Extension+Operators.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "SCNVector3Extension+Operators.swift"; sourceTree = "<group>"; };
 		F4B463CD211371700093F585 /* BezierSpline3D.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BezierSpline3D.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -129,7 +129,7 @@
 		81293BC720B4A1AE0014A17A /* Examples */ = {
 			isa = PBXGroup;
 			children = (
-				F4B463C9211125500093F585 /* SCNVector3+Magic.swift */,
+				F4B463C9211125500093F585 /* SCNVector3Extension+Operators.swift */,
 				81293BD320B4A1AE0014A17A /* AppDelegate.swift */,
 				81293BC920B4A1AE0014A17A /* DemoStyleViewController.swift */,
 				81293BC820B4A1AE0014A17A /* DemoHeightmapViewController.swift */,
@@ -392,7 +392,7 @@
 				8190075F20C07FAD002F23C3 /* AppDelegate.swift in Sources */,
 				81293BF420B4A35C0014A17A /* DemoHeightmapViewController.swift in Sources */,
 				817BC09220BDC435005A015D /* SCNExtensions.swift in Sources */,
-				F4B463CA211125500093F585 /* SCNVector3+Magic.swift in Sources */,
+				F4B463CA211125500093F585 /* SCNVector3Extension+Operators.swift in Sources */,
 				817BC09020BDC413005A015D /* FocusSquare.swift in Sources */,
 				817BC08E20BDC071005A015D /* DemoARViewController.swift in Sources */,
 				81293BF520B4A35C0014A17A /* DemoPlacementViewController.swift in Sources */,
