@@ -31,6 +31,7 @@ open class TerrainNode: SCNNode {
     fileprivate static let rgbTileSize = CGSize(width: 256, height: 256)
     fileprivate static let styleTileSize = CGSize(width: 256, height: 256)
 
+    private static let maxTextureImageSizeInBytes: Int = (1024 * 1024) // set a max texture size in order to dynamically calculate the highest zoom level for a given lat/lon bounding rect. Need to balance download speed and detail, so set to 1MB for now
     private let terrainZoomLevel: Int
 
     fileprivate let terrainSize: CGSize
@@ -60,16 +61,7 @@ open class TerrainNode: SCNNode {
         metersPerLat = 1 / Math.metersToDegreesForLat(at: maxLon)
         metersPerLon = 1 / Math.metersToDegreesForLon(at: maxLat)
 
-        //TODO: Calculate ideal zoom level based on node size
-        //      Based on the examples in the bundled demo project, I'd expect this to return a value closer to 12 (or less), but was getting 16.
-        //      Confirm math logic with the react team. Ported logic commented out below.
-
-//        let corners = [(minLat, maxLon), (maxLat, minLon)] //se, nw
-//        let cornerTiles = corners.map({ Math.latLng2tile(lat: $0.0, lon: $0.1, zoom: 22, tileSize: TerrainNode.rgbTileSize) })
-//        let tileExtent = max(abs(cornerTiles.first!.xPos - cornerTiles.last!.xPos), abs(cornerTiles.first!.yPos - cornerTiles.last!.yPos))
-//        let base = log(tileExtent) / log(2)
-//        terrainZoomLevel = Int(floor(22 - base + 0.5))
-        terrainZoomLevel = 12
+        terrainZoomLevel = TerrainNode.zoomLevelForBounds(minLat: minLat, maxLat: maxLat, minLon: minLon, maxLon: maxLon, tileSize: TerrainNode.rgbTileSize)
 
         let bounding = MapboxImageAPI.tiles(zoom: terrainZoomLevel, latBounds: latBounds, lonBounds: lonBounds, tileSize: TerrainNode.rgbTileSize)
         terrainSize = CGSize(width: CGFloat(bounding.xs.count) * TerrainNode.rgbTileSize.width - bounding.insets.left - bounding.insets.right,
@@ -88,6 +80,28 @@ open class TerrainNode: SCNNode {
         for task in pendingFetches {
             api.cancelRequestWithID(task)
         }
+    }
+
+    private class func zoomLevelForBounds(minLat: CLLocationDegrees, maxLat: CLLocationDegrees, minLon: CLLocationDegrees, maxLon: CLLocationDegrees, tileSize: CGSize) -> Int {
+        var imageSizeIsTooBig = true
+        var zoomLevel = 22
+
+        let latBounds = (minLat, maxLat)
+        let lonBounds = (minLon, maxLon)
+
+        while imageSizeIsTooBig {
+            let bounding = MapboxImageAPI.tiles(zoom: zoomLevel, latBounds: latBounds, lonBounds: lonBounds, tileSize: tileSize)
+
+            let size = bounding.xs.count * Int(tileSize.width) * bounding.ys.count * Int(tileSize.height)
+            imageSizeIsTooBig = size > maxTextureImageSizeInBytes
+
+            // drop the zoom level and try again
+            if (imageSizeIsTooBig) {
+                zoomLevel -= 1
+            }
+        }
+
+        return zoomLevel
     }
 
     private func centerPivot() {
