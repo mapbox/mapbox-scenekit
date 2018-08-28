@@ -113,7 +113,7 @@
         [_terrainDemoScene.cameraNode lookAt:_terrainNode.position];
     }
     
-    [_terrainNode fetchTerrainHeightsWithMinWallHeight:50.0 enableDynamicShadows:YES progress:^(float progress, NSInteger total) {
+    [_terrainNode fetchTerrainHeightsWithMinWallHeight:50.0 multiplier:1 enableDynamicShadows:YES progress:^(float progress, NSInteger total) {
     } completion:^{
         NSLog(@"terrain height fetch completed");
     }];

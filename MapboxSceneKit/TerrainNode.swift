@@ -117,15 +117,16 @@ open class TerrainNode: SCNNode {
             return SCNVector3(xz.x, 0.0, xz.z)
         }
     }
-
-    /**
-     Begins the fetch of terrain-rgb data throught the mapbox API, and then updates the geometry to repersent a to-scale model of the terrain at this location.
-
-     `minWallHeight`: Padding amount (in meters) of the walls beyond the returned altitude minumum for the region.
-     `enableDynamicShadows`: Depending on your applied texture / style, you may want to enable dynamic shadowing based on the contour of the terrain for interaction with Scene Kit lighting.
-     **/
-    @objc
-    public func fetchTerrainHeights(minWallHeight: CLLocationDistance = 0.0, enableDynamicShadows shadows: Bool = false, progress: MapboxImageAPI.TileLoadProgressCallback? = nil, completion: @escaping TerrainLoadCompletion) {
+    
+    /// Begins the fetch of terrain-rgb data throught the mapbox API, and then updates the geometry to repersent a to-scale model of the terrain at this location.
+    ///
+    /// - Parameters:
+    ///   - minWallHeight: Padding amount (in meters) of the walls beyond the returned altitude minumum for the region.
+    ///   - multiplier: Allows to multiply the hight by a given number. The bigger number, the more sharp the output will be. Default 1.
+    ///   - shadows: Depending on your applied texture / style, you may want to enable dynamic shadowing based on the contour of the terrain for interaction with Scene Kit lighting.
+    ///   - progress: Handler for fetch progress change.
+    ///   - completion: Handler for complete height update.
+    @objc public func fetchTerrainHeights(minWallHeight: CLLocationDistance = 0.0, multiplier: Float = 1, enableDynamicShadows shadows: Bool = false, progress: MapboxImageAPI.TileLoadProgressCallback? = nil, completion: @escaping TerrainLoadCompletion) {
         let latBounds = self.latBounds
         let lonBounds = self.lonBounds
         let terrainZoomLevel = self.terrainZoomLevel
@@ -133,7 +134,7 @@ open class TerrainNode: SCNNode {
             if let taskID = self?.api.image(forTileset: "mapbox.terrain-rgb", zoomLevel: terrainZoomLevel, minLat: latBounds.0, maxLat: latBounds.1, minLon: lonBounds.0, maxLon: lonBounds.1, format: MapboxImageAPI.TileImageFormatPNG, progress: progress, completion: { image in
                 TerrainNode.queue.async {
                     if let image = image {
-                        self?.applyTerrainHeightmap(image, withWallHeight: minWallHeight, enableShadows: shadows)
+                        self?.applyTerrainHeightmap(image, withWallHeight: minWallHeight, multiplier: multiplier, enableShadows: shadows)
                     }
                     DispatchQueue.main.async(execute: completion)
                 }
@@ -162,7 +163,7 @@ open class TerrainNode: SCNNode {
 
     //MARK: - Geometry Creation
 
-    private func applyTerrainHeightmap(_ image: UIImage, withWallHeight wallHeight: CLLocationDistance? = nil, enableShadows shadows: Bool) {
+    private func applyTerrainHeightmap(_ image: UIImage, withWallHeight wallHeight: CLLocationDistance? = nil, multiplier: Float, enableShadows shadows: Bool) {
         guard let pixelData = image.cgImage?.dataProvider?.data, let terrainData = CFDataGetBytePtr(pixelData) else {
             NSLog("Couldn't get CGImage color data for terrain")
             return
@@ -177,7 +178,7 @@ open class TerrainNode: SCNNode {
             var rowData = [Double]()
             rowData.reserveCapacity(Int(terrainSize.width))
             for x in 0 ..< Int(terrainSize.width) {
-                guard let z = TerrainNode.heightFromImage(x: x, y: y, terrainData: terrainData, terrainSize: terrainSize) else {
+                guard let z = TerrainNode.heightFromImage(x: x, y: y, terrainData: terrainData, terrainSize: terrainSize, multiplier: multiplier) else {
                     NSLog("Couldn't get Z data for {\(x),\(y)}")
                     continue
                 }
@@ -467,7 +468,7 @@ extension TerrainNode {
         return heights[y][x]
     }
 
-    fileprivate static func heightFromImage(x: Int, y: Int, terrainData: UnsafePointer<UInt8>, terrainSize: CGSize) -> Double? {
+    fileprivate static func heightFromImage(x: Int, y: Int, terrainData: UnsafePointer<UInt8>, terrainSize: CGSize, multiplier: Float) -> Double? {
         guard x < Int(terrainSize.width) && y < Int(terrainSize.height) else {
             return nil
         }
@@ -479,6 +480,6 @@ extension TerrainNode {
         let b = Float(terrainData[pixelInfo + 2])
 
         let terrainHeight = -10000 + ((r * 256 * 256 + g * 256 + b) * 0.1)
-        return Double(terrainHeight)
+        return Double(terrainHeight * multiplier)
     }
 }

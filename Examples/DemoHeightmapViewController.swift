@@ -66,7 +66,7 @@ class DemoHeightmapViewController: UIViewController {
         let terrainFetcherHandler = progressHandler.registerForProgress()
         let terrainRendererHandler = progressHandler.registerForProgress()
         progressHandler.updateProgress(handlerID: terrainRendererHandler, progress: 0, total: 1)
-        terrainNode.fetchTerrainHeights(minWallHeight: 50.0, progress: { progress, total in
+        terrainNode.fetchTerrainHeights(minWallHeight: 50.0, multiplier: 1.2, progress: { progress, total in
             self.progressHandler.updateProgress(handlerID: terrainFetcherHandler, progress: progress, total: total)
         }, completion: {
             self.progressHandler.updateProgress(handlerID: terrainRendererHandler, progress: 1, total: 1)
