@@ -82,7 +82,7 @@ class DemoHeightmapViewController: UIViewController {
         }
 
         let textureFetchHandler = progressHandler.registerForProgress()
-        terrainNode.fetchTerrainTexture(style, zoom: 13, progress: { progress, total in
+        terrainNode.fetchTerrainTexture(style, progress: { progress, total in
             self.progressHandler.updateProgress(handlerID: textureFetchHandler, progress: progress, total: total)
 
         }, completion: { image in

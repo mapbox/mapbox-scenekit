@@ -157,11 +157,12 @@ open class TerrainNode: SCNNode {
      For the simplist usage, you'll want to apply it as the diffuse contents in position 4 (the top): `myRerrainNode.geometry?.materials[4].diffuse.contents = image`.
     **/
     @objc
-    public func fetchTerrainTexture(_ style: String, zoom: Int, progress: MapboxImageAPI.TileLoadProgressCallback? = nil, completion: @escaping MapboxImageAPI.TileLoadCompletion) {
+    public func fetchTerrainTexture(_ style: String, progress: MapboxImageAPI.TileLoadProgressCallback? = nil, completion: @escaping MapboxImageAPI.TileLoadCompletion) {
         let latBounds = self.latBounds
         let lonBounds = self.lonBounds
+        let terrainZoomLevel = self.terrainZoomLevel
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in
-            if let taskID = self?.api.image(forStyle: style, zoomLevel: zoom, minLat: latBounds.0, maxLat: latBounds.1, minLon: lonBounds.0, maxLon: lonBounds.1, progress: progress, completion: completion) {
+            if let taskID = self?.api.image(forStyle: style, zoomLevel: terrainZoomLevel, minLat: latBounds.0, maxLat: latBounds.1, minLon: lonBounds.0, maxLon: lonBounds.1, progress: progress, completion: completion) {
                 self?.pendingFetches.append(taskID)
             }
         }
