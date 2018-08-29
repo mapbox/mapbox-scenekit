@@ -102,6 +102,11 @@ class DemoPlacementViewController: UIViewController {
         for latlon in latlons {
             locations.append(CLLocation(latitude: latlon.0, longitude: latlon.1))
         }
-        terrainNode.drawPath(from: locations, cylinderRadius: 10, sphereRadius: 15, color: .magenta)
+        guard let firstLocation = locations.first, let lastLocation = locations.last else { return }
+        terrainNode.drawPath(from: locations, cylinderRadius: 10, color: .orange, verticalOffset: 3)
+        let firstNode = terrainNode.projectedSphere(at: firstLocation, radius: 15, color: .yellow)
+        terrainNode.addChildNode(firstNode)
+        let lastNode = terrainNode.projectedSphere(at: lastLocation, radius: 20, color: .red)
+        terrainNode.addChildNode(lastNode)
     }
 }

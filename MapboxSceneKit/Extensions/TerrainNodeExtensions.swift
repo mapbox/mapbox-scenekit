@@ -18,30 +18,23 @@ extension TerrainNode {
     /// - Parameters:
     ///   - locations: The locations which define where to draw the path.
     ///   - cylinderRadius: Radius of the cylinders.
-    ///   - sphereRadius: Radius of the first and last spheres.
     ///   - color: Color of the path.
-    /// - Returns: The array of all added nodes (first and last objects are the spheres, rest are the cylinders)
-    public func drawPath(from locations: [CLLocation], cylinderRadius: CGFloat, sphereRadius: CGFloat, color: UIColor) -> [SCNNode] {
+    ///   - verticalOffset: Provide positive value to move the path up or negative to move it down.
+    /// - Returns: The array of all added nodes as a line
+    @objc public func drawPath(from locations: [CLLocation], cylinderRadius: CGFloat, color: UIColor, verticalOffset: CGFloat = 0) -> [SCNNode] {
         var nodes = [SCNNode]()
-        
-        guard let firstLocation = locations.first, let lastLocation = locations.last else {
+        guard locations.count > 0 else {
             return nodes// there are no points to draw
         }
-        
-        let firstNode = projectedSphere(at: firstLocation, radius: sphereRadius, color: color)
-        nodes.append(firstNode)
         
         var previousLocation: CLLocation? = nil
         for location in locations {
             if let previousLocation = previousLocation {
-                let node = projectedCylinder(from: previousLocation, to: location, radius: cylinderRadius, color: color)
+                let node = projectedCylinder(from: previousLocation, to: location, radius: cylinderRadius, color: color, verticalOffset: verticalOffset)
                 nodes.append(node)
             }
             previousLocation = location
         }
-        
-        let lastNode = projectedSphere(at: lastLocation, radius: sphereRadius, color: color)
-        nodes.append(lastNode)
         
         for node in nodes {
             addChildNode(node)
@@ -56,15 +49,16 @@ extension TerrainNode {
     ///   - endLocation: Second location at which the cylinder should be placed.
     ///   - radius: Radius of the cylinder.
     ///   - color: Color of the cylinder.
+    ///   - verticalOffset: Provide positive value to move the line up or negative to move it down.
     /// - Returns: Fully configured and projected cylinder to the given terrain node.
-    public func projectedCylinder(from startLocation: CLLocation, to endLocation: CLLocation, radius: CGFloat, color: UIColor) -> SCNNode {
+    @objc public func projectedCylinder(from startLocation: CLLocation, to endLocation: CLLocation, radius: CGFloat, color: UIColor, verticalOffset: CGFloat = 0) -> SCNNode {
         var startVector = positionForLocation(startLocation)
         startVector = convertPosition(startVector, to: self)
-        startVector.y += Float(radius / 2) // move up a bit so we see it properly
+        startVector.y += Float(radius / 2 + verticalOffset) // move up a bit so we see it properly
         
         var endVector = positionForLocation(endLocation)
         endVector = convertPosition(endVector, to: self)
-        endVector.y += Float(radius / 2)
+        endVector.y += Float(radius / 2 + verticalOffset)
         
         return TerrainNode.cylinder(from: startVector, to: endVector, radius: radius, color: color)
     }
@@ -76,12 +70,14 @@ extension TerrainNode {
     ///   - location: Location at which the sphere should be placed.
     ///   - radius: Radius of the sphere.
     ///   - color: Color of the sphere.
+    ///   - verticalOffset: Provide positive value to move the sphere up or negative to move it down.
     /// - Returns: Fully configured and projected sphere to the given terrain node.
-    public func projectedSphere(at location: CLLocation, radius: CGFloat, color: UIColor) -> SCNNode {
+    @objc public func projectedSphere(at location: CLLocation, radius: CGFloat, color: UIColor, verticalOffset: CGFloat = 0) -> SCNNode {
         let node = SCNNode(geometry: SCNSphere(radius: radius))
         node.geometry?.firstMaterial?.diffuse.contents = color
         let position = positionForLocation(location)
         node.position = convertPosition(position, to: self)
+        node.position.y += Float(verticalOffset)
         return node
     }
     
@@ -95,7 +91,7 @@ extension TerrainNode {
     ///   - radius: Radius of the cylinder.
     ///   - color: Color of the cylinder.
     /// - Returns: Fully configured and projected cylinder to the given terrain node.
-    public static func cylinder(from startPoint: SCNVector3, to endPoint: SCNVector3, radius: CGFloat, color: UIColor) -> SCNNode {
+    @objc public static func cylinder(from startPoint: SCNVector3, to endPoint: SCNVector3, radius: CGFloat, color: UIColor) -> SCNNode {
         let node = SCNNode()
         let middleVector = SCNVector3(x: endPoint.x - startPoint.x, y: endPoint.y - startPoint.y, z: endPoint.z - startPoint.z)
         let length = CGFloat(sqrt(middleVector.x * middleVector.x + middleVector.y * middleVector.y + middleVector.z * middleVector.z))
