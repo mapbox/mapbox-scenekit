@@ -31,6 +31,7 @@ open class TerrainNode: SCNNode {
     fileprivate static let rgbTileSize = CGSize(width: 256, height: 256)
     fileprivate static let styleTileSize = CGSize(width: 256, height: 256)
 
+    private static let maxTextureImageSizeInBytes: Int = (1024 * 1024) // set a max texture size in order to dynamically calculate the highest zoom level for a given lat/lon bounding rect. Need to balance download speed and detail, so set to 1MB for now
     private let terrainZoomLevel: Int
 
     fileprivate let terrainSize: CGSize
@@ -60,16 +61,11 @@ open class TerrainNode: SCNNode {
         metersPerLat = 1 / Math.metersToDegreesForLat(at: maxLon)
         metersPerLon = 1 / Math.metersToDegreesForLon(at: maxLat)
 
-        //TODO: Calculate ideal zoom level based on node size
-        //      Based on the examples in the bundled demo project, I'd expect this to return a value closer to 12 (or less), but was getting 16.
-        //      Confirm math logic with the react team. Ported logic commented out below.
+        let maxLocation = CLLocation(latitude: maxLat, longitude: maxLon)
+        let minLocation = CLLocation(latitude: minLat, longitude: minLon)
+        let distance = maxLocation.distance(from: minLocation) / 1000.0
 
-//        let corners = [(minLat, maxLon), (maxLat, minLon)] //se, nw
-//        let cornerTiles = corners.map({ Math.latLng2tile(lat: $0.0, lon: $0.1, zoom: 22, tileSize: TerrainNode.rgbTileSize) })
-//        let tileExtent = max(abs(cornerTiles.first!.xPos - cornerTiles.last!.xPos), abs(cornerTiles.first!.yPos - cornerTiles.last!.yPos))
-//        let base = log(tileExtent) / log(2)
-//        terrainZoomLevel = Int(floor(22 - base + 0.5))
-        terrainZoomLevel = 12
+        terrainZoomLevel = TerrainNode.zoomLevelAtLatitude(lat: maxLat - minLat, distance: distance)
 
         let bounding = MapboxImageAPI.tiles(zoom: terrainZoomLevel, latBounds: latBounds, lonBounds: lonBounds, tileSize: TerrainNode.rgbTileSize)
         terrainSize = CGSize(width: CGFloat(bounding.xs.count) * TerrainNode.rgbTileSize.width - bounding.insets.left - bounding.insets.right,
@@ -88,6 +84,17 @@ open class TerrainNode: SCNNode {
         for task in pendingFetches {
             api.cancelRequestWithID(task)
         }
+    }
+
+    private class func zoomLevelAtLatitude(lat: Double, distance: Double) -> Int
+    {
+        // fit the zoom level to the screen width
+        let screenWidth = Double(UIScreen.main.bounds.size.width)
+        let latitudinalAdjustment = cos(.pi * lat / 180)
+        let earthDiameterInKilometers = 40075.16
+        let arg = earthDiameterInKilometers * screenWidth * latitudinalAdjustment / (distance * 256)
+
+        return Int(round(log(arg)/log(2)))
     }
 
     private func centerPivot() {
@@ -150,11 +157,12 @@ open class TerrainNode: SCNNode {
      For the simplist usage, you'll want to apply it as the diffuse contents in position 4 (the top): `myRerrainNode.geometry?.materials[4].diffuse.contents = image`.
     **/
     @objc
-    public func fetchTerrainTexture(_ style: String, zoom: Int, progress: MapboxImageAPI.TileLoadProgressCallback? = nil, completion: @escaping MapboxImageAPI.TileLoadCompletion) {
+    public func fetchTerrainTexture(_ style: String, progress: MapboxImageAPI.TileLoadProgressCallback? = nil, completion: @escaping MapboxImageAPI.TileLoadCompletion) {
         let latBounds = self.latBounds
         let lonBounds = self.lonBounds
+        let terrainZoomLevel = self.terrainZoomLevel
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in
-            if let taskID = self?.api.image(forStyle: style, zoomLevel: zoom, minLat: latBounds.0, maxLat: latBounds.1, minLon: lonBounds.0, maxLon: lonBounds.1, progress: progress, completion: completion) {
+            if let taskID = self?.api.image(forStyle: style, zoomLevel: terrainZoomLevel, minLat: latBounds.0, maxLat: latBounds.1, minLon: lonBounds.0, maxLon: lonBounds.1, progress: progress, completion: completion) {
                 self?.pendingFetches.append(taskID)
             }
         }

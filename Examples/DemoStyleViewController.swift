@@ -57,7 +57,7 @@ class DemoStyleViewController: UIViewController {
 
         self.progressView?.progress = 0.0
         self.progressView?.isHidden = false
-        terrainNode.fetchTerrainTexture(style, zoom: 13, progress: { progress, total in
+        terrainNode.fetchTerrainTexture(style, progress: { progress, total in
             self.progressView?.progress = progress
 
         }, completion: { image in

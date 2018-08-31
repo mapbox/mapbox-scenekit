@@ -69,7 +69,7 @@ class DemoPlacementViewController: UIViewController {
         })
 
         let textureFetchHandler = progressHandler.registerForProgress()
-        terrainNode.fetchTerrainTexture("mapbox/satellite-v9", zoom: 14, progress: { progress, total in
+        terrainNode.fetchTerrainTexture("mapbox/satellite-v9", progress: { progress, total in
             progressHandler.updateProgress(handlerID: textureFetchHandler, progress: progress, total: total)
 
         }, completion: { image in

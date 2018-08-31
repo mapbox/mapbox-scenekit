@@ -118,7 +118,7 @@
         NSLog(@"terrain height fetch completed");
     }];
     
-    [_terrainNode fetchTerrainTexture:@"mapbox/satellite-v9" zoom:self.mapView.zoomLevel progress:^(float progress, NSInteger total) {
+    [_terrainNode fetchTerrainTexture:@"mapbox/satellite-v9" progress:^(float progress, NSInteger total) {
     } completion:^(UIImage * _Nullable image) {
         NSLog(@"terrain texture fetch completed");
         self.terrainNode.geometry.materials[4].diffuse.contents = image;
