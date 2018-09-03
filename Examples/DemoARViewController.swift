@@ -96,13 +96,22 @@ final class DemoARViewController: UIViewController, ARSCNViewDelegate, ARSession
         arView!.scene.rootNode.addChildNode(terrainNode)
         terrain = terrainNode
 
-        terrainNode.fetchTerrainHeights(minWallHeight: 50.0, enableDynamicShadows: true, progress: { _, _ in }, completion: {
-            NSLog("Terrain load complete")
+        terrainNode.fetchTerrainHeights(minWallHeight: 50.0, enableDynamicShadows: true, completion: { fetchError in
+            if let fetchError = fetchError {
+                NSLog("Texture load failed: \(fetchError.localizedDescription)")
+            } else {
+                NSLog("Terrain load complete")
+            }
         })
 
-        terrainNode.fetchTerrainTexture("mapbox/satellite-v9", progress: { _, _ in }, completion: { image in
-            NSLog("Texture load complete")
-            terrainNode.geometry?.materials[4].diffuse.contents = image
+        terrainNode.fetchTerrainTexture("mapbox/satellite-v9", progress: { _, _ in }, completion: { image, fetchError in
+            if let fetchError = fetchError {
+                NSLog("Texture load failed: \(fetchError.localizedDescription)")
+            }
+            if image != nil {
+                NSLog("Texture load complete")
+                terrainNode.geometry?.materials[4].diffuse.contents = image
+            }
         })
 
         arView!.isUserInteractionEnabled = true

@@ -61,20 +61,28 @@ class DemoPlacementViewController: UIViewController {
         terrainNode.fetchTerrainHeights(minWallHeight: 50.0, enableDynamicShadows: true, progress: { progress, total in
             progressHandler.updateProgress(handlerID: terrainFetcherHandler, progress: progress, total: total)
 
-        }, completion: {
+        }, completion: { fetchError in
+            if let fetchError = fetchError {
+                NSLog("Texture load failed: \(fetchError.localizedDescription)")
+            } else {
+                NSLog("Terrain load complete")
+            }
             progressHandler.updateProgress(handlerID: terrainRendererHandler, progress: 1, total: 1)
-
             self.addUserPath(to: terrainNode)
-            NSLog("Terrain load complete")
         })
 
         let textureFetchHandler = progressHandler.registerForProgress()
         terrainNode.fetchTerrainTexture("mapbox/satellite-v9", progress: { progress, total in
             progressHandler.updateProgress(handlerID: textureFetchHandler, progress: progress, total: total)
 
-        }, completion: { image in
-            NSLog("Texture load complete")
-            terrainNode.geometry?.materials[4].diffuse.contents = image
+        }, completion: { image, fetchError in
+            if let fetchError = fetchError {
+                NSLog("Texture load failed: \(fetchError.localizedDescription)")
+            }
+            if image != nil {
+                NSLog("Texture load complete")
+                terrainNode.geometry?.materials[4].diffuse.contents = image
+            }
         })
     }
 

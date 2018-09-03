@@ -11,7 +11,7 @@ open class TerrainNode: SCNNode {
     /**
      Callback typealias for when the new geometry has been loaded based on RGB heightmaps.
      **/
-    public typealias TerrainLoadCompletion = () -> Void
+    public typealias TerrainLoadCompletion = (NSError?) -> Void
 
     /**
      Convenience tuple represending the bounds of the latitude post-initialization.
@@ -137,12 +137,14 @@ open class TerrainNode: SCNNode {
         let lonBounds = self.lonBounds
         let terrainZoomLevel = self.terrainZoomLevel
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in
-            if let taskID = self?.api.image(forTileset: "mapbox.terrain-rgb", zoomLevel: terrainZoomLevel, minLat: latBounds.0, maxLat: latBounds.1, minLon: lonBounds.0, maxLon: lonBounds.1, format: MapboxImageAPI.TileImageFormatPNG, progress: progress, completion: { image in
+            if let taskID = self?.api.image(forTileset: "mapbox.terrain-rgb", zoomLevel: terrainZoomLevel, minLat: latBounds.0, maxLat: latBounds.1, minLon: lonBounds.0, maxLon: lonBounds.1, format: MapboxImageAPI.TileImageFormatPNG, progress: progress, completion: { image, fetchError in
                 TerrainNode.queue.async {
                     if let image = image {
                         self?.applyTerrainHeightmap(image, withWallHeight: minWallHeight, enableShadows: shadows)
                     }
-                    DispatchQueue.main.async(execute: completion)
+                    DispatchQueue.main.async() {
+                        completion(fetchError)
+                    }
                 }
             }) {
                 self?.pendingFetches.append(taskID)

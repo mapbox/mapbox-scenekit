@@ -114,14 +114,23 @@
     }
     
     [_terrainNode fetchTerrainHeightsWithMinWallHeight:50.0 enableDynamicShadows:YES progress:^(float progress, NSInteger total) {
-    } completion:^{
-        NSLog(@"terrain height fetch completed");
+    } completion:^(NSError * _Nullable fetchError) {
+        if (fetchError) {
+            NSLog(@"Texture load failed: %@", fetchError.localizedDescription);
+        } else {
+            NSLog(@"Terrain load complete");
+        }
     }];
     
     [_terrainNode fetchTerrainTexture:@"mapbox/satellite-v9" progress:^(float progress, NSInteger total) {
-    } completion:^(UIImage * _Nullable image) {
-        NSLog(@"terrain texture fetch completed");
-        self.terrainNode.geometry.materials[4].diffuse.contents = image;
+    } completion:^(UIImage * _Nullable image, NSError * _Nullable fetchError) {
+        if (fetchError) {
+            NSLog(@"Texture load failed: %@", fetchError.localizedDescription);
+        }
+        if (image) {
+            NSLog(@"terrain texture fetch completed");
+            self.terrainNode.geometry.materials[4].diffuse.contents = image;
+        }
     }];
 }
 
