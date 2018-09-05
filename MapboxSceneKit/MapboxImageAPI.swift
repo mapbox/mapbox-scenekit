@@ -129,7 +129,7 @@ public final class MapboxImageAPI: NSObject {
                         }
                         guard let image = image else {
                             hadFailure = true
-                            NSLog("Couldn't get image for tile {\(zoom),\(x),\(y)}")
+                            NSLog("Couldn't get image for tile {\(tileset)\(zoom),\(x),\(y)}")
                             return
                         }
 
@@ -211,7 +211,7 @@ public final class MapboxImageAPI: NSObject {
                         }
                         guard let image = image else {
                             hadFailure = true
-                            NSLog("Couldn't get image for tile {\(zoom),\(x),\(y)}")
+                            NSLog("Couldn't get image for tile {\(style)\(zoom),\(x),\(y)}")
                             return
                         }
 
