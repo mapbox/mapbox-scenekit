@@ -133,14 +133,31 @@ open class TerrainNode: SCNNode {
      **/
     @objc
     public func fetchTerrainHeights(minWallHeight: CLLocationDistance = 0.0, enableDynamicShadows shadows: Bool = false, progress: MapboxImageAPI.TileLoadProgressCallback? = nil, completion: @escaping TerrainLoadCompletion) {
+        fetchTerrainHeights(minWallHeight: minWallHeight, enableDynamicShadows: shadows, zoomLevel: self.terrainZoomLevel, progress: progress, completion: completion)
+    }
+
+    private func fetchTerrainHeights(minWallHeight: CLLocationDistance = 0.0, enableDynamicShadows shadows: Bool = false, zoomLevel: Int, retryNumber: Int = 3, progress: MapboxImageAPI.TileLoadProgressCallback? = nil, completion: @escaping TerrainLoadCompletion) {
         let latBounds = self.latBounds
         let lonBounds = self.lonBounds
         let terrainZoomLevel = self.terrainZoomLevel
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in
-            if let taskID = self?.api.image(forTileset: "mapbox.terrain-rgb", zoomLevel: terrainZoomLevel, minLat: latBounds.0, maxLat: latBounds.1, minLon: lonBounds.0, maxLon: lonBounds.1, format: MapboxImageAPI.TileImageFormatPNG, progress: progress, completion: { image in
+            if let taskID = self?.api.image(forTileset: "mapbox.terrain-rgb", zoomLevel: zoomLevel, minLat: latBounds.0, maxLat: latBounds.1, minLon: lonBounds.0, maxLon: lonBounds.1, format: MapboxImageAPI.TileImageFormatPNG, progress: progress, completion: { image in
                 TerrainNode.queue.async {
                     if let image = image {
-                        self?.applyTerrainHeightmap(image, withWallHeight: minWallHeight, enableShadows: shadows)
+                        var finalImage = image
+
+                        let zoomLevelDifferential = Double(terrainZoomLevel - zoomLevel)
+                        let zoomFactor = CGFloat(pow(2.0,zoomLevelDifferential))
+
+                        if zoomFactor != 1 {
+                            // calculate a new image based on the differential between zoom levels
+                            finalImage = image.scaleImage(scaleFactor: zoomFactor)
+                        }
+                        self?.applyTerrainHeightmap(finalImage, withWallHeight: minWallHeight, enableShadows: shadows)
+                    } else if retryNumber > 0 {
+                        //                        // there is a possibility there is no height map for given zoom level.
+                        //                        // more info here: https://github.com/mapbox/mapbox-scenekit/issues/41
+                        self?.fetchTerrainHeights(minWallHeight: minWallHeight, enableDynamicShadows: shadows, zoomLevel: zoomLevel - 1, retryNumber: retryNumber - 1, progress: progress, completion: completion)
                     }
                     DispatchQueue.main.async(execute: completion)
                 }
@@ -181,11 +198,11 @@ open class TerrainNode: SCNNode {
         var newTerrainHeights = [[Double]]()
         newTerrainHeights.reserveCapacity(Int(terrainSize.height))
 
-        for y in 0 ..< Int(terrainSize.height) {
+        for y in 0 ..< Int(image.size.height) {
             var rowData = [Double]()
-            rowData.reserveCapacity(Int(terrainSize.width))
-            for x in 0 ..< Int(terrainSize.width) {
-                guard let z = TerrainNode.heightFromImage(x: x, y: y, terrainData: terrainData, terrainSize: terrainSize) else {
+            rowData.reserveCapacity(Int(image.size.width))
+            for x in 0 ..< Int(image.size.width) {
+                guard let z = TerrainNode.heightFromImage(x: x, y: y, terrainData: terrainData, terrainSize: image.size) else {
                     NSLog("Couldn't get Z data for {\(x),\(y)}")
                     continue
                 }
