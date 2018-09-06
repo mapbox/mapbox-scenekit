@@ -45,8 +45,8 @@ class DemoHeightmapViewController: UIViewController {
         sceneView.showsStatistics = true
 
         //Set up initial terrain and materials
-        let terrainNode = TerrainNode(minLat: 50.044660402821592, maxLat: 50.120873988090956,
-                                      minLon: -122.99017089272466, maxLon: -122.86824490727534)
+        let terrainNode = TerrainNode(minLat: 53.063137900000001, maxLat: 53.0745991,
+                                      minLon: -4.0644666000000003, maxLon: -4.0349393999999998)
         terrainNode.position = SCNVector3(0, 500, 0)
         terrainNode.geometry?.materials = defaultMaterials()
         scene.rootNode.addChildNode(terrainNode)
@@ -59,24 +59,6 @@ class DemoHeightmapViewController: UIViewController {
         scene.cameraNode.position = SCNVector3(terrainNode.boundingBox.max.x * 2, 9000, terrainNode.boundingBox.max.z * 2)
         scene.cameraNode.look(at: terrainNode.position)
 
-        self.progressView?.progress = 0.0
-
-        //Time to hit the web API and load Mapbox heightmap data for the terrain node
-        //Note, you can also wait to place the node until after this fetch has completed. It doesn't have to be in-scene to fetch.
-        let terrainFetcherHandler = progressHandler.registerForProgress()
-        let terrainRendererHandler = progressHandler.registerForProgress()
-        progressHandler.updateProgress(handlerID: terrainRendererHandler, progress: 0, total: 1)
-        terrainNode.fetchTerrainHeights(minWallHeight: 50.0, progress: { progress, total in
-            self.progressHandler.updateProgress(handlerID: terrainFetcherHandler, progress: progress, total: total)
-        }, completion: { fetchError in
-            if let fetchError = fetchError {
-                NSLog("Texture load failed: \(fetchError.localizedDescription)")
-            } else {
-                NSLog("Terrain load complete")
-            }
-            self.progressHandler.updateProgress(handlerID: terrainRendererHandler, progress: 1, total: 1)
-        })
-
         applyStyle(styles.first!)
     }
 
@@ -85,19 +67,34 @@ class DemoHeightmapViewController: UIViewController {
             return
         }
 
+        self.progressView?.progress = 0.0
+        
+        //Time to hit the web API and load Mapbox heightmap data for the terrain node
+        //Note, you can also wait to place the node until after this fetch has completed. It doesn't have to be in-scene to fetch.
+        let terrainFetcherHandler = progressHandler.registerForProgress()
+        let terrainRendererHandler = progressHandler.registerForProgress()
+        progressHandler.updateProgress(handlerID: terrainRendererHandler, progress: 0, total: 1)
         let textureFetchHandler = progressHandler.registerForProgress()
-        terrainNode.fetchTerrainTexture(style, progress: { progress, total in
+        terrainNode.fetchTerrainAndTexture(minWallHeight: 50.0, enableDynamicShadows: false, textureStyle: style, heightProgress: { progress, total in
+            self.progressHandler.updateProgress(handlerID: terrainFetcherHandler, progress: progress, total: total)
+        }, heightCompletion: { heightFetchError in
+            if let heightFetchError = heightFetchError {
+                NSLog("Texture load failed: \(heightFetchError.localizedDescription)")
+            } else {
+                NSLog("Terrain load complete")
+            }
+            self.progressHandler.updateProgress(handlerID: terrainRendererHandler, progress: 1, total: 1)
+        }, textureProgress: { progress, total in
             self.progressHandler.updateProgress(handlerID: textureFetchHandler, progress: progress, total: total)
-
-        }, completion: { image, fetchError in
-            if let fetchError = fetchError {
-                NSLog("Texture load failed: \(fetchError.localizedDescription)")
+        }) { image, textureFetchError in
+            if let textureFetchError = textureFetchError {
+                NSLog("Texture load failed: \(textureFetchError.localizedDescription)")
             }
             if image != nil {
                 NSLog("Texture load for \(style) complete")
                 terrainNode.geometry?.materials[4].diffuse.contents = image
             }
-        })
+        }
     }
 
     private func defaultMaterials() -> [SCNMaterial] {
