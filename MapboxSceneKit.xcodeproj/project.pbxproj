@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		4C8655FA211B5B13001465FF /* TerrainNodeExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C8655F9211B5B13001465FF /* TerrainNodeExtensions.swift */; };
 		81293BEC20B4A1FB0014A17A /* MapboxSceneKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 81A436BC20A1F68500F42A53 /* MapboxSceneKit.framework */; };
 		81293BF120B4A29C0014A17A /* MapboxSceneKit.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 81A436BC20A1F68500F42A53 /* MapboxSceneKit.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		81293BF320B4A35C0014A17A /* DemoStyleViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81293BC920B4A1AE0014A17A /* DemoStyleViewController.swift */; };
@@ -66,6 +67,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		4C8655F9211B5B13001465FF /* TerrainNodeExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerrainNodeExtensions.swift; sourceTree = "<group>"; };
 		81293BC820B4A1AE0014A17A /* DemoHeightmapViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DemoHeightmapViewController.swift; sourceTree = "<group>"; };
 		81293BC920B4A1AE0014A17A /* DemoStyleViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DemoStyleViewController.swift; sourceTree = "<group>"; };
 		81293BCB20B4A1AE0014A17A /* ProgressCompositor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressCompositor.swift; sourceTree = "<group>"; };
@@ -217,6 +219,7 @@
 				957C85E32146FF92004C548E /* Shaders */,
 				957C85E62146FF92004C548E /* BezierSpline3D.swift */,
 				957C85E72146FF92004C548E /* TerrainNodeExtension+Routes.swift */,
+				4C8655F9211B5B13001465FF /* TerrainNodeExtensions.swift */,
 			);
 			path = Routes;
 			sourceTree = "<group>";
@@ -401,6 +404,7 @@
 			files = (
 				957C85E92146FF92004C548E /* unlit-line.metal in Sources */,
 				81A436C820A1F6BC00F42A53 /* TerrainNode.swift in Sources */,
+				4C8655FA211B5B13001465FF /* TerrainNodeExtensions.swift in Sources */,
 				81A4371720A1FAB700F42A53 /* Math.swift in Sources */,
 				957C85EC2146FF92004C548E /* TerrainNodeExtension+Routes.swift in Sources */,
 				814D9F2720A48538008E6848 /* ImageBuilder.swift in Sources */,
