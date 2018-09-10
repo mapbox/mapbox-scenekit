@@ -108,6 +108,9 @@ class DemoPlacementViewController: UIViewController {
             sphere.position = terrainNode.convertPosition(terrainNode.positionForLocation(location), to: nil)
             sceneView?.scene?.rootNode.addChildNode(sphere)
         }
+        
+        let polyLine = terrainNode.addPolyline(coordinates: locations, startRadius: 20, endRadius: 50, startColor: UIColor.red, endColor: UIColor.white)
+        polyLine.position.y += 50;
 
         let firstLocation: CLLocation = CLLocation(latitude: latlons.first!.0, longitude: latlons.first!.1)
         let startSphere = SCNNode(geometry: SCNSphere(radius: 60.0))
