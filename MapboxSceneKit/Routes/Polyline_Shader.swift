@@ -21,7 +21,7 @@ import Metal
 ///   - handleGeometryOverlap: !Experimental! Flag indicating whether the line radius should be used to handle overlap/z-fighting per-pixel. Greatly improves visual quality of lines intersecting with other geometry, but at some cost to performance. May create graphical artifacts on some devices.
 
 @available(iOS 10.0, *)
-internal class PolylineNode_dynamic: SCNNode {
+internal class Polyline_Shader: PolylineRenderer {
     
     private var positions: [SCNVector3] = [SCNVector3Zero]
     private var startRadius: CGFloat = 0.1
@@ -38,24 +38,35 @@ internal class PolylineNode_dynamic: SCNNode {
     private var colors: [SCNVector4]! //vertex colors
     private var lineParams: [CGPoint]! //line radius captured in y value
     
-    @objc
-    public init( positions: [SCNVector3],
+    public func generatePolyline(forNode node: SCNNode, positions: [SCNVector3], radius: CGFloat, color: UIColor) {
+        generatePolyline(forNode: node,
+                         positions: positions,
+                         startRadius: radius, endRadius: radius,
+                         startColor: color, endColor: color)
+    }
+    
+    public func generatePolyline( forNode node: SCNNode,
+                      positions: [SCNVector3],
                       startRadius: CGFloat, endRadius: CGFloat,
                       startColor: UIColor, endColor: UIColor,
                       handleGeometryOverlap: Bool = true) {
-        super.init()
+        
+        //store values
         self.positions = positions
         self.startRadius = startRadius
         self.endRadius = endRadius
         self.startColor = startColor
         self.endColor = endColor
         self.handleGeometryOverlap = handleGeometryOverlap
-        setMaterial()
+        
+        //assign geometry
+        node.geometry = generateGeometry()
+        
+        //assign materials
+        node.geometry?.firstMaterial = generateMaterial()
     }
     
-    private func setMaterial(){
-        
-        self.geometry = generateGeometry()
+    private func generateMaterial() -> SCNMaterial{
         
         //assign materials using the scenekit metal library
         let lineMaterial = SCNMaterial()
@@ -66,7 +77,7 @@ internal class PolylineNode_dynamic: SCNNode {
         lineMaterial.program = program
         lineMaterial.isDoubleSided = true
         lineMaterial.blendMode = .alpha
-        self.geometry?.firstMaterial = lineMaterial
+        return lineMaterial
     }
     
     private func generateGeometry() -> SCNGeometry{
@@ -198,12 +209,6 @@ internal class PolylineNode_dynamic: SCNNode {
             low2: 0, high2: 1) //to a 0-1 range
         
         return UIColor.lerp(from: startColor, to: endColor, withProgress: progress)
-    }
-    
-    
-    
-    required init?(coder aDecoder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
     }
 }
 
