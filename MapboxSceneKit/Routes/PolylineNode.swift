@@ -10,6 +10,7 @@ import Foundation
 import SceneKit
 
 //MARK: - Polyline Renderer Protocol
+/// Implement this protocol to define new line rendering behavior
 internal protocol PolylineRenderer {
     
     func generatePolyline(forNode node: SCNNode, positions: [SCNVector3], radius: CGFloat, color: UIColor)

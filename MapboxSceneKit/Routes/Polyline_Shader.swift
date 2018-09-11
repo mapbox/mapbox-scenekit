@@ -49,7 +49,7 @@ internal class Polyline_Shader: PolylineRenderer {
                       positions: [SCNVector3],
                       startRadius: CGFloat, endRadius: CGFloat,
                       startColor: UIColor, endColor: UIColor,
-                      handleGeometryOverlap: Bool = true) {
+                      handleGeometryOverlap: Bool = false) {
         
         //store values
         self.positions = positions

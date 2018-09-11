@@ -10,7 +10,6 @@ import Foundation
 import SceneKit
 import CoreLocation
 
-@available(iOS 10.0, *)
 extension TerrainNode {
     @discardableResult
     @objc
@@ -26,6 +25,7 @@ extension TerrainNode {
         
 //        let lineNode = PolylineNode( positions: scenePositions, startRadius: startRadius, endRadius: endRadius, startColor: startColor, endColor: endColor, handleGeometryOverlap: false )
         let lineNode = PolylineNode(positions: scenePositions, radius: startRadius, color: startColor)
+        lineNode.position.y += Float(startRadius)
         self.addChildNode(lineNode)
         return lineNode
     }
