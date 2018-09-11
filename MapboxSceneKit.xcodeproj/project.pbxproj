@@ -33,7 +33,9 @@
 		81A4372520A243E100F42A53 /* AsyncOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81A4372420A243E100F42A53 /* AsyncOperation.swift */; };
 		81A4372A20A2444B00F42A53 /* HTTPRequestOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81A4372920A2444B00F42A53 /* HTTPRequestOperation.swift */; };
 		81CCF68720AA99CD00194B22 /* CGExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81CCF68620AA99CD00194B22 /* CGExtensions.swift */; };
-		957C85E82146FF92004C548E /* PolylineNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 957C85E22146FF92004C548E /* PolylineNode.swift */; };
+		954A248021484C210050025E /* PolylineGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 954A247F21484C210050025E /* PolylineGenerator.swift */; };
+		954A248221484F330050025E /* PolylineNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 954A248121484F330050025E /* PolylineNode.swift */; };
+		957C85E82146FF92004C548E /* PolylineNode_dynamic.swift in Sources */ = {isa = PBXBuildFile; fileRef = 957C85E22146FF92004C548E /* PolylineNode_dynamic.swift */; };
 		957C85E92146FF92004C548E /* unlit-line.metal in Sources */ = {isa = PBXBuildFile; fileRef = 957C85E42146FF92004C548E /* unlit-line.metal */; };
 		957C85EA2146FF92004C548E /* SCNProgramExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 957C85E52146FF92004C548E /* SCNProgramExtensions.swift */; };
 		957C85EB2146FF92004C548E /* BezierSpline3D.swift in Sources */ = {isa = PBXBuildFile; fileRef = 957C85E62146FF92004C548E /* BezierSpline3D.swift */; };
@@ -94,7 +96,9 @@
 		81A4372420A243E100F42A53 /* AsyncOperation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AsyncOperation.swift; sourceTree = "<group>"; };
 		81A4372920A2444B00F42A53 /* HTTPRequestOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTTPRequestOperation.swift; sourceTree = "<group>"; };
 		81CCF68620AA99CD00194B22 /* CGExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CGExtensions.swift; sourceTree = "<group>"; };
-		957C85E22146FF92004C548E /* PolylineNode.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PolylineNode.swift; sourceTree = "<group>"; };
+		954A247F21484C210050025E /* PolylineGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolylineGenerator.swift; sourceTree = "<group>"; };
+		954A248121484F330050025E /* PolylineNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolylineNode.swift; sourceTree = "<group>"; };
+		957C85E22146FF92004C548E /* PolylineNode_dynamic.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PolylineNode_dynamic.swift; sourceTree = "<group>"; };
 		957C85E42146FF92004C548E /* unlit-line.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; path = "unlit-line.metal"; sourceTree = "<group>"; };
 		957C85E52146FF92004C548E /* SCNProgramExtensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SCNProgramExtensions.swift; sourceTree = "<group>"; };
 		957C85E62146FF92004C548E /* BezierSpline3D.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BezierSpline3D.swift; sourceTree = "<group>"; };
@@ -215,11 +219,13 @@
 		957C85E12146FF92004C548E /* Routes */ = {
 			isa = PBXGroup;
 			children = (
-				957C85E22146FF92004C548E /* PolylineNode.swift */,
+				957C85E22146FF92004C548E /* PolylineNode_dynamic.swift */,
 				957C85E32146FF92004C548E /* Shaders */,
 				957C85E62146FF92004C548E /* BezierSpline3D.swift */,
 				957C85E72146FF92004C548E /* TerrainNodeExtension+Routes.swift */,
 				4C8655F9211B5B13001465FF /* TerrainNodeExtensions.swift */,
+				954A247F21484C210050025E /* PolylineGenerator.swift */,
+				954A248121484F330050025E /* PolylineNode.swift */,
 			);
 			path = Routes;
 			sourceTree = "<group>";
@@ -407,11 +413,13 @@
 				4C8655FA211B5B13001465FF /* TerrainNodeExtensions.swift in Sources */,
 				81A4371720A1FAB700F42A53 /* Math.swift in Sources */,
 				957C85EC2146FF92004C548E /* TerrainNodeExtension+Routes.swift in Sources */,
+				954A248021484C210050025E /* PolylineGenerator.swift in Sources */,
 				814D9F2720A48538008E6848 /* ImageBuilder.swift in Sources */,
 				81A4372A20A2444B00F42A53 /* HTTPRequestOperation.swift in Sources */,
 				81A4372520A243E100F42A53 /* AsyncOperation.swift in Sources */,
 				81A4372320A243B200F42A53 /* MapboxHTTPAPI.swift in Sources */,
-				957C85E82146FF92004C548E /* PolylineNode.swift in Sources */,
+				957C85E82146FF92004C548E /* PolylineNode_dynamic.swift in Sources */,
+				954A248221484F330050025E /* PolylineNode.swift in Sources */,
 				957C85EA2146FF92004C548E /* SCNProgramExtensions.swift in Sources */,
 				814F3BD520ADF1B40006DDFD /* MapboxImageAPI.swift in Sources */,
 				957C85EB2146FF92004C548E /* BezierSpline3D.swift in Sources */,
@@ -464,6 +472,7 @@
 					"$(PROJECT_DIR)",
 				);
 				INFOPLIST_FILE = Examples/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -492,6 +501,7 @@
 					"$(PROJECT_DIR)",
 				);
 				INFOPLIST_FILE = Examples/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

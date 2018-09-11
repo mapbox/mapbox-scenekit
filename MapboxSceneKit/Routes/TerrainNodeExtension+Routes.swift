@@ -12,7 +12,7 @@ import CoreLocation
 
 @available(iOS 10.0, *)
 extension TerrainNode {
-    
+    @discardableResult
     @objc
     public func addPolyline( coordinates: [CLLocation], startRadius: CGFloat, endRadius: CGFloat, startColor: UIColor, endColor: UIColor) -> PolylineNode{
         
@@ -24,7 +24,8 @@ extension TerrainNode {
         
         //TODO: check along lines between coordinates for intersections with terrain geometry, and add points to avoid those interasections.
         
-        let lineNode = PolylineNode( positions: scenePositions, startRadius: startRadius, endRadius: endRadius, startColor: startColor, endColor: endColor, handleGeometryOverlap: false )
+//        let lineNode = PolylineNode( positions: scenePositions, startRadius: startRadius, endRadius: endRadius, startColor: startColor, endColor: endColor, handleGeometryOverlap: false )
+        let lineNode = PolylineNode(positions: scenePositions, radius: startRadius, color: startColor)
         self.addChildNode(lineNode)
         return lineNode
     }
