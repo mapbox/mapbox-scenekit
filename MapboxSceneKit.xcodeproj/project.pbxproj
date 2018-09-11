@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		4C8655FA211B5B13001465FF /* TerrainNodeExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C8655F9211B5B13001465FF /* TerrainNodeExtensions.swift */; };
 		81293BEC20B4A1FB0014A17A /* MapboxSceneKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 81A436BC20A1F68500F42A53 /* MapboxSceneKit.framework */; };
 		81293BF120B4A29C0014A17A /* MapboxSceneKit.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 81A436BC20A1F68500F42A53 /* MapboxSceneKit.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		81293BF320B4A35C0014A17A /* DemoStyleViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81293BC920B4A1AE0014A17A /* DemoStyleViewController.swift */; };
@@ -19,8 +18,6 @@
 		81293C0120B4B4010014A17A /* MapboxMobileEvents.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 81293BFD20B4B3C10014A17A /* MapboxMobileEvents.framework */; };
 		814D9F2720A48538008E6848 /* ImageBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 814D9F2620A48538008E6848 /* ImageBuilder.swift */; };
 		814F3BD520ADF1B40006DDFD /* MapboxImageAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 814F3BD420ADF1B40006DDFD /* MapboxImageAPI.swift */; };
-		817BC08E20BDC071005A015D /* DemoARViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 817BC08D20BDC071005A015D /* DemoARViewController.swift */; };
-		817BC09020BDC413005A015D /* FocusSquare.swift in Sources */ = {isa = PBXBuildFile; fileRef = 817BC08F20BDC413005A015D /* FocusSquare.swift */; };
 		817BC09220BDC435005A015D /* SCNExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 817BC09120BDC435005A015D /* SCNExtensions.swift */; };
 		8190075F20C07FAD002F23C3 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81293BD320B4A1AE0014A17A /* AppDelegate.swift */; };
 		8190076020C07FD5002F23C3 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81293BCD20B4A1AE0014A17A /* LaunchScreen.storyboard */; };
@@ -35,6 +32,8 @@
 		81CCF68720AA99CD00194B22 /* CGExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81CCF68620AA99CD00194B22 /* CGExtensions.swift */; };
 		954A248021484C210050025E /* Polyline_Cylinder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 954A247F21484C210050025E /* Polyline_Cylinder.swift */; };
 		954A248221484F330050025E /* PolylineNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 954A248121484F330050025E /* PolylineNode.swift */; };
+		9569513E2148827800D567AE /* DemoARViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 817BC08D20BDC071005A015D /* DemoARViewController.swift */; };
+		9569513F2148828200D567AE /* FocusSquare.swift in Sources */ = {isa = PBXBuildFile; fileRef = 817BC08F20BDC413005A015D /* FocusSquare.swift */; };
 		957C85E82146FF92004C548E /* Polyline_Shader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 957C85E22146FF92004C548E /* Polyline_Shader.swift */; };
 		957C85E92146FF92004C548E /* unlit-line.metal in Sources */ = {isa = PBXBuildFile; fileRef = 957C85E42146FF92004C548E /* unlit-line.metal */; };
 		957C85EA2146FF92004C548E /* SCNProgramExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 957C85E52146FF92004C548E /* SCNProgramExtensions.swift */; };
@@ -69,7 +68,6 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		4C8655F9211B5B13001465FF /* TerrainNodeExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerrainNodeExtensions.swift; sourceTree = "<group>"; };
 		81293BC820B4A1AE0014A17A /* DemoHeightmapViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DemoHeightmapViewController.swift; sourceTree = "<group>"; };
 		81293BC920B4A1AE0014A17A /* DemoStyleViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DemoStyleViewController.swift; sourceTree = "<group>"; };
 		81293BCB20B4A1AE0014A17A /* ProgressCompositor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressCompositor.swift; sourceTree = "<group>"; };
@@ -225,7 +223,6 @@
 				954A247F21484C210050025E /* Polyline_Cylinder.swift */,
 				957C85E32146FF92004C548E /* Shaders */,
 				957C85E62146FF92004C548E /* BezierSpline3D.swift */,
-				4C8655F9211B5B13001465FF /* TerrainNodeExtensions.swift */,
 			);
 			path = Routes;
 			sourceTree = "<group>";
@@ -399,6 +396,8 @@
 				81293BF420B4A35C0014A17A /* DemoHeightmapViewController.swift in Sources */,
 				817BC09220BDC435005A015D /* SCNExtensions.swift in Sources */,
 				81293BF520B4A35C0014A17A /* DemoPlacementViewController.swift in Sources */,
+				9569513E2148827800D567AE /* DemoARViewController.swift in Sources */,
+				9569513F2148828200D567AE /* FocusSquare.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -408,7 +407,6 @@
 			files = (
 				957C85E92146FF92004C548E /* unlit-line.metal in Sources */,
 				81A436C820A1F6BC00F42A53 /* TerrainNode.swift in Sources */,
-				4C8655FA211B5B13001465FF /* TerrainNodeExtensions.swift in Sources */,
 				81A4371720A1FAB700F42A53 /* Math.swift in Sources */,
 				957C85EC2146FF92004C548E /* TerrainNodeExtension+Routes.swift in Sources */,
 				954A248021484C210050025E /* Polyline_Cylinder.swift in Sources */,

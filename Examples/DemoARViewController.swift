@@ -100,11 +100,7 @@ final class DemoARViewController: UIViewController, ARSCNViewDelegate, ARSession
         terrainNode.fetchTerrainHeights(minWallHeight: 50.0, enableDynamicShadows: true, completion: { [weak self] in
             NSLog("Terrain load complete")
             guard let `self` = self, let firstLocation = self.locations.first, let lastLocation = self.locations.last else { return }
-            terrainNode.drawPath(from: self.locations, cylinderRadius: 10, color: .orange)
-            let firstNode = terrainNode.projectedSphere(at: firstLocation, radius: 15, color: .yellow)
-            terrainNode.addChildNode(firstNode)
-            let lastNode = terrainNode.projectedSphere(at: lastLocation, radius: 20, color: .red)
-            terrainNode.addChildNode(lastNode)
+            terrainNode.addPolyline(coordinates: self.locations, radius: 10, color: .orange)
         })
 
         terrainNode.fetchTerrainTexture("mapbox/satellite-v9", progress: { _, _ in }, completion: { image in
