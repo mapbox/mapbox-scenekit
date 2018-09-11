@@ -12,9 +12,15 @@ import SceneKit
 @available(iOS, introduced: 8.0, deprecated: 10.0, message: "Use Polyline_Shader")
 internal class Polyline_Cylinder: PolylineRenderer {
     
-    
+    /// Calculates and draws route using cylinders between each supplied position.
+    ///
+    /// - Parameters:
+    ///   - node: The root node for the polyline
+    ///   - positions: The list of SCNVector3 positions. The line is drawn through each position consectutively from 0...n
+    ///   - radius: The width of the line in local space
+    ///   - color: The color of the line
     func generatePolyline(forNode node: SCNNode, positions: [SCNVector3], radius: CGFloat, color: UIColor) {
-        // add material and geometry to the node
+
         var nodes = [SCNNode]()
         guard positions.count > 0 else {
             return // there are no points to draw

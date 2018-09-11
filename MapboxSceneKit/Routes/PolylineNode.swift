@@ -28,6 +28,12 @@ public class PolylineNode: SCNNode {
     private var radius: CGFloat
     private var color: UIColor
     
+    /// PolylineNode generates line geometry through a list of positions.
+    ///
+    /// - Parameters:
+    ///   - positions: The list of SCNVector3 positions. The line is drawn through each position consectutively from 0...n
+    ///   - radius: The width of the line in local space
+    ///   - color: The color of the line
     public init( positions: [SCNVector3], radius: CGFloat, color: UIColor ) {
         
         //Find and instantiate the appropriate renderer

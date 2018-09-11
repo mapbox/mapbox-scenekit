@@ -10,7 +10,7 @@ import Foundation
 import SceneKit
 import Metal
 
-/// PolylineNode generates line geometry through a list of positions, and uses a Metal Shader to give that geometry a set radius in screen-space. Not compatible with iOS simulator builds.
+/// Uses a Metal Shader to give that geometry a set radius in screen-space. Not compatible with iOS simulator builds.
 ///
 /// - Parameters:
 ///   - positions: The list of SCNVector3 positions. The line is drawn through each position consectutively from 0...n
