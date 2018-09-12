@@ -47,8 +47,9 @@ vertex Vertex lineVert(VertexInput in [[ stage_in ]],
     float lineRadius = in.lineParams.y;
     bool shouldModifyDepthBuffer = in.lineParams.x > 0;
     
-    //calculate the offset amounts
-    float expandDistance = lineRadius;
+    //calculate the offset amounts using the model's scale, averaged across x/y/z components
+    float3 modelScale = float3(scn_node.modelTransform[0][0], scn_node.modelTransform[1][1], scn_node.modelTransform[2][2]);
+    float expandDistance = lineRadius * ((modelScale.x + modelScale.y + modelScale.z) / 3);
     
     //apply the offset
     float4 neighborPos = scn_node.modelViewProjectionTransform * float4(in.normals, 1.0);
@@ -64,6 +65,7 @@ vertex Vertex lineVert(VertexInput in [[ stage_in ]],
     
     // get aspect ratio by applying the projection transform to a 1,1,1 vector.
     float4 projectedPoint = scn_frame.projectionTransform * float4(1,1,1,1);
+
     //apply the corresponding component of the aspect ratio to adjust for screen size
     vert.position.x += mix(capVec.x, perpVec.x, vert.capFlag) * (expandDistance * projectedPoint.x);
     vert.position.y += mix(capVec.y, perpVec.y, vert.capFlag) * (expandDistance * projectedPoint.y);
