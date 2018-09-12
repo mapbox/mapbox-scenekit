@@ -57,6 +57,10 @@ class DemoStyleViewController: UIViewController {
 
         self.progressView?.progress = 0.0
         self.progressView?.isHidden = false
+        
+        // we want to fetch texture only here, so we don't need to use the new fetching of both height and texture
+        // for which this method was deprecated. Probably in real app you'll never want to present texture without
+        // heights, so it stays here for easier example to let you get the idea faster as 1st simplest solution
         terrainNode.fetchTerrainTexture(style, progress: { progress, total in
             self.progressView?.progress = progress
 

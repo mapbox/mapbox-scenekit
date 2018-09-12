@@ -58,10 +58,11 @@ class DemoPlacementViewController: UIViewController {
         let terrainRendererHandler = progressHandler.registerForProgress()
         progressHandler.updateProgress(handlerID: terrainRendererHandler, progress: 0, total: 1)
         let terrainFetcherHandler = progressHandler.registerForProgress()
-        terrainNode.fetchTerrainHeights(minWallHeight: 50.0, enableDynamicShadows: true, progress: { progress, total in
+        let textureFetchHandler = progressHandler.registerForProgress()
+        
+        terrainNode.fetchTerrainAndTexture(minWallHeight: 50.0, enableDynamicShadows: true, textureStyle: "mapbox/satellite-v9", heightProgress: { progress, total in
             progressHandler.updateProgress(handlerID: terrainFetcherHandler, progress: progress, total: total)
-
-        }, completion: { fetchError in
+        }, heightCompletion: { fetchError in
             if let fetchError = fetchError {
                 NSLog("Texture load failed: \(fetchError.localizedDescription)")
             } else {
@@ -69,13 +70,9 @@ class DemoPlacementViewController: UIViewController {
             }
             progressHandler.updateProgress(handlerID: terrainRendererHandler, progress: 1, total: 1)
             self.addUserPath(to: terrainNode)
-        })
-
-        let textureFetchHandler = progressHandler.registerForProgress()
-        terrainNode.fetchTerrainTexture("mapbox/satellite-v9", progress: { progress, total in
+        }, textureProgress: { progress, total in
             progressHandler.updateProgress(handlerID: textureFetchHandler, progress: progress, total: total)
-
-        }, completion: { image, fetchError in
+        }) { image, fetchError in
             if let fetchError = fetchError {
                 NSLog("Texture load failed: \(fetchError.localizedDescription)")
             }
@@ -83,7 +80,7 @@ class DemoPlacementViewController: UIViewController {
                 NSLog("Texture load complete")
                 terrainNode.geometry?.materials[4].diffuse.contents = image
             }
-        })
+        }
     }
 
     private func defaultMaterials() -> [SCNMaterial] {
