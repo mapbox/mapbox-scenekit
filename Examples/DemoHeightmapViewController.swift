@@ -45,8 +45,8 @@ class DemoHeightmapViewController: UIViewController {
         sceneView.showsStatistics = true
 
         //Set up initial terrain and materials
-        let terrainNode = TerrainNode(minLat: 53.063137900000001, maxLat: 53.0745991,
-                                      minLon: -4.0644666000000003, maxLon: -4.0349393999999998)
+        let terrainNode = TerrainNode(minLat: 50.044660402821592, maxLat: 50.120873988090956,
+                                      minLon: -122.99017089272466, maxLon: -122.86824490727534)
         terrainNode.position = SCNVector3(0, 500, 0)
         terrainNode.geometry?.materials = defaultMaterials()
         scene.rootNode.addChildNode(terrainNode)
