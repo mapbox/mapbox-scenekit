@@ -58,24 +58,29 @@ class DemoPlacementViewController: UIViewController {
         let terrainRendererHandler = progressHandler.registerForProgress()
         progressHandler.updateProgress(handlerID: terrainRendererHandler, progress: 0, total: 1)
         let terrainFetcherHandler = progressHandler.registerForProgress()
-        terrainNode.fetchTerrainHeights(minWallHeight: 50.0, enableDynamicShadows: true, progress: { progress, total in
-            progressHandler.updateProgress(handlerID: terrainFetcherHandler, progress: progress, total: total)
-
-        }, completion: {
-            progressHandler.updateProgress(handlerID: terrainRendererHandler, progress: 1, total: 1)
-
-            self.addUserPath(to: terrainNode)
-            NSLog("Terrain load complete")
-        })
-
         let textureFetchHandler = progressHandler.registerForProgress()
-        terrainNode.fetchTerrainTexture("mapbox/satellite-v9", progress: { progress, total in
+        
+        terrainNode.fetchTerrainAndTexture(minWallHeight: 50.0, enableDynamicShadows: true, textureStyle: "mapbox/satellite-v9", heightProgress: { progress, total in
+            progressHandler.updateProgress(handlerID: terrainFetcherHandler, progress: progress, total: total)
+        }, heightCompletion: { fetchError in
+            if let fetchError = fetchError {
+                NSLog("Texture load failed: \(fetchError.localizedDescription)")
+            } else {
+                NSLog("Terrain load complete")
+            }
+            progressHandler.updateProgress(handlerID: terrainRendererHandler, progress: 1, total: 1)
+            self.addUserPath(to: terrainNode)
+        }, textureProgress: { progress, total in
             progressHandler.updateProgress(handlerID: textureFetchHandler, progress: progress, total: total)
-
-        }, completion: { image in
-            NSLog("Texture load complete")
-            terrainNode.geometry?.materials[4].diffuse.contents = image
-        })
+        }) { image, fetchError in
+            if let fetchError = fetchError {
+                NSLog("Texture load failed: \(fetchError.localizedDescription)")
+            }
+            if image != nil {
+                NSLog("Texture load complete")
+                terrainNode.geometry?.materials[4].diffuse.contents = image
+            }
+        }
     }
 
     private func defaultMaterials() -> [SCNMaterial] {
