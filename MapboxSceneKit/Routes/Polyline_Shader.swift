@@ -19,16 +19,14 @@ import Metal
 ///   - startColor: The color of the initial point of the line. Linearly interpolated through RGB color space from start to end.
 ///   - endColor: The color of the final point of the line. Linearly interpolated through RGB color space from start to end.
 ///   - handleGeometryOverlap: !Experimental! Flag indicating whether the line radius should be used to handle overlap/z-fighting per-pixel. Greatly improves visual quality of lines intersecting with other geometry, but at some cost to performance. May create graphical artifacts on some devices.
-
 @available(iOS 10.0, *)
 internal class Polyline_Shader: PolylineRenderer {
     
-    private var positions: [SCNVector3] = [SCNVector3Zero]
-    private var startRadius: CGFloat = 0.1
-    private var endRadius: CGFloat = 0.5
-    private var startColor: UIColor = UIColor.yellow
-    private var endColor: UIColor = UIColor.white
-    private var handleGeometryOverlap: Bool = false
+    private weak var polyline: PolylineNode?
+    private var sampleCount: Int = 0
+    
+    private let defaultColor: UIColor = .magenta
+    private let defaultRadius: CGFloat = 5
     
     //derived from position, radius, and color settings
     private var verts: [SCNVector3]! //components -> quads
@@ -38,32 +36,21 @@ internal class Polyline_Shader: PolylineRenderer {
     private var colors: [SCNVector4]! //vertex colors
     private var lineParams: [CGPoint]! //line radius captured in y value
     
-    public func generatePolyline(forNode node: SCNNode, positions: [SCNVector3], radius: CGFloat, color: UIColor) {
-        generatePolyline(forNode: node,
-                         positions: positions,
-                         startRadius: radius, endRadius: radius,
-                         startColor: color, endColor: color)
-    }
-    
-    public func generatePolyline( forNode node: SCNNode,
-                      positions: [SCNVector3],
-                      startRadius: CGFloat, endRadius: CGFloat,
-                      startColor: UIColor, endColor: UIColor,
-                      handleGeometryOverlap: Bool = false) {
+
+    public func render(_ polyline: PolylineNode, withSampleCount sampleCount: Int) {
         
-        //store values
-        self.positions = positions
-        self.startRadius = startRadius
-        self.endRadius = endRadius
-        self.startColor = startColor
-        self.endColor = endColor
-        self.handleGeometryOverlap = handleGeometryOverlap
+        self.polyline = polyline
+        self.sampleCount = sampleCount
         
         //assign geometry
-        node.geometry = generateGeometry()
+        polyline.geometry = generateGeometry()
         
         //assign materials
-        node.geometry?.firstMaterial = generateMaterial()
+        polyline.geometry?.firstMaterial = generateMaterial()
+    }
+    
+    private func progressAtSample(_ sample: Int) -> CGFloat {
+        return (CGFloat(sample) / CGFloat(sampleCount))
     }
     
     private func generateMaterial() -> SCNMaterial{
@@ -90,16 +77,21 @@ internal class Polyline_Shader: PolylineRenderer {
         normals = []
         indices = []
         
-        //step forward through positions and add lines first
-        for (index, position) in positions.enumerated() where index != 0{
-            let lastPosition = positions[index - 1]
-            addLine(from: lastPosition, to: position, withIndex: index)
-        }
-        
-        //step backwards and add caps
-        //we want the vertex transforms calculate for the lines first, so that alpha transparency appears correctly on the caps.
-        for (index, position) in positions.enumerated().reversed(){
-            addCap(atPosition: position, withIndex: index )
+        if let polyline = self.polyline {
+            
+            for index in 1..<sampleCount
+            {
+                let lastPosition = polyline.getPositon(atProgress: progressAtSample(index - 1))
+                let position = polyline.getPositon(atProgress: progressAtSample(index))
+                addLine(from: lastPosition, to: position, withIndex: index)
+            }
+            
+            for index in (0..<sampleCount).reversed()
+            {
+                let position = polyline.getPositon(atProgress: progressAtSample(index))
+                addCap(atPosition: position, withIndex: index)
+            }
+            
         }
         
         //create geometry from sources
@@ -126,13 +118,12 @@ internal class Polyline_Shader: PolylineRenderer {
         uvs.append(contentsOf: billboardUVs())
         
         //set Color
-        let color = getColor(atPositionIndex: index).asSCNVector()
+        let color = polyline?.getColor(atProgress: progressAtSample(index)).asSCNVector() ?? defaultColor.asSCNVector()
         colors.append(contentsOf: [color, color, color, color])
         
         //set line radius and geometry overlap settings
-        let handleOverlapFlag: CGFloat = handleGeometryOverlap ? 1.0 : 0.0
-        let radius = getLineRadius(atPositionIndex: index)
-        let lineParam = CGPoint(x: handleOverlapFlag, y: radius)
+        let radius = polyline?.getRadius(atProgress: progressAtSample(index)) ?? defaultRadius
+        let lineParam = CGPoint(x: 0, y: radius)
         lineParams.append(contentsOf: [lineParam, lineParam, lineParam, lineParam])
         
         //add indices
@@ -154,16 +145,15 @@ internal class Polyline_Shader: PolylineRenderer {
         uvs.append(contentsOf: billboardUVs())
         
         //set Color
-        let fromColor = getColor(atPositionIndex: index - 1).asSCNVector()
-        let toColor = getColor(atPositionIndex: index).asSCNVector()
+        let fromColor = polyline?.getColor(atProgress: progressAtSample(index - 1)).asSCNVector() ?? defaultColor.asSCNVector()
+        let toColor = polyline?.getColor(atProgress: progressAtSample(index)).asSCNVector() ?? defaultColor.asSCNVector()
         colors.append(contentsOf: [fromColor, fromColor, toColor, toColor])
         
         //set line radius and geometry overlap settings
-        let handleOverlapFlag : CGFloat = handleGeometryOverlap ? 1.0 : 0.0
-        let fromRadius = getLineRadius(atPositionIndex: index - 1)
-        let toRadius = getLineRadius(atPositionIndex: index)
-        let fromParam = CGPoint(x: handleOverlapFlag, y: fromRadius)
-        let toParam = CGPoint(x: handleOverlapFlag, y: toRadius)
+        let fromRadius = polyline?.getRadius(atProgress: progressAtSample(index - 1)) ?? defaultRadius
+        let toRadius = polyline?.getRadius(atProgress: progressAtSample(index)) ?? defaultRadius
+        let fromParam = CGPoint(x: 0, y: fromRadius)
+        let toParam = CGPoint(x: 0, y: toRadius)
         lineParams.append(contentsOf: [fromParam, fromParam, toParam, toParam])
         
         //add indices
@@ -188,27 +178,6 @@ internal class Polyline_Shader: PolylineRenderer {
         let uvSet4 = CGPoint(x: 0, y: 1)
         
         return [uvSet1, uvSet2, uvSet3, uvSet4]
-    }
-    
-    private func getLineRadius(atPositionIndex index: Int ) -> CGFloat{
-        
-        let totalPositions = positions.count
-        let progress = CGFloat.map(value: CGFloat(index),
-                                   low1: 0, high1: CGFloat(totalPositions), //map from total postions
-            low2: 0, high2: 1) //to a 0-1 range
-        
-        let radius = CGFloat.lerp(from: startRadius, to: endRadius, withProgress: progress)
-        return radius
-    }
-    
-    private func getColor(atPositionIndex index: Int) -> UIColor{
-        
-        let totalPositions = positions.count
-        let progress = CGFloat.map(value: CGFloat(index),
-                                   low1: 0, high1: CGFloat(totalPositions), //map from total postions
-            low2: 0, high2: 1) //to a 0-1 range
-        
-        return UIColor.lerp(from: startColor, to: endColor, withProgress: progress)
     }
 }
 

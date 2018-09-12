@@ -33,4 +33,19 @@ extension TerrainNode {
         self.addChildNode(lineNode)
         return lineNode
     }
+    
+    @available(iOS 10.0, *)
+    public func addPolyline( coordinates: [CLLocation], startRadius: CGFloat, endRadius: CGFloat, startColor: UIColor, endColor: UIColor) -> PolylineNode{
+        
+        var scenePositions : [SCNVector3] = []
+        for coord in coordinates {
+            let position = self.positionForLocation(coord)
+            scenePositions.append(position)
+        }
+        
+        let lineNode = PolylineNode(positions: scenePositions, startRadius: startRadius, endRadius: endRadius, startColor: startColor, endColor: endColor)
+        lineNode.position.y += Float((startRadius + endRadius)/2)
+        self.addChildNode(lineNode)
+        return lineNode
+    }
 }

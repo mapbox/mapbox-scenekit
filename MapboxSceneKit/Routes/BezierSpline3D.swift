@@ -40,3 +40,15 @@ internal class BezierSpline3D {
         return (absoluteProgress, spineSegmentStartIndex, t)
     }
 }
+
+//temporary extension to use this class for color splines
+internal extension SCNVector3 {
+    
+    func toColor() -> UIColor{
+        return UIColor(red: CGFloat(self.x), green: CGFloat(self.y), blue: CGFloat(self.z), alpha: 1.0)
+    }
+    
+    func toRadius() -> CGFloat{
+        return CGFloat(self.x)
+    }
+}
