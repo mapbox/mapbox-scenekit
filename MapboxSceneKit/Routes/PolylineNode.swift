@@ -9,17 +9,7 @@
 import Foundation
 import SceneKit
 
-//MARK: - Polyline Renderer Protocol
-/// Implement this protocol to define new line rendering behavior
-internal protocol PolylineRenderer {
-
-    func render(_ polyline: PolylineNode, withSampleCount sampleCount: Int)
-    
-}
-
 //MARK: - Constructors
-/// Stores data on the polyline, and converts it to curves for rendering.
-/// Responsible for selecting the correct renderer based on iOS version.
 public class PolylineNode: SCNNode {
     
     private var lineRenderer : PolylineRenderer
@@ -28,7 +18,7 @@ public class PolylineNode: SCNNode {
     let colorCurve: BezierSpline3D
     let radiusCurve: BezierSpline3D
     
-    /// PolylineNode generates line geometry through a list of positions.
+    /// PolylineNode is a line drawn through the given positions. Can be sampled later at any point on the line.
     ///
     /// - Parameters:
     ///   - positions: The list of SCNVector3 positions. The line is drawn through each position consectutively from 0...n
@@ -37,7 +27,7 @@ public class PolylineNode: SCNNode {
     public init( positions: [SCNVector3], radius: CGFloat, color: UIColor ) {
         
         //Find and instantiate the appropriate renderer
-        self.lineRenderer = PolylineNode.getValidRenderer()
+        self.lineRenderer = PolylineRendererVersion.getValidRenderer()
         
         //define the polyline's curves from the inputs
         positionCurve = BezierSpline3D(curvePoints: positions)
@@ -46,11 +36,12 @@ public class PolylineNode: SCNNode {
         
         super.init()
         
+        //render the line
         lineRenderer.render(self, withSampleCount: positions.count)
     }
     
     @available(iOS 10.0, *)
-    /// PolylineNode is a line through the given positions, and can be sampled later at any point on the line.
+    /// PolylineNode is a line drawn through the given positions. Can be sampled later at any point on the line.
     ///
     /// - Parameters:
     ///   - positions: The list of SCNVector3 positions. The line is drawn through each position consectutively from 0...n
@@ -59,8 +50,9 @@ public class PolylineNode: SCNNode {
     ///   - startColor: The color of the initial point of the line. Linearly interpolated through RGB color space from start to end.
     ///   - endColor: The color of the final point of the line. Linearly interpolated through RGB color space from start to end.
     public init( positions: [SCNVector3], startRadius: CGFloat, endRadius: CGFloat, startColor: UIColor, endColor: UIColor){
+        
         //Find and instantiate the appropriate renderer
-        self.lineRenderer = PolylineNode.getValidRenderer()
+        self.lineRenderer = PolylineRendererVersion.getValidRenderer()
         
         //define the polyline's curves from the inputs
         positionCurve = BezierSpline3D(curvePoints: positions)
@@ -69,6 +61,7 @@ public class PolylineNode: SCNNode {
         
         super.init()
         
+        //render the line
         lineRenderer.render(self, withSampleCount: positions.count)
     }
     
@@ -103,23 +96,7 @@ public extension PolylineNode {
     }
 }
 
-//MARK: - Selecting Renderer version
-fileprivate extension PolylineNode {
-    
-    //return the appropriate line generator based on the ios version / metal availability
-    static func getValidRenderer() -> PolylineRenderer {
-        //TODO: first, check if a metal rendering context is available
-        
-        //then, check if the ios version can support framework shaders
-        if #available(iOS 10.0, *) {
-            return Polyline_Shader()
-        } else {
-            return Polyline_Cylinder()
-        }
-    }
-}
-
-//temporary extension to use this class for color splines
+//temporary extension to use the bezierspline class for color splines, doesn't support alpha
 fileprivate extension BezierSpline3D {
     convenience init(curvePoints: [UIColor]) {
         var points = [SCNVector3]()

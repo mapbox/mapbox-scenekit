@@ -35,6 +35,15 @@ extension TerrainNode {
     }
     
     @available(iOS 10.0, *)
+    /// Converts a set of coordinates to SCNVector3s relative to the TerrainNode, then adds a PolylineNode through those locations.
+    ///
+    /// - Parameters:
+    ///   - coordinates: Coordinates on the TerrainNode. The Polyline is drawn through each location consectutively from 0...n
+    ///   - startRadius: The width of the initial point of the line. Linearly interpolated from start to end positions.
+    ///   - endRadius: The width of the final point of the line. Linearly interpolated from start to end positions.
+    ///   - startColor: The color of the initial point of the line. Linearly interpolated through RGB color space from start to end.
+    ///   - endColor: The color of the final point of the line. Linearly interpolated through RGB color space from start to end.
+    /// - Returns: The final PolylineNode, already added as a child of the TerrainNode
     public func addPolyline( coordinates: [CLLocation], startRadius: CGFloat, endRadius: CGFloat, startColor: UIColor, endColor: UIColor) -> PolylineNode{
         
         var scenePositions : [SCNVector3] = []
