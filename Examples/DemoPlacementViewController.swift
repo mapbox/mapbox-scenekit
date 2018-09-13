@@ -113,12 +113,11 @@ class DemoPlacementViewController: UIViewController {
         }
         
         let lineA = terrainNode.addPolyline(coordinates: locations, radius: 20, color: .red)
-        lineA.position.y += 600
         
         let lineB = terrainNode.addPolyline(coordinates: locations, startRadius: 30, endRadius: 80, startColor: .red, endColor: .yellow)
-        lineB.position.y += 400
+        lineB.position.y += 200
         
         let lineC = terrainNode.addPolyline(coordinates: locations, radii: [10, 50, 30], colors: [.red, .yellow, .orange], verticalOffset: 40)
-        lineC.position.y += 200
+        lineC.position.y += 400
     }
 }

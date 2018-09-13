@@ -58,7 +58,7 @@ extension TerrainNode {
         
         let scenePositions = coordinatesToSCNVector3(coordinates: coordinates)
         let lineNode = PolylineNode(positions: scenePositions, radii: radii, colors: colors)
-        lineNode.position.y += verticalOffset
+        lineNode.position.y += Float(verticalOffset)
         self.addChildNode(lineNode)
         return lineNode
         
