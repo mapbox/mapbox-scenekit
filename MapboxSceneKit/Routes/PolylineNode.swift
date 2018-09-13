@@ -10,13 +10,13 @@ import Foundation
 import SceneKit
 
 //MARK: - Constructors
+@objc(MBPolylineNode)
 public class PolylineNode: SCNNode {
     
     private var lineRenderer : PolylineRenderer
-    
-    let positionCurve: BezierSpline3D
-    let colorCurve: BezierSpline3D
-    let radiusCurve: BezierSpline3D
+    private let positionCurve: BezierSpline3D
+    private let colorCurve: BezierSpline3D
+    private let radiusCurve: BezierSpline3D
     
     /// Top-level initializer
     private init( positionCurve: BezierSpline3D, radiusCurve: BezierSpline3D, colorCurve: BezierSpline3D, sampleCount: Int) {
@@ -36,17 +36,17 @@ public class PolylineNode: SCNNode {
     ///   - positions: The list of SCNVector3 positions. The line is drawn through each position consectutively from 0...n
     ///   - radius: The width of the line in local space
     ///   - color: The color of the line
-    public convenience init( positions: [SCNVector3], radius: CGFloat, color: UIColor ) {
+    @objc
+    public convenience init(positions: [SCNVector3], radius: CGFloat, color: UIColor ) {
         
         //define the polyline's curves from the inputs
         let p = BezierSpline3D(curvePoints: positions)
-        let c = BezierSpline3D(curvePoints: [color, color, color, color])
-        let r = BezierSpline3D(curvePoints: [radius, radius, radius, radius])
+        let c = BezierSpline3D(curvePoints: [color])
+        let r = BezierSpline3D(curvePoints: [radius])
         
         self.init(positionCurve: p, radiusCurve: r, colorCurve: c, sampleCount: positions.count)
     }
     
-    @available(iOS 10.0, *)
     /// PolylineNode is a line drawn through the given positions. Can be sampled later at any point on the line.
     ///
     /// - Parameters:
@@ -55,12 +55,31 @@ public class PolylineNode: SCNNode {
     ///   - endRadius: The width of the final point of the line. Linearly interpolated from start to end positions.
     ///   - startColor: The color of the initial point of the line. Linearly interpolated through RGB color space from start to end.
     ///   - endColor: The color of the final point of the line. Linearly interpolated through RGB color space from start to end.
-    public convenience init( positions: [SCNVector3], startRadius: CGFloat, endRadius: CGFloat, startColor: UIColor, endColor: UIColor){
+    @available(iOS 10.0, *)
+    @objc
+    public convenience init(positions: [SCNVector3], startRadius: CGFloat, endRadius: CGFloat, startColor: UIColor, endColor: UIColor){
         
         //define the polyline's curves from the inputs
         let p  = BezierSpline3D(curvePoints: positions)
-        let c = BezierSpline3D(curvePoints: [startColor, startColor, endColor, endColor])
-        let r = BezierSpline3D(curvePoints: [startRadius, startRadius, endRadius, endRadius])
+        let c = BezierSpline3D(curvePoints: [startColor, endColor])
+        let r = BezierSpline3D(curvePoints: [startRadius, endRadius])
+        
+        self.init(positionCurve: p, radiusCurve: r, colorCurve: c, sampleCount: positions.count)
+    }
+    
+    /// PolylineNode is a line drawn through the given positions. Can be sampled later at any point on the line.
+    ///
+    /// - Parameters:
+    ///   - positions: The list of SCNVector3 positions. The line is drawn through each position consectutively from 0...n
+    ///   - radii: The list of radii, distributed evenly along the line
+    ///   - colors: The list of colors, distributed evenly along the line
+    @available(iOS 10.0, *)
+    @objc
+    public convenience init(positions: [SCNVector3], radii: [CGFloat], colors: [UIColor]){
+        
+        let p = BezierSpline3D(curvePoints: positions)
+        let c = BezierSpline3D(curvePoints: colors)
+        let r = BezierSpline3D(curvePoints: radii)
         
         self.init(positionCurve: p, radiusCurve: r, colorCurve: c, sampleCount: positions.count)
     }
@@ -96,8 +115,10 @@ public extension PolylineNode {
     }
 }
 
-//temporary extension to use the bezierspline class for color splines, doesn't support alpha
+//temporary extension to use the bezierspline class for other parameters
 fileprivate extension BezierSpline3D {
+    
+    //color splines, doesn't support alpha
     convenience init(curvePoints: [UIColor]) {
         var points = [SCNVector3]()
         for color  in curvePoints {
@@ -112,6 +133,7 @@ fileprivate extension BezierSpline3D {
         self.init(curvePoints: points)
     }
     
+    //radius spline, uses the x-component only
     convenience init(curvePoints: [CGFloat]) {
         var points = [SCNVector3]()
         for radius  in curvePoints {

@@ -12,8 +12,6 @@ import CoreLocation
 
 extension TerrainNode {
     
-    @discardableResult
-    @objc
     /// Converts a set of coordinates to SCNVector3s relative to the TerrainNode, then adds a PolylineNode through those locations.
     ///
     /// - Parameters:
@@ -21,6 +19,8 @@ extension TerrainNode {
     ///   - radius: The width of the line
     ///   - color: The color of the line
     /// - Returns: The final PolylineNode, already added as a child of the TerrainNode
+    @discardableResult
+    @objc
     public func addPolyline( coordinates: [CLLocation], radius: CGFloat, color: UIColor) -> PolylineNode{
         
         let scenePositions = coordinatesToSCNVector3(coordinates: coordinates)
@@ -30,8 +30,6 @@ extension TerrainNode {
         return lineNode
     }
     
-    @discardableResult
-    @available(iOS 10.0, *)
     /// Converts a set of coordinates to SCNVector3s relative to the TerrainNode, then adds a PolylineNode through those locations.
     ///
     /// - Parameters:
@@ -41,6 +39,9 @@ extension TerrainNode {
     ///   - startColor: The color of the initial point of the line. Linearly interpolated through RGB color space from start to end.
     ///   - endColor: The color of the final point of the line. Linearly interpolated through RGB color space from start to end.
     /// - Returns: The final PolylineNode, already added as a child of the TerrainNode
+    @discardableResult
+    @objc
+    @available(iOS 10.0, *)
     public func addPolyline(coordinates: [CLLocation], startRadius: CGFloat, endRadius: CGFloat, startColor: UIColor, endColor: UIColor) -> PolylineNode{
         
         let scenePositions = coordinatesToSCNVector3(coordinates: coordinates)
@@ -48,6 +49,18 @@ extension TerrainNode {
         lineNode.position.y += Float((startRadius + endRadius)/2) //average begining and ending radius for vertical offset
         self.addChildNode(lineNode)
         return lineNode
+    }
+    
+    @discardableResult
+    @objc
+    @available(iOS 10.0, *)
+    public func addPolyline(coordinates: [CLLocation], radii: [CGFloat], colors: [UIColor], verticalOffset: CGFloat = 0) -> PolylineNode{
+        
+        let scenePositions = coordinatesToSCNVector3(coordinates: coordinates)
+        let lineNode = PolylineNode(positions: scenePositions, radii: radii, colors: colors)
+        self.addChildNode(lineNode)
+        return lineNode
+        
     }
     
     /// Convert coordinates to SCNVector3
