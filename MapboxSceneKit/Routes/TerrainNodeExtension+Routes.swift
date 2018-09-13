@@ -30,6 +30,7 @@ extension TerrainNode {
         return lineNode
     }
     
+    @discardableResult
     @available(iOS 10.0, *)
     /// Converts a set of coordinates to SCNVector3s relative to the TerrainNode, then adds a PolylineNode through those locations.
     ///

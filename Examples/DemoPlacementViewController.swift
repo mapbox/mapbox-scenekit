@@ -107,7 +107,6 @@ class DemoPlacementViewController: UIViewController {
             locations.append(CLLocation(latitude: latlon.0, longitude: latlon.1))
         }
         
-//        terrainNode.addPolyline(coordinates: locations, radius: 30, color: .yellow)
         terrainNode.addPolyline(coordinates: locations, startRadius: 30, endRadius: 80, startColor: .red, endColor: .yellow)
     }
 }
