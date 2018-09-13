@@ -47,9 +47,9 @@ vertex Vertex lineVert(VertexInput in [[ stage_in ]],
     float lineRadius = in.lineParams.y;
     bool shouldModifyDepthBuffer = in.lineParams.x > 0;
     
-    //calculate the offset amounts using the model's scale, averaged across x/y/z components
+    //calculate the offset amounts using the model's largest x/y/z component scale
     float3 modelScale = float3(scn_node.modelTransform[0][0], scn_node.modelTransform[1][1], scn_node.modelTransform[2][2]);
-    float expandDistance = lineRadius * ((modelScale.x + modelScale.y + modelScale.z) / 3);
+    float expandDistance = lineRadius * max(modelScale.x, max(modelScale.y, modelScale.z));
     
     //apply the offset
     float4 neighborPos = scn_node.modelViewProjectionTransform * float4(in.normals, 1.0);
