@@ -8,6 +8,7 @@
 
 import Foundation
 import SceneKit
+import Metal
 
 /// Implement this protocol to define new line rendering behavior
 internal protocol PolylineRenderer {
@@ -22,7 +23,12 @@ internal class PolylineRendererVersion {
     ///
     /// - Returns: The best linerenderer for the current platform
     public static func getValidRenderer() -> PolylineRenderer {
-        //TODO: first, check if a metal rendering context is available
+        //first, check if a metal rendering context is available
+        let device = MTLCreateSystemDefaultDevice();
+        if (device == nil) {
+            // No metal rendering context available, fallback to cylinder polylines
+            return Polyline_Cylinder()
+        }
         
         //then, check if the ios version can support framework shaders
         if #available(iOS 10.0, *) {
