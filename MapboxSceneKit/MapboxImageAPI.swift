@@ -41,7 +41,7 @@ public final class MapboxImageAPI: NSObject {
     /**
      Completion typealias for when tile loading is complete and the image is ready.
      **/
-    public typealias TileLoadCompletion = (_ image: UIImage?) -> Void
+    public typealias TileLoadCompletion = (_ image: UIImage?, _ error: NSError?) -> Void
 
     fileprivate static let tileSize = CGSize(width: 256, height: 256)
     fileprivate static let styleSize = CGSize(width: 256, height: 256)
@@ -114,11 +114,11 @@ public final class MapboxImageAPI: NSObject {
             progress?(Float(0) / Float(total), total)
         }
 
-        var hadFailure = false
+        var error: FetchError?
         for (xindex, x) in bounding.xs.enumerated() {
             for (yindex, y) in bounding.ys.enumerated() {
                 group.enter()
-                if let task = httpAPI.tileset(tileset, zoomLevel: zoom, xTile: x, yTile: y, format: format, completion: { image in
+                if let task = httpAPI.tileset(tileset, zoomLevel: zoom, xTile: x, yTile: y, format: format, completion: { image, fetchError in
                     MapboxImageAPI.queue.async {
                         defer {
                             completed += 1
@@ -128,7 +128,7 @@ public final class MapboxImageAPI: NSObject {
                             group.leave()
                         }
                         guard let image = image else {
-                            hadFailure = true
+                            error = fetchError ?? FetchError.unknown
                             NSLog("Couldn't get image for tile {\(zoom),\(x),\(y)}")
                             return
                         }
@@ -142,9 +142,9 @@ public final class MapboxImageAPI: NSObject {
         }
 
         group.notify(queue: MapboxImageAPI.queue) {
-            guard !hadFailure else {
+            guard error == nil else {
                 DispatchQueue.main.async {
-                    completion(nil)
+                    completion(nil, error?.toNSError())
                 }
                 return
             }
@@ -152,15 +152,15 @@ public final class MapboxImageAPI: NSObject {
             //Color data gets messed up if the user expectes a PNG back but doesn't get one
             if format == MapboxImageAPI.TileImageFormatPNG, let image = imageBuilder.makeImage(), let png = UIImagePNGRepresentation(image), let formattedImage = UIImage(data: png) {
                 DispatchQueue.main.async {
-                    completion(formattedImage)
+                    completion(formattedImage, nil)
                 }
             } else if let image = imageBuilder.makeImage() {
                 DispatchQueue.main.async {
-                    completion(image)
+                    completion(image, nil)
                 }
             } else {
                 DispatchQueue.main.async {
-                    completion(nil)
+                    completion(nil, FetchError.unknown.toNSError())
                 }
             }
         }
@@ -196,11 +196,11 @@ public final class MapboxImageAPI: NSObject {
             progress?(Float(0) / Float(total), total)
         }
 
-        var hadFailure = false
+        var error: FetchError?
         for (xindex, x) in bounding.xs.enumerated() {
             for (yindex, y) in bounding.ys.enumerated() {
                 group.enter()
-                if let task = httpAPI.style(style, zoomLevel: zoom, xTile: x, yTile: y, tileSize: returnedSize, completion: { image in
+                if let task = httpAPI.style(style, zoomLevel: zoom, xTile: x, yTile: y, tileSize: returnedSize, completion: { image, fetchError in
                     MapboxImageAPI.queue.async {
                         defer {
                             completed += 1
@@ -210,7 +210,7 @@ public final class MapboxImageAPI: NSObject {
                             group.leave()
                         }
                         guard let image = image else {
-                            hadFailure = true
+                            error = fetchError ?? FetchError.unknown
                             NSLog("Couldn't get image for tile {\(zoom),\(x),\(y)}")
                             return
                         }
@@ -225,7 +225,7 @@ public final class MapboxImageAPI: NSObject {
 
         group.notify(queue: DispatchQueue.main) {
             self.pendingFetches.removeValue(forKey: groupID)
-            completion(!hadFailure ? imageBuilder.makeImage() : nil)
+            completion(error == nil ? imageBuilder.makeImage() : nil, error?.toNSError())
         }
 
         return groupID
