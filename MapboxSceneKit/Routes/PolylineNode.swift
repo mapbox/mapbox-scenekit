@@ -18,26 +18,33 @@ public class PolylineNode: SCNNode {
     let colorCurve: BezierSpline3D
     let radiusCurve: BezierSpline3D
     
+    
+    //top-level initializer
+    private init( positionCurve: BezierSpline3D, radiusCurve: BezierSpline3D, colorCurve: BezierSpline3D, sampleCount: Int) {
+        
+        //Find and instantiate the appropriate renderer
+        self.lineRenderer = PolylineRendererVersion.getValidRenderer()
+        self.positionCurve = positionCurve
+        self.radiusCurve = radiusCurve
+        self.colorCurve = colorCurve
+        super.init()
+        lineRenderer.render(self, withSampleCount: sampleCount)
+    }
+    
     /// PolylineNode is a line drawn through the given positions. Can be sampled later at any point on the line.
     ///
     /// - Parameters:
     ///   - positions: The list of SCNVector3 positions. The line is drawn through each position consectutively from 0...n
     ///   - radius: The width of the line in local space
     ///   - color: The color of the line
-    public init( positions: [SCNVector3], radius: CGFloat, color: UIColor ) {
-        
-        //Find and instantiate the appropriate renderer
-        self.lineRenderer = PolylineRendererVersion.getValidRenderer()
+    public convenience init( positions: [SCNVector3], radius: CGFloat, color: UIColor ) {
         
         //define the polyline's curves from the inputs
-        positionCurve = BezierSpline3D(curvePoints: positions)
-        colorCurve = BezierSpline3D(curvePoints: [color, color, color, color])
-        radiusCurve = BezierSpline3D(curvePoints: [radius, radius, radius, radius])
+        let p = BezierSpline3D(curvePoints: positions)
+        let c = BezierSpline3D(curvePoints: [color, color, color, color])
+        let r = BezierSpline3D(curvePoints: [radius, radius, radius, radius])
         
-        super.init()
-        
-        //render the line
-        lineRenderer.render(self, withSampleCount: positions.count)
+        self.init(positionCurve: p, radiusCurve: r, colorCurve: c, sampleCount: positions.count)
     }
     
     @available(iOS 10.0, *)
@@ -49,20 +56,14 @@ public class PolylineNode: SCNNode {
     ///   - endRadius: The width of the final point of the line. Linearly interpolated from start to end positions.
     ///   - startColor: The color of the initial point of the line. Linearly interpolated through RGB color space from start to end.
     ///   - endColor: The color of the final point of the line. Linearly interpolated through RGB color space from start to end.
-    public init( positions: [SCNVector3], startRadius: CGFloat, endRadius: CGFloat, startColor: UIColor, endColor: UIColor){
-        
-        //Find and instantiate the appropriate renderer
-        self.lineRenderer = PolylineRendererVersion.getValidRenderer()
+    public convenience init( positions: [SCNVector3], startRadius: CGFloat, endRadius: CGFloat, startColor: UIColor, endColor: UIColor){
         
         //define the polyline's curves from the inputs
-        positionCurve = BezierSpline3D(curvePoints: positions)
-        colorCurve = BezierSpline3D(curvePoints: [startColor, startColor, endColor, endColor])
-        radiusCurve = BezierSpline3D(curvePoints: [startRadius, startRadius, endRadius, endRadius])
+        let p  = BezierSpline3D(curvePoints: positions)
+        let c = BezierSpline3D(curvePoints: [startColor, startColor, endColor, endColor])
+        let r = BezierSpline3D(curvePoints: [startRadius, startRadius, endRadius, endRadius])
         
-        super.init()
-        
-        //render the line
-        lineRenderer.render(self, withSampleCount: positions.count)
+        self.init(positionCurve: p, radiusCurve: r, colorCurve: c, sampleCount: positions.count)
     }
     
     required init?(coder aDecoder: NSCoder) { fatalError("init(coder:) has not been implemented") }

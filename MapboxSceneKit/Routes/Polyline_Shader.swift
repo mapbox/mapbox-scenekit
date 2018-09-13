@@ -3,7 +3,7 @@
 //  line-rendering
 //
 //  Created by Jim Martin on 8/2/18.
-//  Copyright © 2018 Jim Martin. All rights reserved.
+//  Copyright © 2018 MapBox. All rights reserved.
 //
 
 import Foundation
