@@ -1,5 +1,5 @@
 //
-//  PolylineGenerator.swift
+//  PolylineCylinder.swift
 //  MapboxSceneKit
 //
 //  Created by Jim Martin on 9/11/18.

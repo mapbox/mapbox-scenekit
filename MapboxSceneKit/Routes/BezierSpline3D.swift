@@ -1,6 +1,6 @@
 //
 //  BezierSpline3D.swift
-//  Examples
+//  MapboxSceneKit
 //
 //  Created by Avi Cieplinski on 8/2/18.
 //  Copyright © 2018 MapBox. All rights reserved.

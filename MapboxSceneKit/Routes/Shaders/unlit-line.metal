@@ -1,9 +1,9 @@
 //
 //  unlit-line.metal
-//  line-rendering
+//  MapboxSceneKit
 //
 //  Created by Jim Martin on 8/2/18.
-//  Copyright © 2018 Jim Martin. All rights reserved.
+//  Copyright © 2018 Mapbox. All rights reserved.
 //
 
 #include <metal_stdlib>
