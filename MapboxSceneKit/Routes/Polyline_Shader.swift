@@ -206,41 +206,4 @@ fileprivate extension UIColor {
         let color = SCNVector4(r, g, b, a)
         return color
     }
-    
-    //interpolate from -> to in RGB colorspace given some 0.0 - 1.0 progress value.
-    class func lerp( from: UIColor, to: UIColor, withProgress progress: CGFloat) -> UIColor{
-        var r1 : CGFloat = 0
-        var g1 : CGFloat = 0
-        var b1 : CGFloat = 0
-        var a1 : CGFloat = 0
-        from.getRed(&r1, green: &g1, blue: &b1, alpha: &a1)
-        
-        var r2 : CGFloat = 0
-        var g2 : CGFloat = 0
-        var b2 : CGFloat = 0
-        var a2 : CGFloat = 0
-        to.getRed(&r2, green: &g2, blue: &b2, alpha: &a2)
-        
-        let rOut = CGFloat.lerp(from: r1, to: r2, withProgress: progress)
-        let gOut = CGFloat.lerp(from: g1, to: g2, withProgress: progress)
-        let bOut = CGFloat.lerp(from: b1, to: b2, withProgress: progress)
-        let aOut = CGFloat.lerp(from: a1, to: a2, withProgress: progress)
-        
-        return UIColor(red: rOut, green: gOut, blue: bOut, alpha: aOut)
-        
-    }
-    
-}
-
-fileprivate extension CGFloat {
-    
-    //interpolate from -> to given some 0.0 - 1.0 progress value.
-    static func lerp( from: CGFloat, to: CGFloat, withProgress progress: CGFloat) -> CGFloat{
-        return (1.0 - progress) * from + progress * to;
-    }
-    
-    static func map( value: CGFloat, low1: CGFloat, high1: CGFloat, low2: CGFloat, high2: CGFloat) -> CGFloat{
-        return low2 + (value - low1) * (high2 - low2) / (high1 - low1)
-    }
-    
 }
