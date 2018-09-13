@@ -11,6 +11,7 @@ import SceneKit
 import CoreLocation
 
 extension TerrainNode {
+    
     @discardableResult
     @objc
     /// Converts a set of coordinates to SCNVector3s relative to the TerrainNode, then adds a PolylineNode through those locations.
@@ -22,12 +23,7 @@ extension TerrainNode {
     /// - Returns: The final PolylineNode, already added as a child of the TerrainNode
     public func addPolyline( coordinates: [CLLocation], radius: CGFloat, color: UIColor) -> PolylineNode{
         
-        var scenePositions : [SCNVector3] = []
-        for coord in coordinates {
-            let position = self.positionForLocation(coord)
-            scenePositions.append(position)
-        }
-        
+        let scenePositions = coordinatesToSCNVector3(coordinates: coordinates)
         let lineNode = PolylineNode(positions: scenePositions, radius: radius, color: color)
         lineNode.position.y += Float(radius)
         self.addChildNode(lineNode)
@@ -44,17 +40,26 @@ extension TerrainNode {
     ///   - startColor: The color of the initial point of the line. Linearly interpolated through RGB color space from start to end.
     ///   - endColor: The color of the final point of the line. Linearly interpolated through RGB color space from start to end.
     /// - Returns: The final PolylineNode, already added as a child of the TerrainNode
-    public func addPolyline( coordinates: [CLLocation], startRadius: CGFloat, endRadius: CGFloat, startColor: UIColor, endColor: UIColor) -> PolylineNode{
+    public func addPolyline(coordinates: [CLLocation], startRadius: CGFloat, endRadius: CGFloat, startColor: UIColor, endColor: UIColor) -> PolylineNode{
         
+        let scenePositions = coordinatesToSCNVector3(coordinates: coordinates)
+        let lineNode = PolylineNode(positions: scenePositions, startRadius: startRadius, endRadius: endRadius, startColor: startColor, endColor: endColor)
+        lineNode.position.y += Float((startRadius + endRadius)/2) //average begining and ending radius for vertical offset
+        self.addChildNode(lineNode)
+        return lineNode
+    }
+    
+    /// Convert coordinates to SCNVector3
+    ///
+    /// - Parameter coordinates: CLLocation coordinates to convert
+    /// - Returns: vector in terrainNode local space
+    fileprivate func coordinatesToSCNVector3(coordinates: [CLLocation]) -> [SCNVector3]
+    {
         var scenePositions : [SCNVector3] = []
         for coord in coordinates {
             let position = self.positionForLocation(coord)
             scenePositions.append(position)
         }
-        
-        let lineNode = PolylineNode(positions: scenePositions, startRadius: startRadius, endRadius: endRadius, startColor: startColor, endColor: endColor)
-        lineNode.position.y += Float((startRadius + endRadius)/2)
-        self.addChildNode(lineNode)
-        return lineNode
+        return scenePositions
     }
 }
