@@ -18,8 +18,7 @@ public class PolylineNode: SCNNode {
     let colorCurve: BezierSpline3D
     let radiusCurve: BezierSpline3D
     
-    
-    //top-level initializer
+    /// Top-level initializer
     private init( positionCurve: BezierSpline3D, radiusCurve: BezierSpline3D, colorCurve: BezierSpline3D, sampleCount: Int) {
         
         //Find and instantiate the appropriate renderer

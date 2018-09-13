@@ -35,6 +35,12 @@ internal class Polyline_Cylinder: PolylineRenderer {
             if let previousPosition = previousPosition {
                 let cylinderNode = cylinder(from: previousPosition, to: position, radius: radius, color: color)
                 nodes.append(cylinderNode)
+                
+                let sphereNode = sphere(position: position, radius: radius, color: color)
+                nodes.append(sphereNode)
+            }else{
+                let sphereNode = sphere(position: position, radius: radius, color: color)
+                nodes.append(sphereNode)
             }
             previousPosition = position
         }
@@ -46,6 +52,13 @@ internal class Polyline_Cylinder: PolylineRenderer {
     
     private func progressAtSample(_ sample: Int) -> CGFloat {
         return (CGFloat(sample) / CGFloat(sampleCount))
+    }
+    
+    private func sphere( position: SCNVector3, radius: CGFloat, color: UIColor) -> SCNNode {
+        let sphereNode = SCNNode(geometry: SCNSphere(radius: radius))
+        sphereNode.position = position
+        sphereNode.geometry?.firstMaterial?.diffuse.contents = color
+        return sphereNode
     }
     
     /// Builds a line (cylinder) between two given points in 3D.

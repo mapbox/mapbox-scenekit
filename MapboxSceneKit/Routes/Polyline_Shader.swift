@@ -41,6 +41,7 @@ internal class Polyline_Shader: PolylineRenderer {
         
         self.polyline = polyline
         self.sampleCount = sampleCount
+        guard sampleCount > 0 else { return }
         
         //assign geometry
         polyline.geometry = generateGeometry()
