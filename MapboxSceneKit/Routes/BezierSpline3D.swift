@@ -13,7 +13,28 @@ internal class BezierSpline3D {
     public let curvePoints: [SCNVector3]
 
     public init(curvePoints: [SCNVector3]) {
-        self.curvePoints = curvePoints
+        
+        //ensure the the spline has a minimum of 4 handles.
+        switch curvePoints.count {
+        case 0:
+            //no points
+            fatalError("BezierSpline3D initialized with an empty array")
+        case 1:
+            //single point
+            self.curvePoints = [curvePoints[0], curvePoints[0], curvePoints[0], curvePoints[0]]
+            break
+        case 2:
+            //straight line, add handles at the end points
+            self.curvePoints = [curvePoints[0], curvePoints[0], curvePoints[1], curvePoints[1]]
+            break
+        case 3:
+            //add a handle at the end
+            self.curvePoints = [curvePoints[0], curvePoints[1], curvePoints[2], curvePoints[2]]
+            break
+        default:
+            self.curvePoints = curvePoints
+            break
+        }
     }
 
     public func evaluate(progress: CGFloat) -> SCNVector3 { // Normalized progress through the spline points
