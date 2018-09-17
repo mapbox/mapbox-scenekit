@@ -75,7 +75,7 @@ class DemoHeightmapViewController: UIViewController {
         let terrainRendererHandler = progressHandler.registerForProgress()
         progressHandler.updateProgress(handlerID: terrainRendererHandler, progress: 0, total: 1)
         let textureFetchHandler = progressHandler.registerForProgress()
-        terrainNode.fetchTerrainAndTexture(minWallHeight: 50.0, enableDynamicShadows: false, textureStyle: style, heightProgress: { progress, total in
+        terrainNode.fetchTerrainAndTexture(minWallHeight: 50.0, multiplier: 1.5, enableDynamicShadows: false, textureStyle: style, heightProgress: { progress, total in
             self.progressHandler.updateProgress(handlerID: terrainFetcherHandler, progress: progress, total: total)
         }, heightCompletion: { heightFetchError in
             if let heightFetchError = heightFetchError {

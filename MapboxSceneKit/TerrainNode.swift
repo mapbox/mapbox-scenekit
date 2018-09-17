@@ -126,16 +126,16 @@ open class TerrainNode: SCNNode {
     ///   - heightCompletion: Handler for complete height update.
     ///   - textureProgress: Handler for texture progress change.
     ///   - textureCompletion: Handler for complete texture update. It is up to the caller to apply it as a material component, but this gives the caller the opportunity to modify the image or apply it as something other then default diffuse contents. For the simplist usage, you'll want to apply it as the diffuse contents in position 4 (the top): `myRerrainNode.geometry?.materials[4].diffuse.contents = image`.
-    @objc public func fetchTerrainAndTexture(minWallHeight: CLLocationDistance = 0.0, enableDynamicShadows shadows: Bool = false, textureStyle style: String,
+    @objc public func fetchTerrainAndTexture(minWallHeight: CLLocationDistance = 0.0, multiplier: Float = 1, enableDynamicShadows shadows: Bool = false, textureStyle style: String,
                                              heightProgress: MapboxImageAPI.TileLoadProgressCallback? = nil, heightCompletion: @escaping TerrainLoadCompletion,
                                              textureProgress: MapboxImageAPI.TileLoadProgressCallback? = nil, textureCompletion: @escaping MapboxImageAPI.TileLoadCompletion) {
         let zoomLevel = initialTerrainZoomLevel
         let retryNumber = 3
-        fetchTerrainAndTexture(minWallHeight: minWallHeight, enableDynamicShadows: shadows, textureStyle: style, zoomLevel: zoomLevel, retryNumber: retryNumber,
+        fetchTerrainAndTexture(minWallHeight: minWallHeight, multiplier: multiplier, enableDynamicShadows: shadows, textureStyle: style, zoomLevel: zoomLevel, retryNumber: retryNumber,
                                heightProgress: heightProgress, heightCompletion: heightCompletion, textureProgress: textureProgress, textureCompletion: textureCompletion)
     }
     
-    private func fetchTerrainAndTexture(minWallHeight: CLLocationDistance = 0.0, multiplier: Float = 1, enableDynamicShadows shadows: Bool = false, textureStyle style: String, zoomLevel: Int, retryNumber: Int,
+    private func fetchTerrainAndTexture(minWallHeight: CLLocationDistance = 0.0, multiplier: Float, enableDynamicShadows shadows: Bool = false, textureStyle style: String, zoomLevel: Int, retryNumber: Int,
                                              heightProgress: MapboxImageAPI.TileLoadProgressCallback? = nil, heightCompletion: @escaping TerrainLoadCompletion,
                                              textureProgress: MapboxImageAPI.TileLoadProgressCallback? = nil, textureCompletion: @escaping MapboxImageAPI.TileLoadCompletion) {
         fetchTerrainHeights(minWallHeight: minWallHeight, multiplier: multiplier, enableDynamicShadows: shadows, zoomLevel: zoomLevel, retryNumber: retryNumber, progress: heightProgress) { [weak self] heightFetchError in
@@ -150,8 +150,7 @@ open class TerrainNode: SCNNode {
             // if there was an issue fetching heights, let's try for a different zoom level
             if retryNumber > 0 { // try just a couple of times
                 self.recalculateTerrainSize(forZoom: zoomLevel - 1)
-                self.fetchTerrainAndTexture(minWallHeight: minWallHeight, enableDynamicShadows: shadows, textureStyle: style, zoomLevel: zoomLevel - 1, retryNumber: retryNumber - 1,
-                                       heightProgress: heightProgress, heightCompletion: heightCompletion, textureProgress: textureProgress, textureCompletion: textureCompletion)
+                self.fetchTerrainAndTexture(minWallHeight: minWallHeight, multiplier: multiplier, enableDynamicShadows: shadows, textureStyle: style, zoomLevel: zoomLevel - 1, retryNumber: retryNumber - 1, heightProgress: heightProgress, heightCompletion: heightCompletion, textureProgress: textureProgress, textureCompletion: textureCompletion)
             } else { // fail download when there's no height data for any zoom level
                 heightCompletion(heightFetchError)
                 textureProgress?(1, 1)
