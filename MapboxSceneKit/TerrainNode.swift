@@ -8,36 +8,30 @@ import CoreLocation
  **/
 @objc(MBTerrainNode)
 open class TerrainNode: SCNNode {
-    /**
-     Callback typealias for when the new geometry has been loaded based on RGB heightmaps.
-     **/
-    public typealias TerrainLoadCompletion = () -> Void
 
-    /**
-     Convenience tuple represending the bounds of the latitude post-initialization.
-    **/
+    /// Callback typealias for when the new geometry has been loaded based on RGB heightmaps.
+    public typealias TerrainLoadCompletion = (NSError?) -> Void
+
+    /// Convenience tuple represending the bounds of the latitude post-initialization.
     let latBounds: (CLLocationDegrees, CLLocationDegrees)
 
-    /**
-     Convenience tuple represending the bounds of the longitude post-initialization.
-     **/
+    /// Convenience tuple represending the bounds of the longitude post-initialization.
     let lonBounds: (CLLocationDegrees, CLLocationDegrees)
 
-    /**
-     Convenience tuple represending the bounds of altitude after heightmaps have been loaded.
-     **/
+    /// Convenience tuple represending the bounds of altitude after heightmaps have been loaded.
     private(set) var altitudeBounds: (CLLocationDistance, CLLocationDistance) = (0.0, 1.0)
 
     fileprivate static let rgbTileSize = CGSize(width: 256, height: 256)
     fileprivate static let styleTileSize = CGSize(width: 256, height: 256)
 
-    private let terrainZoomLevel: Int
+    private static let maxTextureImageSizeInBytes: Int = (1024 * 1024) // set a max texture size in order to dynamically calculate the highest zoom level for a given lat/lon bounding rect. Need to balance download speed and detail, so set to 1MB for now
+    private let initialTerrainZoomLevel: Int
 
-    fileprivate let terrainSize: CGSize
+    fileprivate var terrainSize: CGSize = CGSize.zero
     fileprivate let metersPerLat: Double
     fileprivate let metersPerLon: Double
-    fileprivate let metersPerX: Double
-    fileprivate let metersPerY: Double
+    fileprivate var metersPerX: Double = 0
+    fileprivate var metersPerY: Double = 0
     fileprivate var terrainHeights = [[Double]]()
     private let api = MapboxImageAPI()
 
@@ -48,8 +42,7 @@ open class TerrainNode: SCNNode {
         fatalError("init(coder:) has not been implemented")
     }
 
-    @objc
-    public init(minLat: CLLocationDegrees, maxLat: CLLocationDegrees, minLon: CLLocationDegrees, maxLon: CLLocationDegrees) {
+    @objc public init(minLat: CLLocationDegrees, maxLat: CLLocationDegrees, minLon: CLLocationDegrees, maxLon: CLLocationDegrees) {
         assert(minLat >= -90.0 && minLat <= 90.0 && maxLat >= -90.0 && maxLat <= 90.0, "lats must be between -90.0 and 90.0")
         assert(minLon >= -180.0 && minLon <= 180.0 && maxLon >= -180.0 && maxLon <= 180.0, "lons must be between -180.0 and 180.0")
         assert(minLat < maxLat, "minLat must be less than maxLat")
@@ -60,34 +53,31 @@ open class TerrainNode: SCNNode {
         metersPerLat = 1 / Math.metersToDegreesForLat(at: maxLon)
         metersPerLon = 1 / Math.metersToDegreesForLon(at: maxLat)
 
-        //TODO: Calculate ideal zoom level based on node size
-        //      Based on the examples in the bundled demo project, I'd expect this to return a value closer to 12 (or less), but was getting 16.
-        //      Confirm math logic with the react team. Ported logic commented out below.
+        let maxLocation = CLLocation(latitude: maxLat, longitude: maxLon)
+        let minLocation = CLLocation(latitude: minLat, longitude: minLon)
+        let distance = maxLocation.distance(from: minLocation) / 1000.0
 
-//        let corners = [(minLat, maxLon), (maxLat, minLon)] //se, nw
-//        let cornerTiles = corners.map({ Math.latLng2tile(lat: $0.0, lon: $0.1, zoom: 22, tileSize: TerrainNode.rgbTileSize) })
-//        let tileExtent = max(abs(cornerTiles.first!.xPos - cornerTiles.last!.xPos), abs(cornerTiles.first!.yPos - cornerTiles.last!.yPos))
-//        let base = log(tileExtent) / log(2)
-//        terrainZoomLevel = Int(floor(22 - base + 0.5))
-        terrainZoomLevel = 12
-
-        let bounding = MapboxImageAPI.tiles(zoom: terrainZoomLevel, latBounds: latBounds, lonBounds: lonBounds, tileSize: TerrainNode.rgbTileSize)
-        terrainSize = CGSize(width: CGFloat(bounding.xs.count) * TerrainNode.rgbTileSize.width - bounding.insets.left - bounding.insets.right,
-                             height: CGFloat(bounding.ys.count) * TerrainNode.rgbTileSize.height - bounding.insets.top - bounding.insets.bottom)
-        metersPerX = Double(abs(lonBounds.1 - lonBounds.0) * metersPerLon) / Double(terrainSize.width)
-        metersPerY = Double(abs(latBounds.1 - latBounds.0) * metersPerLat) / Double(terrainSize.height)
-
+        initialTerrainZoomLevel = TerrainNode.zoomLevelAtLatitude(lat: maxLat - minLat, distance: distance)
         super.init()
-
-        name = "Terrain"
+        recalculateTerrainSize(forZoom: initialTerrainZoomLevel)
         geometry = SCNBox(width: CGFloat(metersPerX) * CGFloat(terrainSize.width), height: 10.0, length: CGFloat(metersPerY) * CGFloat(terrainSize.height), chamferRadius: 0.0)
-        centerPivot()
+        name = "Terrain"
     }
 
     deinit {
         for task in pendingFetches {
             api.cancelRequestWithID(task)
         }
+    }
+
+    private class func zoomLevelAtLatitude(lat: Double, distance: Double) -> Int {
+        // fit the zoom level to the screen width
+        let screenWidth = Double(UIScreen.main.bounds.size.width)
+        let latitudinalAdjustment = cos(.pi * lat / 180)
+        let earthDiameterInKilometers = 40075.16
+        let arg = earthDiameterInKilometers * screenWidth * latitudinalAdjustment / (distance * 256)
+
+        return Int(round(log(arg)/log(2)))
     }
 
     private func centerPivot() {
@@ -100,16 +90,22 @@ open class TerrainNode: SCNNode {
             min.z + (max.z - min.z) / 2
         )
     }
+    
+    private func recalculateTerrainSize(forZoom zoom: Int) {
+        let bounding = MapboxImageAPI.tiles(zoom: zoom, latBounds: latBounds, lonBounds: lonBounds, tileSize: TerrainNode.rgbTileSize)
+        terrainSize = CGSize(width: CGFloat(bounding.xs.count) * TerrainNode.rgbTileSize.width - bounding.insets.left - bounding.insets.right,
+                             height: CGFloat(bounding.ys.count) * TerrainNode.rgbTileSize.height - bounding.insets.top - bounding.insets.bottom)
+        metersPerX = Double(abs(lonBounds.1 - lonBounds.0) * metersPerLon) / Double(terrainSize.width)
+        metersPerY = Double(abs(latBounds.1 - latBounds.0) * metersPerLat) / Double(terrainSize.height)
+    }
 
     //MARK: - Public API
 
-    /**
-     Will return the local position relative to the terrain node for a given lat/lon/alt.
-
-     Note: the returned position should be converted from the terrain local space to the world space (or another node's corrdinate space, as needed).
-    **/
-    @objc
-    public func positionForLocation(_ location: CLLocation) -> SCNVector3 {
+    /// Will return the local position relative to the terrain node for a given lat/lon/alt.
+    ///
+    /// - Parameter location: Location in the real world.
+    /// - Returns: Vector position should be converted from the terrain local space to the world space (or another node's corrdinate space, as needed).
+    @objc public func positionForLocation(_ location: CLLocation) -> SCNVector3 {
         let xz = coordinates(location: location)
         if let z = TerrainNode.height(heights: terrainHeights, x: xz.x, z: xz.z, metersPerX: metersPerX, metersPerY: metersPerY) {
             return SCNVector3(xz.x, Float(max(z, location.altitude)), xz.z)
@@ -119,24 +115,78 @@ open class TerrainNode: SCNNode {
     }
     
     /// Begins the fetch of terrain-rgb data throught the mapbox API, and then updates the geometry to repersent a to-scale model of the terrain at this location.
+    /// Fetches an image representing a style (either mapbox or user created) to cover this terrain node.
     ///
     /// - Parameters:
     ///   - minWallHeight: Padding amount (in meters) of the walls beyond the returned altitude minumum for the region.
     ///   - multiplier: Allows to multiply the hight by a given number. The bigger number, the more sharp the output will be. Default 1.
     ///   - shadows: Depending on your applied texture / style, you may want to enable dynamic shadowing based on the contour of the terrain for interaction with Scene Kit lighting.
-    ///   - progress: Handler for fetch progress change.
+    ///   - style: Mapbox style ID for given texture.
+    ///   - heightProgress: Handler for height progress change.
+    ///   - heightCompletion: Handler for complete height update.
+    ///   - textureProgress: Handler for texture progress change.
+    ///   - textureCompletion: Handler for complete texture update. It is up to the caller to apply it as a material component, but this gives the caller the opportunity to modify the image or apply it as something other then default diffuse contents. For the simplist usage, you'll want to apply it as the diffuse contents in position 4 (the top): `myRerrainNode.geometry?.materials[4].diffuse.contents = image`.
+    @objc public func fetchTerrainAndTexture(minWallHeight: CLLocationDistance = 0.0, enableDynamicShadows shadows: Bool = false, textureStyle style: String,
+                                             heightProgress: MapboxImageAPI.TileLoadProgressCallback? = nil, heightCompletion: @escaping TerrainLoadCompletion,
+                                             textureProgress: MapboxImageAPI.TileLoadProgressCallback? = nil, textureCompletion: @escaping MapboxImageAPI.TileLoadCompletion) {
+        let zoomLevel = initialTerrainZoomLevel
+        let retryNumber = 3
+        fetchTerrainAndTexture(minWallHeight: minWallHeight, enableDynamicShadows: shadows, textureStyle: style, zoomLevel: zoomLevel, retryNumber: retryNumber,
+                               heightProgress: heightProgress, heightCompletion: heightCompletion, textureProgress: textureProgress, textureCompletion: textureCompletion)
+    }
+    
+    private func fetchTerrainAndTexture(minWallHeight: CLLocationDistance = 0.0, multiplier: Float = 1, enableDynamicShadows shadows: Bool = false, textureStyle style: String, zoomLevel: Int, retryNumber: Int,
+                                             heightProgress: MapboxImageAPI.TileLoadProgressCallback? = nil, heightCompletion: @escaping TerrainLoadCompletion,
+                                             textureProgress: MapboxImageAPI.TileLoadProgressCallback? = nil, textureCompletion: @escaping MapboxImageAPI.TileLoadCompletion) {
+        fetchTerrainHeights(minWallHeight: minWallHeight, multiplier: multiplier, enableDynamicShadows: shadows, zoomLevel: zoomLevel, retryNumber: retryNumber, progress: heightProgress) { [weak self] heightFetchError in
+            guard let `self` = self else { return }
+            guard let heightFetchError = heightFetchError else {
+                // if there is no fetch error, height data is available and we can fetch texture for this zoom level
+                heightCompletion(nil)
+                self.fetchTerrainTexture(style, zoom: zoomLevel, progress: textureProgress, completion: textureCompletion)
+                return
+            }
+            
+            // if there was an issue fetching heights, let's try for a different zoom level
+            if retryNumber > 0 { // try just a couple of times
+                self.recalculateTerrainSize(forZoom: zoomLevel - 1)
+                self.fetchTerrainAndTexture(minWallHeight: minWallHeight, enableDynamicShadows: shadows, textureStyle: style, zoomLevel: zoomLevel - 1, retryNumber: retryNumber - 1,
+                                       heightProgress: heightProgress, heightCompletion: heightCompletion, textureProgress: textureProgress, textureCompletion: textureCompletion)
+            } else { // fail download when there's no height data for any zoom level
+                heightCompletion(heightFetchError)
+                textureProgress?(1, 1)
+                textureCompletion(nil, heightFetchError)
+            }
+        }
+    }
+    
+    /// DEPRECATED - Please use instead fetchTerrainAndTexture.
+    /// Begins the fetch of terrain-rgb data throught the mapbox API, and then updates the geometry to repersent a to-scale model of the terrain at this location.
+    ///
+    /// - Parameters:
+    ///   - minWallHeight: Padding amount (in meters) of the walls beyond the returned altitude minumum for the region.
+    ///   - multiplier: Allows to multiply the hight by a given number. The bigger number, the more sharp the output will be. Default 1.
+    ///   - shadows: Depending on your applied texture / style, you may want to enable dynamic shadowing based on the contour of the terrain for interaction with Scene Kit lighting.
+    ///   - progress: Handler for height progress change.
     ///   - completion: Handler for complete height update.
+    @available(*, deprecated, message: "DEPRECATED - Please use instead fetchTerrainAndTexture.")
     @objc public func fetchTerrainHeights(minWallHeight: CLLocationDistance = 0.0, multiplier: Float = 1, enableDynamicShadows shadows: Bool = false, progress: MapboxImageAPI.TileLoadProgressCallback? = nil, completion: @escaping TerrainLoadCompletion) {
+        let zoomLevel = self.initialTerrainZoomLevel
+        fetchTerrainHeights(minWallHeight: minWallHeight, multiplier: multiplier, enableDynamicShadows: shadows, zoomLevel: zoomLevel, progress: progress, completion: completion)
+    }
+    
+    private func fetchTerrainHeights(minWallHeight: CLLocationDistance = 0.0, multiplier: Float, enableDynamicShadows shadows: Bool = false, zoomLevel: Int, retryNumber: Int = 3, progress: MapboxImageAPI.TileLoadProgressCallback? = nil, completion: @escaping TerrainLoadCompletion) {
         let latBounds = self.latBounds
         let lonBounds = self.lonBounds
-        let terrainZoomLevel = self.terrainZoomLevel
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in
-            if let taskID = self?.api.image(forTileset: "mapbox.terrain-rgb", zoomLevel: terrainZoomLevel, minLat: latBounds.0, maxLat: latBounds.1, minLon: lonBounds.0, maxLon: lonBounds.1, format: MapboxImageAPI.TileImageFormatPNG, progress: progress, completion: { image in
+            if let taskID = self?.api.image(forTileset: "mapbox.terrain-rgb", zoomLevel: zoomLevel, minLat: latBounds.0, maxLat: latBounds.1, minLon: lonBounds.0, maxLon: lonBounds.1, format: MapboxImageAPI.TileImageFormatPNG, progress: progress, completion: { image, fetchError in
                 TerrainNode.queue.async {
                     if let image = image {
                         self?.applyTerrainHeightmap(image, withWallHeight: minWallHeight, multiplier: multiplier, enableShadows: shadows)
                     }
-                    DispatchQueue.main.async(execute: completion)
+                    DispatchQueue.main.async() {
+                        completion(fetchError)
+                    }
                 }
             }) {
                 self?.pendingFetches.append(taskID)
@@ -144,14 +194,21 @@ open class TerrainNode: SCNNode {
         }
     }
 
-    /**
-     Fetches an image representing a style (either mapbox or user created) to cover this terrain node. It is up to the caller to apply it as a material component, but this gives the
-     caller the opportunity to modify the image or apply it as something other then default diffuse contents.
-
-     For the simplist usage, you'll want to apply it as the diffuse contents in position 4 (the top): `myRerrainNode.geometry?.materials[4].diffuse.contents = image`.
-    **/
-    @objc
-    public func fetchTerrainTexture(_ style: String, zoom: Int, progress: MapboxImageAPI.TileLoadProgressCallback? = nil, completion: @escaping MapboxImageAPI.TileLoadCompletion) {
+    /// DEPRECATED - Please use instead fetchTerrainAndTexture.
+    /// Fetches an image representing a style (either mapbox or user created) to cover this terrain node.
+    /// It is up to the caller to apply it as a material component, but this gives the caller the opportunity to modify the image or apply it as something other then default diffuse contents.
+    /// For the simplist usage, you'll want to apply it as the diffuse contents in position 4 (the top): `myRerrainNode.geometry?.materials[4].diffuse.contents = image`.
+    ///
+    /// - Parameters:
+    ///   - style: Mapbox style ID for given texture.
+    ///   - progress: Handler for fetch progress change.
+    ///   - completion: Handler for complete texture update.
+    @available(*, deprecated, message: "DEPRECATED - Please use instead fetchTerrainAndTexture.")
+    @objc public func fetchTerrainTexture(_ style: String, progress: MapboxImageAPI.TileLoadProgressCallback? = nil, completion: @escaping MapboxImageAPI.TileLoadCompletion) {
+        fetchTerrainTexture(style, zoom: initialTerrainZoomLevel, progress: progress, completion: completion)
+    }
+    
+    private func fetchTerrainTexture(_ style: String, zoom: Int, progress: MapboxImageAPI.TileLoadProgressCallback? = nil, completion: @escaping MapboxImageAPI.TileLoadCompletion) {
         let latBounds = self.latBounds
         let lonBounds = self.lonBounds
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in

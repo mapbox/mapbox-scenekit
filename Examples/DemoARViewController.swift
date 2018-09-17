@@ -3,6 +3,7 @@ import UIKit
 import SceneKit
 import ARKit
 import MapboxSceneKit
+import CoreLocation
 
 /**
  Demonstrates placing a Mapbox TerrainNode in AR. The acual Mapbox SDK logic is in the `insert` function, while the rest
@@ -81,8 +82,8 @@ final class DemoARViewController: UIViewController, ARSCNViewDelegate, ARSession
 
     private func insert(on plane: SCNNode, from hitResult: ARHitTestResult) {
         //Set up initial terrain and materials
-        let terrainNode = TerrainNode(minLat: 50.044660402821592, maxLat: 50.120873988090956,
-                                      minLon: -122.99017089272466, maxLon: -122.86824490727534)
+        let terrainNode = TerrainNode(minLat: 53.394747374316, maxLat: 53.422495172318,
+                                      minLon: -1.23018147712619, maxLon: -1.18246149810173)
 
         //Note: Again, you don't have to do this loading in-scene. If you know the area of the node to be fetched, you can
         //do this in the background while AR plane detection is still working so it is ready by the time
@@ -95,15 +96,21 @@ final class DemoARViewController: UIViewController, ARSCNViewDelegate, ARSession
         terrainNode.geometry?.materials = defaultMaterials()
         arView!.scene.rootNode.addChildNode(terrainNode)
         terrain = terrainNode
-
-        terrainNode.fetchTerrainHeights(minWallHeight: 50.0, enableDynamicShadows: true, progress: { _, _ in }, completion: {
-            NSLog("Terrain load complete")
-        })
-
-        terrainNode.fetchTerrainTexture("mapbox/satellite-v9", zoom: 14, progress: { _, _ in }, completion: { image in
-            NSLog("Texture load complete")
-            terrainNode.geometry?.materials[4].diffuse.contents = image
-        })
+        terrainNode.fetchTerrainAndTexture(minWallHeight: 50.0, enableDynamicShadows: true, textureStyle: "mapbox/satellite-v9", heightProgress: nil, heightCompletion: { fetchError in
+            if let fetchError = fetchError {
+                NSLog("Terrain load failed: \(fetchError.localizedDescription)")
+            } else {
+                NSLog("Terrain load complete")
+            }
+        }, textureProgress: nil) { image, fetchError in
+            if let fetchError = fetchError {
+                NSLog("Texture load failed: \(fetchError.localizedDescription)")
+            }
+            if image != nil {
+                NSLog("Texture load complete")
+                terrainNode.geometry?.materials[4].diffuse.contents = image
+            }
+        }
 
         arView!.isUserInteractionEnabled = true
     }
@@ -373,6 +380,17 @@ final class DemoARViewController: UIViewController, ARSCNViewDelegate, ARSession
     private var session: ARSession {
         return arView!.session
     }
+    
+    // MARK: - dummy data, should be handled in GPX
+    private var locations: [CLLocation] {
+        let latLons = [(53.418990994368, -1.20174496401449), (53.418316994367, -1.20159196401519), (53.417416994366, -1.20115396401606), (53.416292994365, -1.19994496401657), (53.415355994364, -1.19954296401747), (53.414853994363, -1.19860096401751), (53.413263994361, -1.19634396401802), (53.412633994360, -1.19494996401781), (53.411907994359, -1.19393396401803), (53.411386994358, -1.19324496401831), (53.410910994358, -1.19309696401875), (53.410621994358, -1.19271896401882), (53.410317994357, -1.19183396401865), (53.409739994356, -1.19116396401891), (53.409335994356, -1.19082296401916), (53.408600994355, -1.19006896401970), (53.407837994354, -1.18988196402041), (53.407308994354, -1.18955196402073), (53.406812994353, -1.18866196402084), (53.406295994352, -1.18710996402053), (53.406305994353, -1.18859296402137), (53.406491994353, -1.18909596402142), (53.406350994353, -1.18986696402210), (53.405997994352, -1.18845096402165), (53.405644994352, -1.18717496402136), (53.405118994351, -1.18650396402147), (53.404996994351, -1.18627896402157), (53.404535994351, -1.18743996402271), (53.404348994350, -1.18767896402305), (53.403635994350, -1.18702096402351), (53.402939994349, -1.18595196402365), (53.402160994348, -1.18496296402407), (53.401318994347, -1.18380096402424), (53.401025994346, -1.18287296402409), (53.400588994346, -1.18304696402467), (53.399930994346, -1.18451696402637), (53.399561994346, -1.18543996402722), (53.399163994345, -1.18668696402836), (53.398588994345, -1.18801596402985), (53.398044994345, -1.18942196403128), (53.397810994345, -1.19019496403197), (53.397792994345, -1.19070096403222), (53.397950994345, -1.19164096403268), (53.398383994346, -1.19240896403261), (53.398217994346, -1.19417496403380), (53.397774994346, -1.19571896403519), (53.397412994346, -1.19768096403670), (53.396972994346, -1.19910296403808), (53.396597994346, -1.19995596403897), (53.396151994346, -1.20030496403964), (53.396576994347, -1.20369996404120), (53.397016994349, -1.20791496404302), (53.396461994349, -1.21074396404536), (53.396150994349, -1.21349896404721), (53.396150994349, -1.21502596404811), (53.395550994349, -1.21505396404888), (53.395363994349, -1.21667196405004), (53.394935994349, -1.21674896405053), (53.394662994349, -1.21719896405111), (53.394738994349, -1.21841096405166), (53.395341994350, -1.21979596405181), (53.395592994350, -1.22068196405201), (53.395500994351, -1.22174796405282), (53.395402994351, -1.22271796405344), (53.395313994351, -1.22424696405439), (53.395169994351, -1.22622096405579), (53.395217994352, -1.22799196405670), (53.395262994352, -1.22845396405685), (53.396534994354, -1.22997496405629), (53.397380994354, -1.23013396405543), (53.399058994356, -1.22909996405298), (53.401801994358, -1.22830896404948), (53.403680994360, -1.22773396404698), (53.404211994360, -1.22754096404617), (53.404819994361, -1.22790496404568), (53.405805994361, -1.22716296404425), (53.406723994362, -1.22637796404277), (53.408701994364, -1.22578396404010), (53.411470994366, -1.22418896403608), (53.413301994368, -1.22420796403398), (53.414396994368, -1.22258096403172), (53.415357994369, -1.22106196402978), (53.416014994369, -1.22036896402868), (53.416147994370, -1.22076896402875), (53.416915994370, -1.21926996402702), (53.418663994371, -1.21537096402280), (53.419009994371, -1.21418596402167), (53.419145994370, -1.21173896402016), (53.419608994370, -1.20997496401867), (53.420988994371, -1.20816896401602), (53.421878994372, -1.20706896401429), (53.421799994371, -1.20622396401394), (53.422651994372, -1.20570996401264)]
+        var locations = [CLLocation]()
+        for latlon in latLons {
+            locations.append(CLLocation(latitude: latlon.0, longitude: latlon.1))
+        }
+        return locations
+    }
+
 }
 
 fileprivate extension ARSCNView {

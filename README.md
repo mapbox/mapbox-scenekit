@@ -8,7 +8,7 @@ Using Swift, bringing our rich 3D terrain into your iOS app is easy. SceneKit SD
 
 ## Requirements
 
-The Mapbox Scene Kit SDK are compatible with applications written in Swift 4 or Objective-C in Xcode 9.0, and require iOS 10 or above (the examples require iOS 11 or above).
+The Mapbox Scene Kit SDK are compatible with applications written in Swift 4 or Objective-C in Xcode 9.0, and require iOS 8 or above (the examples require iOS 11 or above).
 
 ## Installation
 

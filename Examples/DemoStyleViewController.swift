@@ -57,13 +57,22 @@ class DemoStyleViewController: UIViewController {
 
         self.progressView?.progress = 0.0
         self.progressView?.isHidden = false
-        terrainNode.fetchTerrainTexture(style, zoom: 13, progress: { progress, total in
+        
+        // we want to fetch texture only here, so we don't need to use the new fetching of both height and texture
+        // for which this method was deprecated. Probably in real app you'll never want to present texture without
+        // heights, so it stays here for easier example to let you get the idea faster as 1st simplest solution
+        terrainNode.fetchTerrainTexture(style, progress: { progress, total in
             self.progressView?.progress = progress
 
-        }, completion: { image in
-            NSLog("Texture load complete")
+        }, completion: { image, fetchError in
+            if let fetchError = fetchError {
+                NSLog("Texture load failed: \(fetchError.localizedDescription)")
+            }
+            if image != nil {
+                NSLog("Texture load complete")
+                terrainNode.geometry?.materials[4].diffuse.contents = image
+            }
             self.progressView?.isHidden = true
-            terrainNode.geometry?.materials[4].diffuse.contents = image
         })
     }
 
