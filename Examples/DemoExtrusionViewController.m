@@ -113,7 +113,7 @@
         [_terrainDemoScene.cameraNode lookAt:_terrainNode.position];
     }
     
-    [_terrainNode fetchTerrainAndTextureWithMinWallHeight:50.0 enableDynamicShadows:YES textureStyle:@"mapbox/satellite-v9" heightProgress:nil heightCompletion:^(NSError * _Nullable fetchError) {
+    [_terrainNode fetchTerrainAndTextureWithMinWallHeight:50.0 multiplier:1.5 enableDynamicShadows:YES textureStyle:@"mapbox/satellite-v9" heightProgress:nil heightCompletion:^(NSError * _Nullable fetchError) {
         if (fetchError) {
             NSLog(@"Texture load failed: %@", fetchError.localizedDescription);
         } else {
