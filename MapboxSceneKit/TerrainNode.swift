@@ -33,7 +33,7 @@ open class TerrainNode: SCNNode {
     fileprivate var metersPerX: Double = 0
     fileprivate var metersPerY: Double = 0
     fileprivate var terrainHeights = [[Double]]()
-    private let api = MapboxImageAPI()
+    private let api: MapboxImageAPI
 
     fileprivate var pendingFetches = [UUID]()
     private static let queue = DispatchQueue(label: "com.mapbox.scenekit.processing", attributes: [.concurrent])
@@ -41,13 +41,22 @@ open class TerrainNode: SCNNode {
     required public init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
+    
+    @objc convenience public init(minLat: CLLocationDegrees, maxLat: CLLocationDegrees, minLon: CLLocationDegrees, maxLon: CLLocationDegrees) {
+        self.init(api: MapboxImageAPI(), minLat: minLat, maxLat: maxLat, minLon: minLon, maxLon: maxLon)
+    }
+    
+    @objc convenience public init(mapboxAccessToken: String, minLat: CLLocationDegrees, maxLat: CLLocationDegrees, minLon: CLLocationDegrees, maxLon: CLLocationDegrees) {
+        self.init(api: MapboxImageAPI(mapboxAccessToken: mapboxAccessToken), minLat: minLat, maxLat: maxLat, minLon: minLon, maxLon: maxLon)
+    }
 
-    @objc public init(minLat: CLLocationDegrees, maxLat: CLLocationDegrees, minLon: CLLocationDegrees, maxLon: CLLocationDegrees) {
+    private init(api: MapboxImageAPI, minLat: CLLocationDegrees, maxLat: CLLocationDegrees, minLon: CLLocationDegrees, maxLon: CLLocationDegrees) {
         assert(minLat >= -90.0 && minLat <= 90.0 && maxLat >= -90.0 && maxLat <= 90.0, "lats must be between -90.0 and 90.0")
         assert(minLon >= -180.0 && minLon <= 180.0 && maxLon >= -180.0 && maxLon <= 180.0, "lons must be between -180.0 and 180.0")
         assert(minLat < maxLat, "minLat must be less than maxLat")
         assert(minLon < maxLon, "minLon must be less than maxLon")
 
+        self.api = api
         latBounds = (minLat, maxLat)
         lonBounds = (minLon, maxLon)
         metersPerLat = 1 / Math.metersToDegreesForLat(at: maxLon)
