@@ -119,7 +119,7 @@ open class TerrainNode: SCNNode {
     ///
     /// - Parameters:
     ///   - minWallHeight: Padding amount (in meters) of the walls beyond the returned altitude minumum for the region.
-    ///   - multiplier: Allows to multiply the hight by a given number. The bigger number, the more sharp the output will be. Default 1.
+    ///   - multiplier: Scale factor used to artificially exaggerate or flatten the terrain heights. Useful if you are trying to make an area with relatively flat terrain look for dramatic. Default 1.
     ///   - shadows: Depending on your applied texture / style, you may want to enable dynamic shadowing based on the contour of the terrain for interaction with Scene Kit lighting.
     ///   - style: Mapbox style ID for given texture.
     ///   - heightProgress: Handler for height progress change.
@@ -164,7 +164,7 @@ open class TerrainNode: SCNNode {
     ///
     /// - Parameters:
     ///   - minWallHeight: Padding amount (in meters) of the walls beyond the returned altitude minumum for the region.
-    ///   - multiplier: Allows to multiply the hight by a given number. The bigger number, the more sharp the output will be. Default 1.
+    ///   - multiplier: Scale factor used to artificially exaggerate or flatten the terrain heights. Useful if you are trying to make an area with relatively flat terrain look for dramatic. Default 1.
     ///   - shadows: Depending on your applied texture / style, you may want to enable dynamic shadowing based on the contour of the terrain for interaction with Scene Kit lighting.
     ///   - progress: Handler for height progress change.
     ///   - completion: Handler for complete height update.
