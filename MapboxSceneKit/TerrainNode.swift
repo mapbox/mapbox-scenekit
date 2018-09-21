@@ -107,10 +107,16 @@ open class TerrainNode: SCNNode {
     /// - Returns: Vector position should be converted from the terrain local space to the world space (or another node's corrdinate space, as needed).
     @objc public func positionForLocation(_ location: CLLocation) -> SCNVector3 {
         let xz = coordinates(location: location)
+        let z = heightForLocalPosition(SCNVector3(xz.x, 0.0, xz.z))
+        return SCNVector3(xz.x, Float(max(z, location.altitude)), xz.z)
+    }
+    
+    @objc public func heightForLocalPosition(_ position: SCNVector3) -> Double {
+        let xz = ( x: position.x, z: position.z)
         if let z = TerrainNode.height(heights: terrainHeights, x: xz.x, z: xz.z, metersPerX: metersPerX, metersPerY: metersPerY) {
-            return SCNVector3(xz.x, Float(max(z, location.altitude)), xz.z)
+            return z
         } else {
-            return SCNVector3(xz.x, 0.0, xz.z)
+            return 0.0
         }
     }
     
