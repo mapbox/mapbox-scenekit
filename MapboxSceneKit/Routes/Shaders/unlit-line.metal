@@ -91,6 +91,13 @@ vertex Vertex lineVert(VertexInput in [[ stage_in ]],
     return vert;
 }
 
+static float srgbToLinear(float c) {
+    if (c <= 0.04045)
+        return c / 12.92;
+    else
+        return powr((c + 0.055) / 1.055, 2.4);
+}
+
 struct FragmentOutput {
     // color attachment 0
     half4 color [[color(0)]];
@@ -109,6 +116,9 @@ fragment FragmentOutput lineFrag(Vertex in [[stage_in]]) {
     }
     //premultiply alpha
     output.color = lineAlpha * in.color;
+    output.color.r = srgbToLinear(output.color.r);
+    output.color.g = srgbToLinear(output.color.g);
+    output.color.b = srgbToLinear(output.color.b);
     
     if( in.zOffset > 0 ) {
         //offset the z value of the fragment by the line width to create a cylinder effect when intersecting with other geometry.
