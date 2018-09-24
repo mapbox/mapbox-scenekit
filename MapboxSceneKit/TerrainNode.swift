@@ -30,8 +30,8 @@ open class TerrainNode: SCNNode {
     fileprivate var terrainSize: CGSize = CGSize.zero
     fileprivate let metersPerLat: Double
     fileprivate let metersPerLon: Double
-    fileprivate var metersPerX: Double = 0
-    fileprivate var metersPerY: Double = 0
+    internal var metersPerX: Double = 0
+    internal var metersPerY: Double = 0
     fileprivate var terrainHeights = [[Double]]()
     private let api = MapboxImageAPI()
 
