@@ -93,39 +93,41 @@ extension TerrainNode {
     /// - Returns: the final route, snapped to the terrainNode's surface
     fileprivate func subdivideAndSnapToTerrain(positions: [SCNVector3]) -> [SCNVector3] {
         
-        //get the total meters traveled by the line
-        var lengthInMeters: Double = 0.0
-        for index in 1..<positions.count {
-            lengthInMeters += Double((positions[index] - positions[index - 1]).length())
-        }
-        
-        //resample the line based on the terrainNode's of pixels per meter
-        let maxSampleRate = lengthInMeters / self.metersPerX
-        
-        //sample at 1/10th the maximum terrain resolution
-        let sampleRate = ceil(maxSampleRate * 0.1)
-        
-        //don't sub-sample the line
-        if( sampleRate < Double(positions.count) ) {
-            return positions
-        }
-        
-        //create a new spline to interpolate along given positions
-        let positionBezier = BezierSpline3D(curvePoints: positions)
+        guard let firstPosition = positions.first else { return [] }
         var newPositions =  [SCNVector3]()
-        for index in 0...Int(sampleRate) {
-            let currentProgress = CGFloat(CGFloat(index)/CGFloat(sampleRate))
+        newPositions.append(firstPosition)
+        
+        var positionBezier: BezierSpline3D
+        
+        //for each segment...
+        for index in 1..<positions.count {
             
-            //get position at index/subdivisionfactor progress
-            let samplePosition: SCNVector3 = positionBezier.evaluate(progress: currentProgress)
+            let fromPostion = positions[index - 1]
+            let toPositon = positions[index]
             
-            //get the height at this position
-            let newPosition  = SCNVector3(samplePosition.x,
-                                          Float(self.heightForLocalPosition(samplePosition)),
-                                          samplePosition.z)
+            //check the length of the segment
+            let lengthInMeters = Double((toPositon - fromPostion).length())
+            //resample the line based on the terrainNode's of pixels per meter
+            let maxSampleRate = lengthInMeters / self.metersPerX
+            //resample at a 1/5 of the maximum terrain resolution
+            let sampleRate = floor(maxSampleRate * 0.2)
+            print(sampleRate)
+            //sample rates above 1 might have intersecting terrain, re-sample these segments.
+            //below 1 means there's no difference in the height data between the two points, so no need to re-sample
+            for sampleIndex in 1..<Int(sampleRate) {
+                //define a spline for the segment
+                positionBezier = BezierSpline3D(curvePoints: [fromPostion, toPositon])
+                
+                //add a segment at the sample position
+                let samplePosition: SCNVector3 = positionBezier.evaluate(progress: CGFloat(sampleIndex)/CGFloat(sampleRate))
+                //get the height at this position
+                let newPosition  = SCNVector3(samplePosition.x,
+                                              Float(self.heightForLocalPosition(samplePosition)),
+                                              samplePosition.z)
+                newPositions.append(newPosition)
+            }
             
-            //add this to the newpositions list
-            newPositions.append(newPosition)
+            newPositions.append(positions[index])
         }
         
         return newPositions
