@@ -81,13 +81,11 @@ extension TerrainNode {
             let position = self.positionForLocation(coord)
             scenePositions.append(position)
         }
-        
-        
         scenePositions = subdivideAndSnapToTerrain(positions: scenePositions)
         return scenePositions
     }
     
-    /// Resamples the provided route based on zoom level to avoid polylines that intersect, or float above terrain.
+    /// Resamples the provided route based on zoom level to avoid polylines that intersect or float above terrain.
     ///
     /// - Parameter positions: the positions to be re-sampled
     /// - Returns: the final route, snapped to the terrainNode's surface
@@ -97,6 +95,7 @@ extension TerrainNode {
         var newPositions =  [SCNVector3]()
         newPositions.append(firstPosition)
         
+        //re-use a single bezierspline instance to interpolate each segment
         var positionBezier: BezierSpline3D
         
         //for each segment...
@@ -105,28 +104,40 @@ extension TerrainNode {
             let fromPostion = positions[index - 1]
             let toPositon = positions[index]
             
-            //check the length of the segment
+            /*
+             Define the maximum meaningful elevation samples supported by the terrainnode's pixels per meter.
+             More samples would read the same pixel multiple times per line, creating jagged steps.
+             */
             let lengthInMeters = Double((toPositon - fromPostion).length())
-            //resample the line based on the terrainNode's of pixels per meter
-            let maxSampleRate = lengthInMeters / self.metersPerX
-            //resample at a 1/5 of the maximum terrain resolution
-            let sampleRate = floor(maxSampleRate * 0.2)
+            let maxSamplesInSegment = lengthInMeters / self.metersPerX
+            
+            //resample at a 1/5 of the maximum terrain resolution, to save on performance.
+            let samplesInSegment = floor(maxSamplesInSegment * 0.2)
 
-            //sample rates above 1 might have intersecting terrain, re-sample these segments.
-            //below 1 means there's no difference in the height data between the two points, so no need to re-sample
-            for sampleIndex in 0..<Int(sampleRate) where sampleIndex > 0{
+            /*
+             If a segment crosses enough terrain, it's samplesInSegment will be > 1.
+             Longer lines will have more samplesInSegment, because they cover more elevation data.
+             Lines below 1 mean there's not enough difference in the height data between the two points, so no need to re-sample
+            */
+            for sampleIndex in 0..<Int(samplesInSegment) where sampleIndex > 0 {
+                
                 //define a spline for the segment
                 positionBezier = BezierSpline3D(curvePoints: [fromPostion, toPositon])
                 
-                //add a segment at the sample position
-                let samplePosition: SCNVector3 = positionBezier.evaluate(progress: CGFloat(sampleIndex)/CGFloat(sampleRate))
-                //get the height at this position
+                //create a new point on the segment at a step along the line.
+                let progress = CGFloat(sampleIndex)/CGFloat(samplesInSegment)
+                let samplePosition: SCNVector3 = positionBezier.evaluate(progress: progress)
+                
+                //sample the height at this position
                 let newPosition  = SCNVector3(samplePosition.x,
                                               Float(self.heightForLocalPosition(samplePosition)),
                                               samplePosition.z)
+                
+                //add the new position to the new line.
                 newPositions.append(newPosition)
             }
             
+            //add the original end position to the new line
             newPositions.append(positions[index])
         }
         
