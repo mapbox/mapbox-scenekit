@@ -34,6 +34,12 @@ struct Vertex {
     float zOffset;
 };
 
+/*
+ Linear color space conversion happens automatically for sRGBA textures,
+ but not for vertex colors. This conversion method is copied from section
+ 7.7.7 of the Metal Language Spec:
+( https://developer.apple.com/metal/Metal-Shading-Language-Specification.pdf )
+ */
 static float srgbToLinear(float c) {
     if (c <= 0.04045)
         return c / 12.92;
