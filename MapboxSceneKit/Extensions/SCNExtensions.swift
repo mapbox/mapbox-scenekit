@@ -156,4 +156,10 @@ internal func +(lhs: SCNVector4, rhs: SCNVector4) -> SCNVector4 {
     return SCNVector4(lhs.x + rhs.x, lhs.y + rhs.y, lhs.z + rhs.z, lhs.w + rhs.w)
 }
 
+internal extension SCNVector3 {
+    func length() -> Float {
+        return sqrtf(x * x + y * y + z * z)
+    }
+}
+
 

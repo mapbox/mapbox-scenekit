@@ -30,8 +30,8 @@ open class TerrainNode: SCNNode {
     fileprivate var terrainSize: CGSize = CGSize.zero
     fileprivate let metersPerLat: Double
     fileprivate let metersPerLon: Double
-    fileprivate var metersPerX: Double = 0
-    fileprivate var metersPerY: Double = 0
+    internal var metersPerX: Double = 0
+    internal var metersPerY: Double = 0
     fileprivate var terrainHeights = [[Double]]()
     private let api = MapboxImageAPI()
 
@@ -106,11 +106,17 @@ open class TerrainNode: SCNNode {
     /// - Parameter location: Location in the real world.
     /// - Returns: Vector position should be converted from the terrain local space to the world space (or another node's corrdinate space, as needed).
     @objc public func positionForLocation(_ location: CLLocation) -> SCNVector3 {
-        let xz = coordinates(location: location)
-        if let z = TerrainNode.height(heights: terrainHeights, x: xz.x, z: xz.z, metersPerX: metersPerX, metersPerY: metersPerY) {
-            return SCNVector3(xz.x, Float(max(z, location.altitude)), xz.z)
+        let coords = coordinates(location: location)
+        let groundLevel = heightForLocalPosition(SCNVector3(coords.x, 0.0, coords.z))
+        return SCNVector3(coords.x, Float(max(groundLevel, location.altitude)), coords.z)
+    }
+    
+    @objc public func heightForLocalPosition(_ position: SCNVector3) -> Double {
+        let coords = ( x: position.x, z: position.z)
+        if let groundLevel = TerrainNode.height(heights: terrainHeights, x: coords.x, z: coords.z, metersPerX: metersPerX, metersPerY: metersPerY) {
+            return groundLevel
         } else {
-            return SCNVector3(xz.x, 0.0, xz.z)
+            return 0.0
         }
     }
     

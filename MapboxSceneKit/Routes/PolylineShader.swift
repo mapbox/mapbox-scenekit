@@ -42,7 +42,7 @@ internal class PolylineShader: PolylineRenderer {
     }
 
     private func progressAtSample(_ sample: Int) -> CGFloat {
-        return (CGFloat(sample) / CGFloat(sampleCount))
+        return (CGFloat(sample) / CGFloat(sampleCount - 1))
     }
 
     private func generateMaterial() -> SCNMaterial {
