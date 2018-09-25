@@ -24,7 +24,8 @@ internal class BezierSpline3D {
             self.curvePoints = [curvePoints[0], curvePoints[0], curvePoints[0], curvePoints[0]]
         case 2:
             //straight line, add extra handles at the end points.
-            self.curvePoints = [curvePoints[0], curvePoints[0], curvePoints[1], curvePoints[1]]
+            self.curvePoints = [curvePoints[0], curvePoints[0],
+                                curvePoints[1], curvePoints[1]]
         case 3:
             //add a single handle at the end
             self.curvePoints = [curvePoints[0], curvePoints[0],

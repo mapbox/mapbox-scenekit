@@ -18,7 +18,7 @@ internal class PolylineCylinder: PolylineRenderer {
 
         self.sampleCount = sampleCount
         var positions = [SCNVector3]()
-        for index in 1..<sampleCount {
+        for index in 0..<sampleCount {
             positions.append(polyline.getPositon(atProgress: progressAtSample(index)))
         }
         let radius = polyline.getRadius(atProgress: 0)
@@ -49,7 +49,7 @@ internal class PolylineCylinder: PolylineRenderer {
     }
 
     private func progressAtSample(_ sample: Int) -> CGFloat {
-        return (CGFloat(sample) / CGFloat(sampleCount))
+        return (CGFloat(sample) / CGFloat(sampleCount - 1))
     }
 
     private func sphere( position: SCNVector3, radius: CGFloat, color: UIColor) -> SCNNode {
