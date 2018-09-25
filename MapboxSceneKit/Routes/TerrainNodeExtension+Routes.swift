@@ -111,10 +111,10 @@ extension TerrainNode {
             let maxSampleRate = lengthInMeters / self.metersPerX
             //resample at a 1/5 of the maximum terrain resolution
             let sampleRate = floor(maxSampleRate * 0.2)
-            print(sampleRate)
+
             //sample rates above 1 might have intersecting terrain, re-sample these segments.
             //below 1 means there's no difference in the height data between the two points, so no need to re-sample
-            for sampleIndex in 1..<Int(sampleRate) {
+            for sampleIndex in 0..<Int(sampleRate) where sampleIndex > 0{
                 //define a spline for the segment
                 positionBezier = BezierSpline3D(curvePoints: [fromPostion, toPositon])
                 
