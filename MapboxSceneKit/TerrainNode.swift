@@ -24,7 +24,7 @@ open class TerrainNode: SCNNode {
     fileprivate static let rgbTileSize = CGSize(width: 256, height: 256)
     fileprivate static let styleTileSize = CGSize(width: 256, height: 256)
 
-    private static let maxTextureImageSizeInBytes: Int = (1024 * 1024) // set a max texture size in order to dynamically calculate the highest zoom level for a given lat/lon bounding rect. Need to balance download speed and detail, so set to 1MB for now
+    private static let maxTextureImageSizeInBytes: Int = 2048 // set a max texture size in order to dynamically calculate the highest zoom level for a given lat/lon bounding rect. Need to balance download speed and detail, so set to 1MB for now
     private let initialTerrainZoomLevel: Int
 
     fileprivate var terrainSize: CGSize = CGSize.zero
@@ -57,7 +57,7 @@ open class TerrainNode: SCNNode {
         let minLocation = CLLocation(latitude: minLat, longitude: minLon)
         let distance = maxLocation.distance(from: minLocation) / 1000.0
 
-        initialTerrainZoomLevel = TerrainNode.zoomLevelAtLatitude(lat: maxLat - minLat, distance: distance)
+        initialTerrainZoomLevel = TerrainNode.zoomLevelAtLatitude(lat: maxLat, distance: distance)
         super.init()
         recalculateTerrainSize(forZoom: initialTerrainZoomLevel)
         geometry = SCNBox(width: CGFloat(metersPerX) * CGFloat(terrainSize.width), height: 10.0, length: CGFloat(metersPerY) * CGFloat(terrainSize.height), chamferRadius: 0.0)
@@ -72,12 +72,14 @@ open class TerrainNode: SCNNode {
 
     private class func zoomLevelAtLatitude(lat: Double, distance: Double) -> Int {
         // fit the zoom level to the screen width
-        let screenWidth = Double(UIScreen.main.bounds.size.width)
+        let screenWidth = Double(maxTextureImageSizeInBytes)
         let latitudinalAdjustment = cos(.pi * lat / 180)
         let earthDiameterInKilometers = 40075.16
         let arg = earthDiameterInKilometers * screenWidth * latitudinalAdjustment / (distance * 256)
-
-        return Int(round(log(arg)/log(2)))
+        
+        let zoom = Int(round(log(arg)/log(2)))
+        print(zoom)
+        return zoom
     }
 
     private func centerPivot() {
