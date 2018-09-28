@@ -11,12 +11,9 @@ open class TerrainNode: SCNNode {
 
     /// Callback typealias for when the new geometry has been loaded based on RGB heightmaps.
     public typealias TerrainLoadCompletion = (NSError?) -> Void
-
-    /// Convenience tuple represending the bounds of the latitude post-initialization.
-    let latBounds: (CLLocationDegrees, CLLocationDegrees)
-
-    /// Convenience tuple represending the bounds of the longitude post-initialization.
-    let lonBounds: (CLLocationDegrees, CLLocationDegrees)
+    
+    let southWestCorner: CLLocation
+    let northEastCorner: CLLocation
 
     /// Convenience tuple represending the bounds of altitude after heightmaps have been loaded.
     private(set) var altitudeBounds: (CLLocationDistance, CLLocationDistance) = (0.0, 1.0)
@@ -43,20 +40,11 @@ open class TerrainNode: SCNNode {
     
     @objc public init(southWestCorner: CLLocation, northEastCorner: CLLocation) {
         
-        let minLat = southWestCorner.coordinate.latitude
-        let maxLat = northEastCorner.coordinate.latitude
-        let minLon = southWestCorner.coordinate.longitude
-        let maxLon = northEastCorner.coordinate.longitude
-        
-        assert(minLat >= -90.0 && minLat <= 90.0 && maxLat >= -90.0 && maxLat <= 90.0, "lats must be between -90.0 and 90.0")
-        assert(minLon >= -180.0 && minLon <= 180.0 && maxLon >= -180.0 && maxLon <= 180.0, "lons must be between -180.0 and 180.0")
-        assert(minLat < maxLat, "minLat must be less than maxLat")
-        assert(minLon < maxLon, "minLon must be less than maxLon")
-        
-        latBounds = (minLat, maxLat)
-        lonBounds = (minLon, maxLon)
-        metersPerLat = 1 / Math.metersToDegreesForLat(at: maxLon)
-        metersPerLon = 1 / Math.metersToDegreesForLon(at: maxLat)
+        self.southWestCorner = southWestCorner
+        self.northEastCorner = northEastCorner
+    
+        metersPerLat = 1 / Math.metersToDegreesForLat(at: northEastCorner.coordinate.latitude)
+        metersPerLon = 1 / Math.metersToDegreesForLon(at: northEastCorner.coordinate.longitude)
 
         initialTerrainZoomLevel = Math.zoomLevelForBounds(southWestCorner: southWestCorner,
                                                           northEastCorner: northEastCorner)
@@ -66,7 +54,6 @@ open class TerrainNode: SCNNode {
                           height: 10.0,
                           length: CGFloat(metersPerY) * CGFloat(terrainSize.height),
                           chamferRadius: 0.0)
-//        name = "Terrain"
     }
 
     @objc public convenience init(minLat: CLLocationDegrees, maxLat: CLLocationDegrees, minLon: CLLocationDegrees, maxLon: CLLocationDegrees) {
@@ -79,36 +66,31 @@ open class TerrainNode: SCNNode {
             api.cancelRequestWithID(task)
         }
     }
-//
-//    private class func zoomLevelAtLatitude(latitude: Double, distance: Double) -> Int {
-//        // fit the zoom level to the screen width
-//        let screenWidth = Double(maxTextureImageSizeInBytes)
-//        let latitudinalAdjustment = cos(.pi * latitude / 180)
-//        let earthDiameterInKilometers = 40075.16
-//        let arg = earthDiameterInKilometers * screenWidth * latitudinalAdjustment / (distance * 256)
-//
-//        let zoom = Int(round(log(arg)/log(2)))
-//        print(zoom)
-//        return zoom
-//    }
 
     private func centerPivot() {
         var min = SCNVector3Zero
         var max = SCNVector3Zero
         self.__getBoundingBoxMin(&min, max: &max)
-        self.pivot = SCNMatrix4MakeTranslation(
-            min.x + (max.x - min.x) / 2,
-            min.y,
-            min.z + (max.z - min.z) / 2
-        )
+        self.pivot = SCNMatrix4MakeTranslation(min.x + (max.x - min.x) / 2,
+                                               min.y,
+                                               min.z + (max.z - min.z) / 2)
     }
     
     private func recalculateTerrainSize(forZoom zoom: Int) {
-        let bounding = MapboxImageAPI.tiles(zoom: zoom, latBounds: latBounds, lonBounds: lonBounds, tileSize: TerrainNode.rgbTileSize)
+        let bounding = MapboxImageAPI.tiles(zoom: zoom,
+                                            southWestCorner: southWestCorner,
+                                            northEastCorner: northEastCorner,
+                                            tileSize: TerrainNode.rgbTileSize)
         terrainSize = CGSize(width: CGFloat(bounding.xs.count) * TerrainNode.rgbTileSize.width - bounding.insets.left - bounding.insets.right,
                              height: CGFloat(bounding.ys.count) * TerrainNode.rgbTileSize.height - bounding.insets.top - bounding.insets.bottom)
-        metersPerX = Double(abs(lonBounds.1 - lonBounds.0) * metersPerLon) / Double(terrainSize.width)
-        metersPerY = Double(abs(latBounds.1 - latBounds.0) * metersPerLat) / Double(terrainSize.height)
+        
+        let minLat = southWestCorner.coordinate.latitude
+        let maxLat = northEastCorner.coordinate.latitude
+        let minLon = southWestCorner.coordinate.longitude
+        let maxLon = northEastCorner.coordinate.longitude
+        
+        metersPerX = Double(abs(maxLon - minLon) * metersPerLon) / Double(terrainSize.width)
+        metersPerY = Double(abs(maxLat - minLat) * metersPerLat) / Double(terrainSize.height)
     }
 
     //MARK: - Public API
@@ -120,11 +102,13 @@ open class TerrainNode: SCNNode {
     @objc public func positionForLocation(_ location: CLLocation) -> SCNVector3 {
         let coords = coordinates(location: location)
         let groundLevel = heightForLocalPosition(SCNVector3(coords.x, 0.0, coords.z))
+        
         return SCNVector3(coords.x, Float(max(groundLevel, location.altitude)), coords.z)
     }
     
     @objc public func heightForLocalPosition(_ position: SCNVector3) -> Double {
-        let coords = ( x: position.x, z: position.z)
+        let coords = (x: position.x, z: position.z)
+        
         if let groundLevel = TerrainNode.height(heights: terrainHeights, x: coords.x, z: coords.z, metersPerX: metersPerX, metersPerY: metersPerY) {
             return groundLevel
         } else {
@@ -143,32 +127,60 @@ open class TerrainNode: SCNNode {
     ///   - heightProgress: Handler for height progress change.
     ///   - heightCompletion: Handler for complete height update.
     ///   - textureProgress: Handler for texture progress change.
-    ///   - textureCompletion: Handler for complete texture update. It is up to the caller to apply it as a material component, but this gives the caller the opportunity to modify the image or apply it as something other then default diffuse contents. For the simplist usage, you'll want to apply it as the diffuse contents in position 4 (the top): `myRerrainNode.geometry?.materials[4].diffuse.contents = image`.
+    ///   - textureCompletion: Handler for complete texture update. It is up to the caller to apply it as a material component, but this gives the caller the opportunity to modify the image or apply it as something other then default diffuse contents. For the simplist usage, you'll want to apply it as the diffuse contents in position 4 (the top): `myTerrainNode.geometry?.materials[4].diffuse.contents = image`.
     @objc public func fetchTerrainAndTexture(minWallHeight: CLLocationDistance = 0.0, multiplier: Float = 1, enableDynamicShadows shadows: Bool = false, textureStyle style: String,
                                              heightProgress: MapboxImageAPI.TileLoadProgressCallback? = nil, heightCompletion: @escaping TerrainLoadCompletion,
                                              textureProgress: MapboxImageAPI.TileLoadProgressCallback? = nil, textureCompletion: @escaping MapboxImageAPI.TileLoadCompletion) {
         let zoomLevel = initialTerrainZoomLevel
         let retryNumber = 3
-        fetchTerrainAndTexture(minWallHeight: minWallHeight, multiplier: multiplier, enableDynamicShadows: shadows, textureStyle: style, zoomLevel: zoomLevel, retryNumber: retryNumber,
-                               heightProgress: heightProgress, heightCompletion: heightCompletion, textureProgress: textureProgress, textureCompletion: textureCompletion)
+        fetchTerrainAndTexture(minWallHeight: minWallHeight,
+                               multiplier: multiplier,
+                               enableDynamicShadows: shadows,
+                               textureStyle: style,
+                               zoomLevel: zoomLevel,
+                               retryNumber: retryNumber,
+                               heightProgress: heightProgress,
+                               heightCompletion: heightCompletion,
+                               textureProgress: textureProgress,
+                               textureCompletion: textureCompletion)
     }
     
-    private func fetchTerrainAndTexture(minWallHeight: CLLocationDistance = 0.0, multiplier: Float, enableDynamicShadows shadows: Bool = false, textureStyle style: String, zoomLevel: Int, retryNumber: Int,
-                                             heightProgress: MapboxImageAPI.TileLoadProgressCallback? = nil, heightCompletion: @escaping TerrainLoadCompletion,
-                                             textureProgress: MapboxImageAPI.TileLoadProgressCallback? = nil, textureCompletion: @escaping MapboxImageAPI.TileLoadCompletion) {
-        fetchTerrainHeights(minWallHeight: minWallHeight, multiplier: multiplier, enableDynamicShadows: shadows, zoomLevel: zoomLevel, retryNumber: retryNumber, progress: heightProgress) { [weak self] heightFetchError in
+    private func fetchTerrainAndTexture(minWallHeight: CLLocationDistance = 0.0, multiplier: Float, enableDynamicShadows shadows: Bool = false, textureStyle style: String,
+                                        zoomLevel: Int, retryNumber: Int, heightProgress: MapboxImageAPI.TileLoadProgressCallback? = nil,
+                                        heightCompletion: @escaping TerrainLoadCompletion, textureProgress: MapboxImageAPI.TileLoadProgressCallback? = nil,
+                                        textureCompletion: @escaping MapboxImageAPI.TileLoadCompletion) {
+        
+        fetchTerrainHeights(minWallHeight: minWallHeight,
+                            multiplier: multiplier,
+                            enableDynamicShadows: shadows,
+                            zoomLevel: zoomLevel,
+                            retryNumber: retryNumber,
+                            progress: heightProgress) {
+            [weak self] heightFetchError in
             guard let `self` = self else { return }
             guard let heightFetchError = heightFetchError else {
                 // if there is no fetch error, height data is available and we can fetch texture for this zoom level
                 heightCompletion(nil)
-                self.fetchTerrainTexture(style, zoom: zoomLevel, progress: textureProgress, completion: textureCompletion)
+                self.fetchTerrainTexture(style, zoom: zoomLevel,
+                                         progress: textureProgress,
+                                         completion: textureCompletion)
+                
                 return
             }
             
             // if there was an issue fetching heights, let's try for a different zoom level
-            if retryNumber > 0 { // try just a couple of times
+            if retryNumber > 0 {
                 self.recalculateTerrainSize(forZoom: zoomLevel - 1)
-                self.fetchTerrainAndTexture(minWallHeight: minWallHeight, multiplier: multiplier, enableDynamicShadows: shadows, textureStyle: style, zoomLevel: zoomLevel - 1, retryNumber: retryNumber - 1, heightProgress: heightProgress, heightCompletion: heightCompletion, textureProgress: textureProgress, textureCompletion: textureCompletion)
+                self.fetchTerrainAndTexture(minWallHeight: minWallHeight,
+                                            multiplier: multiplier,
+                                            enableDynamicShadows: shadows,
+                                            textureStyle: style,
+                                            zoomLevel: zoomLevel - 1,
+                                            retryNumber: retryNumber - 1,
+                                            heightProgress: heightProgress,
+                                            heightCompletion: heightCompletion,
+                                            textureProgress: textureProgress,
+                                            textureCompletion: textureCompletion)
             } else { // fail download when there's no height data for any zoom level
                 heightCompletion(heightFetchError)
                 textureProgress?(1, 1)
@@ -187,16 +199,30 @@ open class TerrainNode: SCNNode {
     ///   - progress: Handler for height progress change.
     ///   - completion: Handler for complete height update.
     @available(*, deprecated, message: "DEPRECATED - Please use instead fetchTerrainAndTexture.")
-    @objc public func fetchTerrainHeights(minWallHeight: CLLocationDistance = 0.0, multiplier: Float = 1, enableDynamicShadows shadows: Bool = false, progress: MapboxImageAPI.TileLoadProgressCallback? = nil, completion: @escaping TerrainLoadCompletion) {
-        let zoomLevel = self.initialTerrainZoomLevel
-        fetchTerrainHeights(minWallHeight: minWallHeight, multiplier: multiplier, enableDynamicShadows: shadows, zoomLevel: zoomLevel, progress: progress, completion: completion)
+    @objc public func fetchTerrainHeights(minWallHeight: CLLocationDistance = 0.0, multiplier: Float = 1, enableDynamicShadows shadows: Bool = false,
+                                          progress: MapboxImageAPI.TileLoadProgressCallback? = nil, completion: @escaping TerrainLoadCompletion) {
+    
+        fetchTerrainHeights(minWallHeight: minWallHeight,
+                            multiplier: multiplier,
+                            enableDynamicShadows: shadows,
+                            zoomLevel: self.initialTerrainZoomLevel,
+                            progress: progress,
+                            completion: completion)
     }
     
-    private func fetchTerrainHeights(minWallHeight: CLLocationDistance = 0.0, multiplier: Float, enableDynamicShadows shadows: Bool = false, zoomLevel: Int, retryNumber: Int = 3, progress: MapboxImageAPI.TileLoadProgressCallback? = nil, completion: @escaping TerrainLoadCompletion) {
-        let latBounds = self.latBounds
-        let lonBounds = self.lonBounds
+    private func fetchTerrainHeights(minWallHeight: CLLocationDistance = 0.0, multiplier: Float, enableDynamicShadows shadows: Bool = false, zoomLevel: Int,
+                                     retryNumber: Int = 3, progress: MapboxImageAPI.TileLoadProgressCallback? = nil, completion: @escaping TerrainLoadCompletion) {
+        
+        let southWestCorner = self.southWestCorner
+        let northEastCorner = self.northEastCorner
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in
-            if let taskID = self?.api.image(forTileset: "mapbox.terrain-rgb", zoomLevel: zoomLevel, minLat: latBounds.0, maxLat: latBounds.1, minLon: lonBounds.0, maxLon: lonBounds.1, format: MapboxImageAPI.TileImageFormatPNG, progress: progress, completion: { image, fetchError in
+            if let taskID = self?.api.image(forTileset: "mapbox.terrain-rgb",
+                                            zoomLevel: zoomLevel,
+                                            southWestCorner: southWestCorner,
+                                            northEastCorner: northEastCorner,
+                                            format: MapboxImageAPI.TileImageFormatPNG,
+                                            progress: progress,
+                                            completion: { image, fetchError in
                 TerrainNode.queue.async {
                     if let image = image {
                         self?.applyTerrainHeightmap(image, withWallHeight: minWallHeight, multiplier: multiplier, enableShadows: shadows)
@@ -226,10 +252,15 @@ open class TerrainNode: SCNNode {
     }
     
     private func fetchTerrainTexture(_ style: String, zoom: Int, progress: MapboxImageAPI.TileLoadProgressCallback? = nil, completion: @escaping MapboxImageAPI.TileLoadCompletion) {
-        let latBounds = self.latBounds
-        let lonBounds = self.lonBounds
+        let southWestCorner = self.southWestCorner
+        let northEastCorner = self.northEastCorner
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in
-            if let taskID = self?.api.image(forStyle: style, zoomLevel: zoom, minLat: latBounds.0, maxLat: latBounds.1, minLon: lonBounds.0, maxLon: lonBounds.1, progress: progress, completion: completion) {
+            if let taskID = self?.api.image(forStyle: style,
+                                            zoomLevel: zoom,
+                                            southWestCorner: southWestCorner,
+                                            northEastCorner: northEastCorner,
+                                            progress: progress,
+                                            completion: completion) {
                 self?.pendingFetches.append(taskID)
             }
         }
@@ -501,8 +532,8 @@ extension TerrainNode {
     }
 
     fileprivate func coordinates(location: CLLocation) -> (x: Float, z: Float) {
-        let x = Float(location.coordinate.longitude - lonBounds.0) * Float(metersPerLon)
-        let z = Float(latBounds.1 - location.coordinate.latitude) * Float(metersPerLat)
+        let x = Float(location.coordinate.longitude - southWestCorner.coordinate.longitude) * Float(metersPerLon)
+        let z = Float(northEastCorner.coordinate.latitude - location.coordinate.latitude) * Float(metersPerLat)
         return (x: Float(x), z: Float(z))
     }
 
