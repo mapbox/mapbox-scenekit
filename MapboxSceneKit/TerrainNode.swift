@@ -12,33 +12,38 @@ open class TerrainNode: SCNNode {
     /// Callback typealias for when the new geometry has been loaded based on RGB heightmaps.
     public typealias TerrainLoadCompletion = (NSError?) -> Void
     
-    let southWestCorner: CLLocation
-    let northEastCorner: CLLocation
-    
-    fileprivate var terrainSizeMeters: CGSize {
-        get {
-            let x = Double(northEastCorner.coordinate.longitude - southWestCorner.coordinate.longitude) * metersPerLon
-            let z = Double(northEastCorner.coordinate.latitude - southWestCorner.coordinate.latitude) * metersPerLat
-            return CGSize(width: x, height: z)
-        }
-    }
-
-    /// Convenience tuple represending the bounds of altitude after heightmaps have been loaded.
-    private(set) var altitudeBounds: (CLLocationDistance, CLLocationDistance) = (0.0, 1.0)
-
-    fileprivate static let rgbTileSize = CGSize(width: 256, height: 256)
-    fileprivate static let styleTileSize = CGSize(width: 256, height: 256)
-
+    /// Basic TerrainNode Information
+    private let southWestCorner: CLLocation
+    private let northEastCorner: CLLocation
     private let initialTerrainZoomLevel: Int
-
-    fileprivate var terrainSize: CGSize = CGSize.zero
+    
+    /// Unit conversions
     fileprivate let metersPerLat: Double
     fileprivate let metersPerLon: Double
     internal var metersPerX: Double = 0
     internal var metersPerY: Double = 0
+    
+    /// TerrainNode Sizes
     fileprivate var terrainHeights = [[Double]]()
+    fileprivate var terrainSizeMeters: CGSize {
+            let x = Double(northEastCorner.coordinate.longitude - southWestCorner.coordinate.longitude) * metersPerLon
+            let z = Double(northEastCorner.coordinate.latitude - southWestCorner.coordinate.latitude) * metersPerLat
+            return CGSize(width: x, height: z)
+    }
+    
+    fileprivate var terrainImageSize: CGSize = CGSize.zero {
+        didSet {
+            //update meters per pixel value when terrain image size changes
+            metersPerX = Double(abs(terrainSizeMeters.width)) / Double(terrainImageSize.width)
+            metersPerY = Double(abs(terrainSizeMeters.height)) / Double(terrainImageSize.height)
+        }
+    }
+    
+    /// Convenience tuple represending the bounds of altitude after heightmaps have been loaded.
+    private(set) var altitudeBounds: (CLLocationDistance, CLLocationDistance) = (0.0, 1.0)
+    
+    /// APIs and Tile fetching
     private let api = MapboxImageAPI()
-
     fileprivate var pendingFetches = [UUID]()
     private static let queue = DispatchQueue(label: "com.mapbox.scenekit.processing", attributes: [.concurrent])
 
@@ -50,12 +55,12 @@ open class TerrainNode: SCNNode {
         
         self.southWestCorner = southWestCorner
         self.northEastCorner = northEastCorner
+        self.initialTerrainZoomLevel = Math.zoomLevelForBounds(southWestCorner: southWestCorner,
+                                                               northEastCorner: northEastCorner)
         
         self.metersPerLat = 1 / Math.metersToDegreesForLat(at: northEastCorner.coordinate.latitude)
         self.metersPerLon = 1 / Math.metersToDegreesForLon(at: northEastCorner.coordinate.longitude)
 
-        self.initialTerrainZoomLevel = Math.zoomLevelForBounds(southWestCorner: southWestCorner,
-                                                          northEastCorner: northEastCorner)
         super.init()
         geometry = SCNBox(width: terrainSizeMeters.width,
                           height: 10.0,
@@ -81,23 +86,6 @@ open class TerrainNode: SCNNode {
         self.pivot = SCNMatrix4MakeTranslation(min.x + (max.x - min.x) / 2,
                                                min.y,
                                                min.z + (max.z - min.z) / 2)
-    }
-    
-    private func recalculateTerrainSize(forZoom zoom: Int) {
-        let bounding = MapboxImageAPI.tiles(zoom: zoom,
-                                            southWestCorner: southWestCorner,
-                                            northEastCorner: northEastCorner,
-                                            tileSize: TerrainNode.rgbTileSize)
-        terrainSize = CGSize(width: CGFloat(bounding.xs.count) * TerrainNode.rgbTileSize.width - bounding.insets.left - bounding.insets.right,
-                             height: CGFloat(bounding.ys.count) * TerrainNode.rgbTileSize.height - bounding.insets.top - bounding.insets.bottom)
-        
-        let minLat = southWestCorner.coordinate.latitude
-        let maxLat = northEastCorner.coordinate.latitude
-        let minLon = southWestCorner.coordinate.longitude
-        let maxLon = northEastCorner.coordinate.longitude
-        
-        metersPerX = Double(abs(maxLon - minLon) * metersPerLon) / Double(terrainSize.width)
-        metersPerY = Double(abs(maxLat - minLat) * metersPerLat) / Double(terrainSize.height)
     }
 
     //MARK: - Public API
@@ -177,7 +165,6 @@ open class TerrainNode: SCNNode {
             
             // if there was an issue fetching heights, let's try for a different zoom level
             if retryNumber > 0 {
-                self.recalculateTerrainSize(forZoom: zoomLevel - 1)
                 self.fetchTerrainAndTexture(minWallHeight: minWallHeight,
                                             multiplier: multiplier,
                                             enableDynamicShadows: shadows,
@@ -222,7 +209,6 @@ open class TerrainNode: SCNNode {
         
         let southWestCorner = self.southWestCorner
         let northEastCorner = self.northEastCorner
-        let zoom = zoomLevel
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in
             if let taskID = self?.api.image(forTileset: "mapbox.terrain-rgb",
                                             zoomLevel: zoomLevel,
@@ -233,7 +219,6 @@ open class TerrainNode: SCNNode {
                                             completion: { image, fetchError in
                 TerrainNode.queue.async {
                     if let image = image {
-                        self?.recalculateTerrainSize(forZoom: zoom)
                         self?.applyTerrainHeightmap(image, withWallHeight: minWallHeight, multiplier: multiplier, enableShadows: shadows)
                     }
                     DispatchQueue.main.async() {
@@ -284,17 +269,19 @@ open class TerrainNode: SCNNode {
             NSLog("Couldn't get CGImage color data for terrain")
             return
         }
+        
+        terrainImageSize = image.size
 
         var minZ = Double.greatestFiniteMagnitude
         var maxZ = Double.leastNormalMagnitude
         var newTerrainHeights = [[Double]]()
-        newTerrainHeights.reserveCapacity(Int(terrainSize.height))
+        newTerrainHeights.reserveCapacity(Int(terrainImageSize.height))
 
-        for y in 0 ..< Int(terrainSize.height) {
+        for y in 0 ..< Int(terrainImageSize.height) {
             var rowData = [Double]()
-            rowData.reserveCapacity(Int(terrainSize.width))
-            for x in 0 ..< Int(terrainSize.width) {
-                guard let z = TerrainNode.heightFromImage(x: x, y: y, terrainData: terrainData, terrainSize: terrainSize, multiplier: multiplier) else {
+            rowData.reserveCapacity(Int(terrainImageSize.width))
+            for x in 0 ..< Int(terrainImageSize.width) {
+                guard let z = TerrainNode.heightFromImage(x: x, y: y, terrainData: terrainData, terrainSize: terrainImageSize, multiplier: multiplier) else {
                     NSLog("Couldn't get Z data for {\(x),\(y)}")
                     continue
                 }
@@ -316,8 +303,8 @@ open class TerrainNode: SCNNode {
 
         //Adding these geometries in the same order they'd appear in an SCNBox, so previously applied materials stay on the same side / order
         if let wallHeight = wallHeight {
-            let south = createGeometryForWall(xs: [Int](0..<Int(terrainSize.width)),
-                                              ys: [Int(terrainSize.height) - 1],
+            let south = createGeometryForWall(xs: [Int](0..<Int(terrainImageSize.width)),
+                                              ys: [Int(terrainImageSize.height) - 1],
                                               normal: SCNVector3Make(0, 0, -1),
                                               maxHeight: Float(maxZ + wallHeight - minZ),
                                               vertexOffset: vertices.count)
@@ -326,8 +313,8 @@ open class TerrainNode: SCNNode {
             uvList.append(contentsOf: south.uvList)
             elements.append(south.element)
             
-            let east = createGeometryForWall(xs: [Int(terrainSize.width) - 1],
-                                             ys: [Int](0..<Int(terrainSize.height)),
+            let east = createGeometryForWall(xs: [Int(terrainImageSize.width) - 1],
+                                             ys: [Int](0..<Int(terrainImageSize.height)),
                                              normal: SCNVector3Make(1, 0, 0),
                                              maxHeight: Float(maxZ + wallHeight - minZ),
                                              vertexOffset: vertices.count)
@@ -336,7 +323,7 @@ open class TerrainNode: SCNNode {
             uvList.append(contentsOf: east.uvList)
             elements.append(east.element)
 
-            let north = createGeometryForWall(xs: [Int](0..<Int(terrainSize.width)),
+            let north = createGeometryForWall(xs: [Int](0..<Int(terrainImageSize.width)),
                                               ys: [0],
                                               normal: SCNVector3Make(0, 0, -1),
                                               maxHeight: Float(maxZ + wallHeight - minZ),
@@ -347,7 +334,7 @@ open class TerrainNode: SCNNode {
             elements.append(north.element)
 
             let west = createGeometryForWall(xs: [0],
-                                             ys: [Int](0..<Int(terrainSize.height)),
+                                             ys: [Int](0..<Int(terrainImageSize.height)),
                                              normal: SCNVector3Make(1, 0, 0),
                                              maxHeight: Float(maxZ + wallHeight - minZ),
                                              vertexOffset: vertices.count)
@@ -400,19 +387,19 @@ open class TerrainNode: SCNNode {
 
     private func createTopGeometry(vertexOffset: Int, enableShadows: Bool) -> (element: SCNGeometryElement, vertices: [SCNVector3], normals: [SCNVector3], uvList: [vector_float2]) {
         var vertices = [SCNVector3]()
-        vertices.reserveCapacity(Int(terrainSize.height * terrainSize.width))
-        var normals = [SCNVector3](repeating: SCNVector3(0, 1, 0), count: Int(terrainSize.height * terrainSize.width))
+        vertices.reserveCapacity(Int(terrainImageSize.height * terrainImageSize.width))
+        var normals = [SCNVector3](repeating: SCNVector3(0, 1, 0), count: Int(terrainImageSize.height * terrainImageSize.width))
         var uvList: [vector_float2] = []
-        uvList.reserveCapacity(Int(terrainSize.height * terrainSize.width))
+        uvList.reserveCapacity(Int(terrainImageSize.height * terrainImageSize.width))
         let cint: CInt = 0
         let sizeOfCInt = MemoryLayout.size(ofValue: cint)
 
         let geometryData = NSMutableData()
-        for y in 0..<Int(terrainSize.height) {
-            let previousRowStart = (y - 1) * Int(terrainSize.width)
-            let currentRowStart = y * Int(terrainSize.width)
+        for y in 0..<Int(terrainImageSize.height) {
+            let previousRowStart = (y - 1) * Int(terrainImageSize.width)
+            let currentRowStart = y * Int(terrainImageSize.width)
 
-            for x in 0..<Int(terrainSize.width) {
+            for x in 0..<Int(terrainImageSize.width) {
                 guard let z = TerrainNode.height(heights: terrainHeights, x: x, y: y), let xz = coordinates(imageX: x, imageY: y) else {
                     NSLog("Couldn't coordinates for \(x),\(y)")
                     continue
@@ -421,7 +408,7 @@ open class TerrainNode: SCNNode {
                 vertices.append(SCNVector3Make(xz.x, Float(z), xz.z))
 
                 //texture support
-                uvList.append(vector_float2(Float(Float(x) / Float(terrainSize.width)), Float(Float(y) / Float(terrainSize.height))))
+                uvList.append(vector_float2(Float(Float(x) / Float(terrainImageSize.width)), Float(Float(y) / Float(terrainImageSize.height))))
 
                 //past first row, build the faces as we go (skipping first column)
                 if y > 0 && x > 0 {
@@ -444,7 +431,7 @@ open class TerrainNode: SCNNode {
 
         return (element: SCNGeometryElement(data: geometryData as Data,
                                             primitiveType: .triangles,
-                                            primitiveCount: (Int(terrainSize.height) - 1) * (Int(terrainSize.width) - 1) * 2,
+                                            primitiveCount: (Int(terrainImageSize.height) - 1) * (Int(terrainImageSize.width) - 1) * 2,
                                             bytesPerIndex: sizeOfCInt),
                 vertices: vertices,
                 normals: normals,
@@ -459,7 +446,7 @@ open class TerrainNode: SCNNode {
         uvList.reserveCapacity(4)
 
         let minXZ = coordinates(imageX: 0, imageY: 0)!
-        let maxXZ = coordinates(imageX: Int(terrainSize.width) - 1, imageY: Int(terrainSize.height) - 1)!
+        let maxXZ = coordinates(imageX: Int(terrainImageSize.width) - 1, imageY: Int(terrainImageSize.height) - 1)!
         vertices.append(SCNVector3Make(minXZ.x, Float(0.0), minXZ.z))
         uvList.append(vector_float2(Float(0.0), Float(0.0)))
         vertices.append(SCNVector3Make(maxXZ.x, Float(0.0), minXZ.z))
