@@ -46,6 +46,9 @@ public final class MapboxImageAPI: NSObject {
     fileprivate static let tileSize = CGSize(width: 256, height: 256)
     fileprivate static let styleSize = CGSize(width: 256, height: 256)
     fileprivate var pendingFetches = [UUID: [UUID]]()
+    public static var tileSizeWidth: Double {
+        get { return Double(MapboxImageAPI.tileSize.width) }
+    }
 
     private static let queue = DispatchQueue(label: "com.mapbox.scenekit.processing", attributes: [.concurrent])
 

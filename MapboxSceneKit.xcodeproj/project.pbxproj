@@ -39,6 +39,7 @@
 		957C85EA2146FF92004C548E /* SCNProgramExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 957C85E52146FF92004C548E /* SCNProgramExtensions.swift */; };
 		957C85EB2146FF92004C548E /* BezierSpline3D.swift in Sources */ = {isa = PBXBuildFile; fileRef = 957C85E62146FF92004C548E /* BezierSpline3D.swift */; };
 		957C85EC2146FF92004C548E /* TerrainNodeExtension+Routes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 957C85E72146FF92004C548E /* TerrainNodeExtension+Routes.swift */; };
+		9598A005215EB4E80086CF4E /* StaticConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9598A003215EB4460086CF4E /* StaticConstants.swift */; };
 		959F81622149DE9700A290DF /* PolylineRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 959F81612149DE9700A290DF /* PolylineRenderer.swift */; };
 		95CC6AA4214ADB05000CD0E6 /* SCNExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95CC6AA3214ADB05000CD0E6 /* SCNExtensions.swift */; };
 		F44BB60520C75CBF00CE41C6 /* DemoExtrusionViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = F44BB60420C75CBF00CE41C6 /* DemoExtrusionViewController.m */; };
@@ -102,6 +103,7 @@
 		957C85E52146FF92004C548E /* SCNProgramExtensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SCNProgramExtensions.swift; sourceTree = "<group>"; };
 		957C85E62146FF92004C548E /* BezierSpline3D.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BezierSpline3D.swift; sourceTree = "<group>"; };
 		957C85E72146FF92004C548E /* TerrainNodeExtension+Routes.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "TerrainNodeExtension+Routes.swift"; sourceTree = "<group>"; };
+		9598A003215EB4460086CF4E /* StaticConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StaticConstants.swift; sourceTree = "<group>"; };
 		959F81612149DE9700A290DF /* PolylineRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolylineRenderer.swift; sourceTree = "<group>"; };
 		95CC6AA3214ADB05000CD0E6 /* SCNExtensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SCNExtensions.swift; sourceTree = "<group>"; };
 		F44BB60220C75CBF00CE41C6 /* Examples-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Examples-Bridging-Header.h"; sourceTree = "<group>"; };
@@ -196,6 +198,7 @@
 				81A436BF20A1F68500F42A53 /* MapboxSceneKit.h */,
 				81A436C720A1F6BC00F42A53 /* TerrainNode.swift */,
 				814F3BD420ADF1B40006DDFD /* MapboxImageAPI.swift */,
+				9598A003215EB4460086CF4E /* StaticConstants.swift */,
 				81A4371620A1FAB700F42A53 /* Math.swift */,
 				957C85E12146FF92004C548E /* Routes */,
 				814F3BD820AE02E60006DDFD /* Extensions */,
@@ -421,6 +424,7 @@
 				81A4372320A243B200F42A53 /* MapboxHTTPAPI.swift in Sources */,
 				957C85E82146FF92004C548E /* PolylineShader.swift in Sources */,
 				954A248221484F330050025E /* PolylineNode.swift in Sources */,
+				9598A005215EB4E80086CF4E /* StaticConstants.swift in Sources */,
 				957C85EA2146FF92004C548E /* SCNProgramExtensions.swift in Sources */,
 				814F3BD520ADF1B40006DDFD /* MapboxImageAPI.swift in Sources */,
 				957C85EB2146FF92004C548E /* BezierSpline3D.swift in Sources */,

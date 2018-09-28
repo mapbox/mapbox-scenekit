@@ -24,7 +24,6 @@ open class TerrainNode: SCNNode {
     fileprivate static let rgbTileSize = CGSize(width: 256, height: 256)
     fileprivate static let styleTileSize = CGSize(width: 256, height: 256)
 
-    private static let maxTextureImageSizeInBytes: Int = 2048 // set a max texture size in order to dynamically calculate the highest zoom level for a given lat/lon bounding rect. Need to balance download speed and detail, so set to 1MB for now
     private let initialTerrainZoomLevel: Int
 
     fileprivate var terrainSize: CGSize = CGSize.zero
@@ -42,33 +41,37 @@ open class TerrainNode: SCNNode {
         fatalError("init(coder:) has not been implemented")
     }
     
-    @objc public convenience init(southWestCorner: CLLocationCoordinate2D, northEastCorner: CLLocationCoordinate2D) {
-        self.init(minLat: southWestCorner.latitude,
-                  maxLat: northEastCorner.latitude,
-                  minLon: southWestCorner.longitude,
-                  maxLon: northEastCorner.longitude)
-    }
-
-    @objc public init(minLat: CLLocationDegrees, maxLat: CLLocationDegrees, minLon: CLLocationDegrees, maxLon: CLLocationDegrees) {
+    @objc public init(southWestCorner: CLLocation, northEastCorner: CLLocation) {
+        
+        let minLat = southWestCorner.coordinate.latitude
+        let maxLat = northEastCorner.coordinate.latitude
+        let minLon = southWestCorner.coordinate.longitude
+        let maxLon = northEastCorner.coordinate.longitude
+        
         assert(minLat >= -90.0 && minLat <= 90.0 && maxLat >= -90.0 && maxLat <= 90.0, "lats must be between -90.0 and 90.0")
         assert(minLon >= -180.0 && minLon <= 180.0 && maxLon >= -180.0 && maxLon <= 180.0, "lons must be between -180.0 and 180.0")
         assert(minLat < maxLat, "minLat must be less than maxLat")
         assert(minLon < maxLon, "minLon must be less than maxLon")
-
+        
         latBounds = (minLat, maxLat)
         lonBounds = (minLon, maxLon)
         metersPerLat = 1 / Math.metersToDegreesForLat(at: maxLon)
         metersPerLon = 1 / Math.metersToDegreesForLon(at: maxLat)
 
-        let maxLocation = CLLocation(latitude: maxLat, longitude: maxLon)
-        let minLocation = CLLocation(latitude: minLat, longitude: minLon)
-        let distance = maxLocation.distance(from: minLocation) / 1000.0
-
-        initialTerrainZoomLevel = TerrainNode.zoomLevelAtLatitude(lat: maxLat, distance: distance)
+        initialTerrainZoomLevel = Math.zoomLevelForBounds(southWestCorner: southWestCorner,
+                                                          northEastCorner: northEastCorner)
         super.init()
         recalculateTerrainSize(forZoom: initialTerrainZoomLevel)
-        geometry = SCNBox(width: CGFloat(metersPerX) * CGFloat(terrainSize.width), height: 10.0, length: CGFloat(metersPerY) * CGFloat(terrainSize.height), chamferRadius: 0.0)
-        name = "Terrain"
+        geometry = SCNBox(width: CGFloat(metersPerX) * CGFloat(terrainSize.width),
+                          height: 10.0,
+                          length: CGFloat(metersPerY) * CGFloat(terrainSize.height),
+                          chamferRadius: 0.0)
+//        name = "Terrain"
+    }
+
+    @objc public convenience init(minLat: CLLocationDegrees, maxLat: CLLocationDegrees, minLon: CLLocationDegrees, maxLon: CLLocationDegrees) {
+        self.init(southWestCorner: CLLocation(latitude: minLat, longitude: minLon),
+                  northEastCorner: CLLocation(latitude: maxLat, longitude: maxLon))
     }
 
     deinit {
@@ -76,18 +79,18 @@ open class TerrainNode: SCNNode {
             api.cancelRequestWithID(task)
         }
     }
-
-    private class func zoomLevelAtLatitude(lat: Double, distance: Double) -> Int {
-        // fit the zoom level to the screen width
-        let screenWidth = Double(maxTextureImageSizeInBytes)
-        let latitudinalAdjustment = cos(.pi * lat / 180)
-        let earthDiameterInKilometers = 40075.16
-        let arg = earthDiameterInKilometers * screenWidth * latitudinalAdjustment / (distance * 256)
-        
-        let zoom = Int(round(log(arg)/log(2)))
-        print(zoom)
-        return zoom
-    }
+//
+//    private class func zoomLevelAtLatitude(latitude: Double, distance: Double) -> Int {
+//        // fit the zoom level to the screen width
+//        let screenWidth = Double(maxTextureImageSizeInBytes)
+//        let latitudinalAdjustment = cos(.pi * latitude / 180)
+//        let earthDiameterInKilometers = 40075.16
+//        let arg = earthDiameterInKilometers * screenWidth * latitudinalAdjustment / (distance * 256)
+//
+//        let zoom = Int(round(log(arg)/log(2)))
+//        print(zoom)
+//        return zoom
+//    }
 
     private func centerPivot() {
         var min = SCNVector3Zero
