@@ -9,7 +9,11 @@ import CoreLocation
 import Foundation
 
 struct Constants {
-    static let maxTextureImageSize: Int = 2048 // set a max texture size in order to dynamically calculate the highest zoom level for a given lat/lon bounding rect. Need to balance download speed and detail, so set to 1MB for now
+    /// Terrain.rgb isn't available in all areas beyond this value, higher zoom levels are oversampled.
+    static let maxTerrainRGBZoomLevel: Int = 12
+    
+    /// Is the largest supported texture size by the SDK, style images are drawn at 2x this value, so any higher number would result in crashes.
+    static let maxTextureImageSize: Int = 2048
     
     static let earthDiameterInKilometers = 40075.16
 }
