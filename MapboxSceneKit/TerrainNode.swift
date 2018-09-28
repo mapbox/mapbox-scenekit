@@ -14,6 +14,14 @@ open class TerrainNode: SCNNode {
     
     let southWestCorner: CLLocation
     let northEastCorner: CLLocation
+    
+    fileprivate var terrainSizeMeters: CGSize {
+        get {
+            let x = Double(northEastCorner.coordinate.longitude - southWestCorner.coordinate.longitude) * metersPerLon
+            let z = Double(northEastCorner.coordinate.latitude - southWestCorner.coordinate.latitude) * metersPerLat
+            return CGSize(width: x, height: z)
+        }
+    }
 
     /// Convenience tuple represending the bounds of altitude after heightmaps have been loaded.
     private(set) var altitudeBounds: (CLLocationDistance, CLLocationDistance) = (0.0, 1.0)
@@ -42,17 +50,16 @@ open class TerrainNode: SCNNode {
         
         self.southWestCorner = southWestCorner
         self.northEastCorner = northEastCorner
-    
-        metersPerLat = 1 / Math.metersToDegreesForLat(at: northEastCorner.coordinate.latitude)
-        metersPerLon = 1 / Math.metersToDegreesForLon(at: northEastCorner.coordinate.longitude)
+        
+        self.metersPerLat = 1 / Math.metersToDegreesForLat(at: northEastCorner.coordinate.latitude)
+        self.metersPerLon = 1 / Math.metersToDegreesForLon(at: northEastCorner.coordinate.longitude)
 
-        initialTerrainZoomLevel = Math.zoomLevelForBounds(southWestCorner: southWestCorner,
+        self.initialTerrainZoomLevel = Math.zoomLevelForBounds(southWestCorner: southWestCorner,
                                                           northEastCorner: northEastCorner)
         super.init()
-        recalculateTerrainSize(forZoom: initialTerrainZoomLevel)
-        geometry = SCNBox(width: CGFloat(metersPerX) * CGFloat(terrainSize.width),
+        geometry = SCNBox(width: terrainSizeMeters.width,
                           height: 10.0,
-                          length: CGFloat(metersPerY) * CGFloat(terrainSize.height),
+                          length: terrainSizeMeters.height,
                           chamferRadius: 0.0)
     }
 
@@ -215,6 +222,7 @@ open class TerrainNode: SCNNode {
         
         let southWestCorner = self.southWestCorner
         let northEastCorner = self.northEastCorner
+        let zoom = zoomLevel
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in
             if let taskID = self?.api.image(forTileset: "mapbox.terrain-rgb",
                                             zoomLevel: zoomLevel,
@@ -225,6 +233,7 @@ open class TerrainNode: SCNNode {
                                             completion: { image, fetchError in
                 TerrainNode.queue.async {
                     if let image = image {
+                        self?.recalculateTerrainSize(forZoom: zoom)
                         self?.applyTerrainHeightmap(image, withWallHeight: minWallHeight, multiplier: multiplier, enableShadows: shadows)
                     }
                     DispatchQueue.main.async() {
@@ -268,7 +277,9 @@ open class TerrainNode: SCNNode {
 
     //MARK: - Geometry Creation
 
-    private func applyTerrainHeightmap(_ image: UIImage, withWallHeight wallHeight: CLLocationDistance? = nil, multiplier: Float, enableShadows shadows: Bool) {
+    private func applyTerrainHeightmap(_ image: UIImage,
+                                       withWallHeight wallHeight: CLLocationDistance? = nil,
+                                       multiplier: Float, enableShadows shadows: Bool) {
         guard let pixelData = image.cgImage?.dataProvider?.data, let terrainData = CFDataGetBytePtr(pixelData) else {
             NSLog("Couldn't get CGImage color data for terrain")
             return
