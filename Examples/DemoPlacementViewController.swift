@@ -30,8 +30,11 @@ class DemoPlacementViewController: UIViewController {
         sceneView.showsStatistics = true
 
         //Set up initial terrain and materials
-        let terrainNode = TerrainNode(minLat: 50.044660402821592, maxLat: 50.120873988090956,
-                                      minLon: -122.99017089272466, maxLon: -122.86824490727534)
+        let southWest = CLLocationCoordinate2D(latitude: 50.044660402821592, longitude: -122.99017089272466)
+        let northEast = CLLocationCoordinate2D(latitude: 50.120873988090956, longitude: -122.86824490727534)
+//        let terrainNode = TerrainNode(minLat: 50.044660402821592, maxLat: 50.120873988090956,
+//                                      minLon: -122.99017089272466, maxLon: -122.86824490727534)
+        let terrainNode = TerrainNode(southWestCorner: southWest, northEastCorner: northEast)
         terrainNode.position = SCNVector3(0, 500, 0)
         terrainNode.geometry?.materials = defaultMaterials()
         scene.rootNode.addChildNode(terrainNode)

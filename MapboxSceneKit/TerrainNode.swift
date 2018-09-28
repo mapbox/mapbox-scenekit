@@ -41,6 +41,13 @@ open class TerrainNode: SCNNode {
     required public init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
+    
+    @objc public convenience init(southWestCorner: CLLocationCoordinate2D, northEastCorner: CLLocationCoordinate2D) {
+        self.init(minLat: southWestCorner.latitude,
+                  maxLat: northEastCorner.latitude,
+                  minLon: southWestCorner.longitude,
+                  maxLon: northEastCorner.longitude)
+    }
 
     @objc public init(minLat: CLLocationDegrees, maxLat: CLLocationDegrees, minLon: CLLocationDegrees, maxLon: CLLocationDegrees) {
         assert(minLat >= -90.0 && minLat <= 90.0 && maxLat >= -90.0 && maxLat <= 90.0, "lats must be between -90.0 and 90.0")
