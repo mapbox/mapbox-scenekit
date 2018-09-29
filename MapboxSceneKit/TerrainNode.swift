@@ -154,12 +154,8 @@ open class TerrainNode: SCNNode {
             [weak self] heightFetchError in
             guard let `self` = self else { return }
             guard let heightFetchError = heightFetchError else {
-                // if there is no fetch error, height data is available and we can fetch texture for this zoom level
+                // if there is no fetch error, height data is available
                 heightCompletion(nil)
-                self.fetchTerrainTexture(style, zoom: self.styleZoomLevel,
-                                         progress: textureProgress,
-                                         completion: textureCompletion)
-                
                 return
             }
             
@@ -182,6 +178,11 @@ open class TerrainNode: SCNNode {
                 textureCompletion(nil, heightFetchError)
             }
         }
+        
+        //fetch texture in parallel to heights
+        self.fetchTerrainTexture(style, zoom: self.styleZoomLevel,
+                                 progress: textureProgress,
+                                 completion: textureCompletion)
     }
     
     /// DEPRECATED - Please use instead fetchTerrainAndTexture.
