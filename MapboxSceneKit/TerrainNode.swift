@@ -60,8 +60,8 @@ open class TerrainNode: SCNNode {
                                                                northEastCorner: northEastCorner)
         self.terrainZoomLevel = min(styleZoomLevel, Constants.maxTerrainRGBZoomLevel)
         
-        self.metersPerLat = 1 / Math.metersToDegreesForLat(at: northEastCorner.coordinate.latitude)
-        self.metersPerLon = 1 / Math.metersToDegreesForLon(at: northEastCorner.coordinate.longitude)
+        self.metersPerLat = 1 / Math.metersToDegreesForLat(atLongitude: northEastCorner.coordinate.longitude)
+        self.metersPerLon = 1 / Math.metersToDegreesForLon(atLatitude: northEastCorner.coordinate.latitude)
 
         super.init()
         geometry = SCNBox(width: terrainSizeMeters.width,

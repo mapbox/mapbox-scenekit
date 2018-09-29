@@ -11,7 +11,7 @@ internal class Math {
         return radians * 180.0 / Double.pi
     }
 
-    static func metersToDegreesForLat(at longitude: CLLocationDegrees) -> CLLocationDistance {
+    static func metersToDegreesForLat(atLongitude longitude: CLLocationDegrees) -> CLLocationDistance {
         let a = cos(2 * Math.degreesToRadians(longitude))
         let b = cos(4 * Math.degreesToRadians(longitude))
         let c = cos(6 * Math.degreesToRadians(longitude))
@@ -19,7 +19,7 @@ internal class Math {
         return 1.0 / fabs(111132.95255 - 559.84957 * a + 1.17514 * b - 0.00230 * c)
     }
 
-    static func metersToDegreesForLon(at latitude: CLLocationDegrees) -> CLLocationDistance {
+    static func metersToDegreesForLon(atLatitude latitude: CLLocationDegrees) -> CLLocationDistance {
         let a = cos(Math.degreesToRadians(latitude))
         let b = cos(3 * Math.degreesToRadians(latitude))
         let c = cos(5 * Math.degreesToRadians(latitude))
