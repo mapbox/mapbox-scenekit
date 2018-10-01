@@ -30,8 +30,9 @@ class DemoPlacementViewController: UIViewController {
         sceneView.showsStatistics = true
 
         //Set up initial terrain and materials
-        let terrainNode = TerrainNode(minLat: 50.044660402821592, maxLat: 50.120873988090956,
-                                      minLon: -122.99017089272466, maxLon: -122.86824490727534)
+        let southWest = CLLocation(latitude: 50.044660402821592, longitude: -122.99017089272466)
+        let northEast = CLLocation(latitude: 50.120873988090956, longitude: -122.86824490727534)
+        let terrainNode = TerrainNode(southWestCorner: southWest, northEastCorner: northEast)
         terrainNode.position = SCNVector3(0, 500, 0)
         terrainNode.geometry?.materials = defaultMaterials()
         scene.rootNode.addChildNode(terrainNode)
@@ -112,7 +113,7 @@ class DemoPlacementViewController: UIViewController {
             locations.append(CLLocation(latitude: latlon.0, longitude: latlon.1))
         }
         
-        let lineA = terrainNode.addPolyline(coordinates: locations, radius: 20, color: .red)
+        terrainNode.addPolyline(coordinates: locations, radius: 20, color: .red)
         
         let lineB = terrainNode.addPolyline(coordinates: locations, startRadius: 30, endRadius: 80, startColor: .red, endColor: .yellow)
         lineB.position.y += 200

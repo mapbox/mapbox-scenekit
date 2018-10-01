@@ -109,7 +109,7 @@ extension TerrainNode {
              More samples would read the same pixel multiple times per line, creating jagged steps.
              */
             let lengthInMeters = Double((toPositon - fromPostion).length())
-            let maxSamplesInSegment = lengthInMeters / self.metersPerX
+            let maxSamplesInSegment = lengthInMeters / self.metersPerPixelX
             
             //resample at a 1/5 of the maximum terrain resolution, to save on performance.
             let samplesInSegment = floor(maxSamplesInSegment * 0.2)
