@@ -21,8 +21,8 @@ open class TerrainNode: SCNNode {
     /// Unit conversions
     fileprivate let metersPerLat: Double
     fileprivate let metersPerLon: Double
-    internal var metersPerX: Double = 0
-    internal var metersPerY: Double = 0
+    private(set) internal var metersPerPixelX: Double = 0
+    private(set) internal var metersPerPixelY: Double = 0
     
     /// TerrainNode Sizes
     fileprivate var terrainHeights = [[Double]]()
@@ -35,8 +35,8 @@ open class TerrainNode: SCNNode {
     fileprivate var terrainImageSize: CGSize = CGSize.zero {
         didSet {
             //update meters per pixel value when terrain image size changes
-            metersPerX = Double(abs(terrainSizeMeters.width)) / Double(terrainImageSize.width)
-            metersPerY = Double(abs(terrainSizeMeters.height)) / Double(terrainImageSize.height)
+            metersPerPixelX = Double(abs(terrainSizeMeters.width)) / Double(terrainImageSize.width)
+            metersPerPixelY = Double(abs(terrainSizeMeters.height)) / Double(terrainImageSize.height)
         }
     }
     
@@ -97,7 +97,7 @@ open class TerrainNode: SCNNode {
     /// - Parameter location: Location in the real world.
     /// - Returns: Vector position should be converted from the terrain local space to the world space (or another node's corrdinate space, as needed).
     @objc public func positionForLocation(_ location: CLLocation) -> SCNVector3 {
-        let coords = coordinates(location: location)
+        let coords = latLonToMeters(location: location)
         let groundLevel = heightForLocalPosition(SCNVector3(coords.x, 0.0, coords.z))
         
         return SCNVector3(coords.x, Float(max(groundLevel, location.altitude)), coords.z)
@@ -106,7 +106,7 @@ open class TerrainNode: SCNNode {
     @objc public func heightForLocalPosition(_ position: SCNVector3) -> Double {
         let coords = (x: position.x, z: position.z)
         
-        if let groundLevel = TerrainNode.height(heights: terrainHeights, x: coords.x, z: coords.z, metersPerX: metersPerX, metersPerY: metersPerY) {
+        if let groundLevel = TerrainNode.height(heights: terrainHeights, x: coords.x, z: coords.z, metersPerX: metersPerPixelX, metersPerY: metersPerPixelY) {
             return groundLevel
         } else {
             return 0.0
@@ -402,7 +402,7 @@ open class TerrainNode: SCNNode {
             let currentRowStart = y * Int(terrainImageSize.width)
 
             for x in 0..<Int(terrainImageSize.width) {
-                guard let z = TerrainNode.height(heights: terrainHeights, x: x, y: y), let xz = coordinates(imageX: x, imageY: y) else {
+                guard let z = TerrainNode.height(heights: terrainHeights, x: x, y: y), let xz = terrainImagePixelsToMeters(imageX: x, imageY: y) else {
                     NSLog("Couldn't coordinates for \(x),\(y)")
                     continue
                 }
@@ -447,8 +447,8 @@ open class TerrainNode: SCNNode {
         var uvList: [vector_float2] = []
         uvList.reserveCapacity(4)
 
-        let minXZ = coordinates(imageX: 0, imageY: 0)!
-        let maxXZ = coordinates(imageX: Int(terrainImageSize.width) - 1, imageY: Int(terrainImageSize.height) - 1)!
+        let minXZ = terrainImagePixelsToMeters(imageX: 0, imageY: 0)!
+        let maxXZ = terrainImagePixelsToMeters(imageX: Int(terrainImageSize.width) - 1, imageY: Int(terrainImageSize.height) - 1)!
         vertices.append(SCNVector3Make(minXZ.x, Float(0.0), minXZ.z))
         uvList.append(vector_float2(Float(0.0), Float(0.0)))
         vertices.append(SCNVector3Make(maxXZ.x, Float(0.0), minXZ.z))
@@ -486,12 +486,12 @@ open class TerrainNode: SCNNode {
 
         var textureX: Float = 0
         let length = Float(max(xs.count, ys.count))
-        let lengthInMeters = Float(!xs.isEmpty ? metersPerX : metersPerY) * Float(length)
+        let lengthInMeters = Float(!xs.isEmpty ? metersPerPixelX : metersPerPixelY) * Float(length)
         let heightRatio: Float = maxHeight / lengthInMeters
 
         for x in xs {
             for y in ys {
-                guard let z = TerrainNode.height(heights: terrainHeights, x: x, y: y), let xz = coordinates(imageX: x, imageY: y) else {
+                guard let z = TerrainNode.height(heights: terrainHeights, x: x, y: y), let xz = terrainImagePixelsToMeters(imageX: x, imageY: y) else {
                     NSLog("Couldn't coordinates for \(x),\(y)")
                     continue
                 }
@@ -527,11 +527,11 @@ open class TerrainNode: SCNNode {
 //MARK: - Helpers
 
 extension TerrainNode {
-    fileprivate func coordinates(imageX: Int, imageY: Int) -> (x: Float, z: Float)? {
-        return (x: Float(imageX) * Float(metersPerX), z: Float(imageY) * Float(metersPerY))
+    fileprivate func terrainImagePixelsToMeters(imageX: Int, imageY: Int) -> (x: Float, z: Float)? {
+        return (x: Float(imageX) * Float(metersPerPixelX), z: Float(imageY) * Float(metersPerPixelY))
     }
 
-    fileprivate func coordinates(location: CLLocation) -> (x: Float, z: Float) {
+    fileprivate func latLonToMeters(location: CLLocation) -> (x: Float, z: Float) {
         let x = Float(location.coordinate.longitude - southWestCorner.coordinate.longitude) * Float(metersPerLon)
         let z = Float(northEastCorner.coordinate.latitude - location.coordinate.latitude) * Float(metersPerLat)
         return (x: Float(x), z: Float(z))
