@@ -103,6 +103,10 @@ open class TerrainNode: SCNNode {
         return SCNVector3(coords.x, Float(max(groundLevel, location.altitude)), coords.z)
     }
     
+    /// Returns the height at ground level of the terrain node at a given local position.
+    ///
+    /// - Parameter position: postion for the height lookup in the terrainNode's local space.
+    /// - Returns: height value at the input position. Apply this to the Y component of the input position to place it on the TerrainNode's surface.
     @objc public func heightForLocalPosition(_ position: SCNVector3) -> Double {
         let coords = (x: position.x, z: position.z)
         
