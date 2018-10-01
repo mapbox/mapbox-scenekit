@@ -128,7 +128,7 @@ open class TerrainNode: SCNNode {
     @objc public func fetchTerrainAndTexture(minWallHeight: CLLocationDistance = 0.0, multiplier: Float = 1, enableDynamicShadows shadows: Bool = false, textureStyle style: String,
                                              heightProgress: MapboxImageAPI.TileLoadProgressCallback? = nil, heightCompletion: @escaping TerrainLoadCompletion,
                                              textureProgress: MapboxImageAPI.TileLoadProgressCallback? = nil, textureCompletion: @escaping MapboxImageAPI.TileLoadCompletion) {
-        let retryNumber = 3
+        let retryNumber = Constants.maxRequestAttempts
         fetchTerrainAndTexture(minWallHeight: minWallHeight,
                                multiplier: multiplier,
                                enableDynamicShadows: shadows,
