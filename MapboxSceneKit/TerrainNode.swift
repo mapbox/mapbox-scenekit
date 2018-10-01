@@ -54,6 +54,11 @@ open class TerrainNode: SCNNode {
     
     @objc public init(southWestCorner: CLLocation, northEastCorner: CLLocation) {
         
+        assert(CLLocationCoordinate2DIsValid(southWestCorner.coordinate), "TerrainNode southWestCorner coordinates are invalid.")
+        assert(CLLocationCoordinate2DIsValid(northEastCorner.coordinate), "TerrainNode northEastCorner coordinates are invalid.")
+        assert(southWestCorner.coordinate.latitude < northEastCorner.coordinate.latitude, "southWestCorner must be South of northEastCorner")
+        assert(southWestCorner.coordinate.longitude < northEastCorner.coordinate.longitude, "southWestCorner must be West of northEastCorner")
+        
         self.southWestCorner = southWestCorner
         self.northEastCorner = northEastCorner
         self.styleZoomLevel = Math.zoomLevelForBounds(southWestCorner: southWestCorner,
