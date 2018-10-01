@@ -115,7 +115,7 @@ class DemoPlacementViewController: UIViewController {
             locations.append(CLLocation(latitude: latlon.0, longitude: latlon.1))
         }
         
-        let lineA = terrainNode.addPolyline(coordinates: locations, radius: 20, color: .red)
+        terrainNode.addPolyline(coordinates: locations, radius: 20, color: .red)
         
         let lineB = terrainNode.addPolyline(coordinates: locations, startRadius: 30, endRadius: 80, startColor: .red, endColor: .yellow)
         lineB.position.y += 200
