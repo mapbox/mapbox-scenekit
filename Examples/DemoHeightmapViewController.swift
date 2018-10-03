@@ -47,8 +47,8 @@ class DemoHeightmapViewController: UIViewController {
         // Big Sur
         // SW: 36.212430, -121.999480
         // NE: 36.658087, -121.700665
-        let minLat = 36.212430
-        let minLon = -121.999480
+        let minLat = 36.21244
+        let minLon = -121.9999
         let maxLat = 36.658087
         let maxLon = -121.700665
 
@@ -67,7 +67,7 @@ class DemoHeightmapViewController: UIViewController {
         scene.cameraNode.position = SCNVector3(terrainNode.boundingBox.max.x * 2, 9000, terrainNode.boundingBox.max.z * 2)
         scene.cameraNode.look(at: terrainNode.position)
 
-        applyStyle(styles.first!)
+        applyStyle(styles[1])
     }
 
     private func applyStyle(_ style: String) {

@@ -18,7 +18,7 @@ open class TerrainNode: SCNNode {
     /// Basic TerrainNode Information
     private let southWestCorner: CLLocation
     private let northEastCorner: CLLocation
-    private let styleZoomLevel: Int
+    private var styleZoomLevel: Int
     private var terrainZoomLevel: Int
     
     /// Unit conversions
@@ -68,12 +68,11 @@ open class TerrainNode: SCNNode {
         self.southWestCorner = southWestCorner
         self.northEastCorner = northEastCorner
         
-        //force a specific zoom level for imagery; subdivide the mesh if necessary
-        self.styleZoomLevel = forceZoomLevel
         
-        //however, use a single terrain image for the entire node
+        //use a single terrain image for the entire node
         let autoZoomLevel = Math.zoomLevelForBounds(southWestCorner: southWestCorner,
                                                     northEastCorner: northEastCorner)
+        self.styleZoomLevel = autoZoomLevel
         self.terrainZoomLevel = min(autoZoomLevel, Constants.maxTerrainRGBZoomLevel)
         
         self.metersPerLat = 1 / Math.metersToDegreesForLat(atLongitude: northEastCorner.coordinate.longitude)
@@ -83,9 +82,18 @@ open class TerrainNode: SCNNode {
         //for now, using the automatic zoom level should be the same as returning 1 terrainelement
         
         //initialize the terrain elements
-        let testCoord = Math.centerCoordinate(southWestCorner: southWestCorner, northEastCorner: northEastCorner)
-        self.terrainElements = [TerrainElement(southWestCorner: testCoord, northEastCorner: northEastCorner),
-                                TerrainElement(southWestCorner: southWestCorner, northEastCorner: testCoord)]
+        self.terrainElements = [TerrainElement(southWestCorner: southWestCorner, northEastCorner: northEastCorner)]
+        while styleZoomLevel < autoZoomLevel + 2 {
+            var newElements = [TerrainElement]()
+            for element in terrainElements {
+                newElements.append(contentsOf: TerrainNode.subdivideElement(rootElement: element))
+            }
+            terrainElements = newElements
+            styleZoomLevel = Math.zoomLevelForBounds(southWestCorner: terrainElements[0].southWestCorner,
+                                                     northEastCorner: terrainElements[0].northEastCorner)
+        }
+        
+        
         //preload the materials list for loaded terrain
         self.terrainMaterials = TerrainNode.getMaterials(forTerrainElements: terrainElements)
         super.init()
@@ -305,28 +313,29 @@ open class TerrainNode: SCNNode {
                                      completion: @escaping TileElementLoadCompletion) {
         
         //for every element, create a separate image request
-        for (index, element) in terrainElements.enumerated() {
-            let southWestCorner = element.southWestCorner
-            let northEastCorner = element.northEastCorner
+
             DispatchQueue.global(qos: .userInitiated).async { [weak self] in
-                if let taskID = self?.api.image(forStyle: style,
-                                                zoomLevel: zoom,
-                                                southWestCorner: southWestCorner,
-                                                northEastCorner: northEastCorner,
-                                                progress: progress,
-                                                completion: { image, textureFetchError in
-                                                    let inputMaterial = self?.terrainMaterials[index] ?? SCNMaterial()
-                                                    if let outputMaterial = completion(inputMaterial,
-                                                               textureFetchError == nil ? image : nil,
-                                                               textureFetchError) {
+                for (index, element) in (self?.terrainElements.enumerated())! {
+                    let southWestCorner = element.southWestCorner
+                    let northEastCorner = element.northEastCorner
+                    if let taskID = self?.api.image(forStyle: style,
+                                                    zoomLevel: zoom,
+                                                    southWestCorner: southWestCorner,
+                                                    northEastCorner: northEastCorner,
+                                                    progress: progress,
+                                                    completion: { image, textureFetchError in
+                                                        let inputMaterial = self?.terrainMaterials[index] ?? SCNMaterial()
+                                                        if let outputMaterial = completion(inputMaterial,
+                                                                   textureFetchError == nil ? image : nil,
+                                                                   textureFetchError) {
+                                                            
+                                                            //assign the returned material to the correct material index
+                                                            self?.terrainMaterials[index] = outputMaterial
+                                                        }
                                                         
-                                                        //assign the returned material to the correct material index
-                                                        self?.terrainMaterials[index] = outputMaterial
-                                                    }
-                                                    
-                }) {
-                    self?.pendingFetches.append(taskID)
-                }
+                    }) {
+                        self?.pendingFetches.append(taskID)
+                    }
             }
         }
     }
@@ -469,10 +478,10 @@ open class TerrainNode: SCNNode {
         //get the x and y bounds in pixels of the element
         let southWestCornerInMeters = latLonToMeters(location: southWestCorner)
         let northEastCornerInMeters = latLonToMeters(location: northEastCorner)
-        let xPixelMin = Int(southWestCornerInMeters.x / Float(metersPerPixelX))
-        let xPixelMax = Int(northEastCornerInMeters.x / Float(metersPerPixelX))
-        let yPixelMin = Int(northEastCornerInMeters.z / Float(metersPerPixelY))
-        var yPixelMax = Int(southWestCornerInMeters.z / Float(metersPerPixelY))
+        let xPixelMin = Int((southWestCornerInMeters.x / Float(metersPerPixelX)).rounded(.down))
+        let xPixelMax = Int((northEastCornerInMeters.x / Float(metersPerPixelX)).rounded(.up))
+        let yPixelMin = Int((northEastCornerInMeters.z / Float(metersPerPixelY)).rounded(.down))
+        var yPixelMax = Int((southWestCornerInMeters.z / Float(metersPerPixelY)).rounded(.up))
         let widthInPixels: Int = xPixelMax - xPixelMin
         let heightInPixels: Int = yPixelMax - yPixelMin
         
@@ -728,6 +737,37 @@ extension TerrainNode {
         materialsList.append(bottomMaterial)
         
         return materialsList
+    }
+    
+    fileprivate static func subdivideElement(rootElement: TerrainElement) -> [TerrainElement]{
+        //get the center of the element to subdivide
+        let centerCoordinate = Math.centerCoordinate(southWestCorner: rootElement.southWestCorner,
+                                                    northEastCorner: rootElement.northEastCorner)
+        //center of the north boundary
+        let northCenter = CLLocation(latitude: rootElement.northEastCorner.coordinate.latitude,
+                                     longitude: centerCoordinate.coordinate.longitude)
+        //center of the east boundary
+        let eastCenter = CLLocation(latitude: centerCoordinate.coordinate.latitude,
+                                    longitude: rootElement.northEastCorner.coordinate.longitude)
+        
+        //center of the south boundary
+        let southCenter = CLLocation(latitude: rootElement.southWestCorner.coordinate.latitude,
+                                     longitude: centerCoordinate.coordinate.longitude)
+        
+        //center of the west boundary
+        let westCenter = CLLocation(latitude: centerCoordinate.coordinate.latitude,
+                                    longitude: rootElement.southWestCorner.coordinate.longitude)
+        
+        //define four new elements spanning the root element
+        let southWestElement = TerrainElement(southWestCorner: rootElement.southWestCorner, northEastCorner: centerCoordinate)
+        let southEastElement = TerrainElement(southWestCorner: southCenter, northEastCorner: eastCenter)
+        let northWestElement = TerrainElement(southWestCorner: westCenter, northEastCorner: northCenter)
+        let northEastElement = TerrainElement(southWestCorner: centerCoordinate, northEastCorner: rootElement.northEastCorner)
+        
+        return [southWestElement,
+                southEastElement,
+                northWestElement,
+                northEastElement]
     }
 }
 
