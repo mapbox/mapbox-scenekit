@@ -119,14 +119,15 @@
         } else {
             NSLog(@"Terrain load complete");
         }
-    } textureProgress:nil textureCompletion:^(UIImage * _Nullable image, NSError * _Nullable fetchError) {
+    } textureProgress:nil textureCompletion:^(SCNMaterial * _Nullable material, UIImage * _Nullable image, NSError * _Nullable fetchError) {
         if (fetchError) {
             NSLog(@"Texture load failed: %@", fetchError.localizedDescription);
         }
         if (image) {
             NSLog(@"terrain texture fetch completed");
-            self.terrainNode.geometry.materials[4].diffuse.contents = image;
+            material.diffuse.contents = image;
         }
+        return material;
     }];
 }
 

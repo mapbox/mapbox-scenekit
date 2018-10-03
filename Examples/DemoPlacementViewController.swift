@@ -73,14 +73,15 @@ class DemoPlacementViewController: UIViewController {
             self.addUserPath(to: terrainNode)
         }, textureProgress: { progress, total in
             progressHandler.updateProgress(handlerID: textureFetchHandler, progress: progress, total: total)
-        }) { image, fetchError in
+        }) { material, image, fetchError in
             if let fetchError = fetchError {
                 NSLog("Texture load failed: \(fetchError.localizedDescription)")
             }
             if image != nil {
                 NSLog("Texture load complete")
-                terrainNode.geometry?.materials[4].diffuse.contents = image
+                material?.diffuse.contents = image
             }
+            return material
         }
     }
 

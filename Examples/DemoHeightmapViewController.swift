@@ -94,14 +94,15 @@ class DemoHeightmapViewController: UIViewController {
             self.progressHandler.updateProgress(handlerID: terrainRendererHandler, progress: 1, total: 1)
         }, textureProgress: { progress, total in
             self.progressHandler.updateProgress(handlerID: textureFetchHandler, progress: progress, total: total)
-        }) { image, textureFetchError in
+        }) { material, image, textureFetchError in
             if let textureFetchError = textureFetchError {
                 NSLog("Texture load failed: \(textureFetchError.localizedDescription)")
             }
             if image != nil {
                 NSLog("Texture load for \(style) complete")
-//                terrainNode.geometry?.materials[4].diffuse.contents = image
+                material?.diffuse.contents = image
             }
+            return material
         }
     }
 
