@@ -43,12 +43,20 @@ class DemoHeightmapViewController: UIViewController {
         sceneView.defaultCameraController.interactionMode = .orbitTurntable
         sceneView.defaultCameraController.inertiaEnabled = true
         sceneView.showsStatistics = true
+        
+        // Big Sur
+        // SW: 36.212430, -121.999480
+        // NE: 36.658087, -121.700665
+        let minLat = 36.212430
+        let minLon = -121.999480
+        let maxLat = 36.658087
+        let maxLon = -121.700665
 
         //Set up initial terrain and materials
-        let terrainNode = TerrainNode(minLat: 50.044660402821592, maxLat: 50.120873988090956,
-                                      minLon: -122.99017089272466, maxLon: -122.86824490727534)
+        let terrainNode = TerrainNode(minLat: minLat, maxLat: maxLat,
+                                      minLon: minLon, maxLon: maxLon)
         terrainNode.position = SCNVector3(0, 500, 0)
-        terrainNode.geometry?.materials = defaultMaterials()
+//        terrainNode.geometry?.materials = defaultMaterials()
         scene.rootNode.addChildNode(terrainNode)
 
         self.terrainNode = terrainNode
@@ -92,7 +100,7 @@ class DemoHeightmapViewController: UIViewController {
             }
             if image != nil {
                 NSLog("Texture load for \(style) complete")
-                terrainNode.geometry?.materials[4].diffuse.contents = image
+//                terrainNode.geometry?.materials[4].diffuse.contents = image
             }
         }
     }

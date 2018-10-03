@@ -12,6 +12,9 @@ open class TerrainNode: SCNNode {
     /// Callback typealias for when the new geometry has been loaded based on RGB heightmaps.
     public typealias TerrainLoadCompletion = (NSError?) -> Void
     
+    /// Callback typealias for when image elements have loaded, including an inout
+    public typealias TileElementLoadCompletion = (_ material: inout SCNMaterial, _ image: UIImage?, _ error: NSError?) -> Void
+    
     /// Basic TerrainNode Information
     private let southWestCorner: CLLocation
     private let northEastCorner: CLLocation
@@ -26,6 +29,7 @@ open class TerrainNode: SCNNode {
     
     /// Terrain Elements
     fileprivate var terrainElements: [TerrainElement]
+    fileprivate var terrainMaterials: [SCNMaterial]
     
     /// TerrainNode Sizes
     fileprivate var terrainHeights = [[Double]]()
@@ -80,13 +84,16 @@ open class TerrainNode: SCNNode {
         
         //initialize the terrain elements
         let testCoord = Math.centerCoordinate(southWestCorner: southWestCorner, northEastCorner: northEastCorner)
-        self.terrainElements = [TerrainElement(southWestCorner: southWestCorner, northEastCorner: testCoord)]
-
+        self.terrainElements = [TerrainElement(southWestCorner: testCoord, northEastCorner: northEastCorner),
+                                TerrainElement(southWestCorner: southWestCorner, northEastCorner: testCoord)]
+        //preload the materials list for loaded terrain
+        self.terrainMaterials = TerrainNode.getMaterials(forTerrainElements: terrainElements)
         super.init()
         geometry = SCNBox(width: terrainSizeMeters.width,
                           height: 10.0,
                           length: terrainSizeMeters.height,
                           chamferRadius: 0.0)
+        geometry?.materials = TerrainNode.getLoadingMaterials()
     }
     
     @objc public convenience init(southWestCorner: CLLocation, northEastCorner: CLLocation) {
@@ -186,6 +193,10 @@ open class TerrainNode: SCNNode {
             guard let heightFetchError = heightFetchError else {
                 // if there is no fetch error, height data is available
                 heightCompletion(nil)
+                //fetch texture after terrain is loaded
+                self.fetchTerrainTexture(style, zoom: self.styleZoomLevel,
+                                         progress: textureProgress,
+                                         completion: textureCompletion)
                 return
             }
             
@@ -202,6 +213,7 @@ open class TerrainNode: SCNNode {
                                             heightCompletion: heightCompletion,
                                             textureProgress: textureProgress,
                                             textureCompletion: textureCompletion)
+                
             } else { // fail download when there's no height data for any zoom level
                 heightCompletion(heightFetchError)
                 textureProgress?(1, 1)
@@ -209,10 +221,7 @@ open class TerrainNode: SCNNode {
             }
         }
         
-        //fetch texture in parallel to heights
-        self.fetchTerrainTexture(style, zoom: self.styleZoomLevel,
-                                 progress: textureProgress,
-                                 completion: textureCompletion)
+
     }
     
     /// DEPRECATED - Please use instead fetchTerrainAndTexture.
@@ -273,12 +282,20 @@ open class TerrainNode: SCNNode {
     ///   - progress: Handler for fetch progress change.
     ///   - completion: Handler for complete texture update.
     @available(*, deprecated, message: "DEPRECATED - Please use instead fetchTerrainAndTexture.")
-    @objc public func fetchTerrainTexture(_ style: String, progress: MapboxImageAPI.TileLoadProgressCallback? = nil, completion: @escaping MapboxImageAPI.TileLoadCompletion) {
+    @objc public func fetchTerrainTexture(_ style: String,
+                                          progress: MapboxImageAPI.TileLoadProgressCallback? = nil,
+                                          completion: @escaping MapboxImageAPI.TileLoadCompletion) {
+        
         fetchTerrainTexture(style, zoom: styleZoomLevel, progress: progress, completion: completion)
     }
     
-    private func fetchTerrainTexture(_ style: String, zoom: Int, progress: MapboxImageAPI.TileLoadProgressCallback? = nil, completion: @escaping MapboxImageAPI.TileLoadCompletion) {
-        for element in terrainElements {
+    private func fetchTerrainTexture(_ style: String,
+                                     zoom: Int,
+                                     progress: MapboxImageAPI.TileLoadProgressCallback? = nil,
+                                     completion: @escaping MapboxImageAPI.TileLoadCompletion) {
+        
+        //for every element, create a separate image request
+        for (index, element) in terrainElements.enumerated() {
             let southWestCorner = element.southWestCorner
             let northEastCorner = element.northEastCorner
             DispatchQueue.global(qos: .userInitiated).async { [weak self] in
@@ -287,7 +304,13 @@ open class TerrainNode: SCNNode {
                                                 southWestCorner: southWestCorner,
                                                 northEastCorner: northEastCorner,
                                                 progress: progress,
-                                                completion: completion) {
+                                                completion: { image, textureFetchError in
+                                                    if image != nil {
+                                                        
+                                                        self?.terrainMaterials[index].diffuse.contents = image
+                                                    }
+                                                    completion(textureFetchError == nil ? image : nil, textureFetchError)                                                 
+                }) {
                     self?.pendingFetches.append(taskID)
                 }
             }
@@ -334,6 +357,18 @@ open class TerrainNode: SCNNode {
         var uvList: [vector_float2] = []
         var sources = [SCNGeometrySource]()
         var elements = [SCNGeometryElement]()
+        
+        /// Add terrain elements first
+        for element in terrainElements {
+            let geometryData = createElevationGeometry(southWestCorner: element.southWestCorner,
+                                                       northEastCorner: element.northEastCorner,
+                                                       vertexOffset: vertices.count, enableShadows: shadows)
+            
+            vertices.append(contentsOf: geometryData.vertices)
+            normals.append(contentsOf: geometryData.normals)
+            uvList.append(contentsOf: geometryData.uvList)
+            elements.append(geometryData.element)
+        }
 
         //Adding these geometries in the same order they'd appear in an SCNBox, so previously applied materials stay on the same side / order
         if let wallHeight = wallHeight {
@@ -377,17 +412,6 @@ open class TerrainNode: SCNNode {
             uvList.append(contentsOf: west.uvList)
             elements.append(west.element)
         }
-        
-        for element in terrainElements {
-            let geometryData = createElevationGeometry(southWestCorner: element.southWestCorner,
-                                    northEastCorner: element.northEastCorner,
-                                    vertexOffset: vertices.count, enableShadows: shadows)
-            
-            vertices.append(contentsOf: geometryData.vertices)
-            normals.append(contentsOf: geometryData.normals)
-            uvList.append(contentsOf: geometryData.uvList)
-            elements.append(geometryData.element)
-        }
 
         if wallHeight != nil {
             let bottom = createGeometryForBottom(vertexOffset: vertices.count)
@@ -397,18 +421,6 @@ open class TerrainNode: SCNNode {
             elements.append(bottom.element)
         }
         
-//        let top = createTopGeometry(vertexOffset: vertices.count, enableShadows: shadows)
-//        vertices.append(contentsOf: top.vertices)
-//        normals.append(contentsOf: top.normals)
-//        uvList.append(contentsOf: top.uvList)
-//        elements.append(top.element)
-//
-//        let tiptop = createTopGeometry(vertexOffset: vertices.count, enableShadows: shadows)
-//        vertices.append(contentsOf: tiptop.vertices)
-//        normals.append(contentsOf: tiptop.normals)
-//        uvList.append(contentsOf: tiptop.uvList)
-//        elements.append(tiptop.element)
-
         let float: Float = 0.0
         let sizeOfFloat = MemoryLayout.size(ofValue: float)
         let vec2: vector_float2 = vector2(0, 0)
@@ -429,9 +441,10 @@ open class TerrainNode: SCNNode {
 
         let originalPosition = position
         let originalMaterials = geometry?.materials ?? [SCNMaterial]()
+        print("orignial materials count: \(originalMaterials.count)")
         
         geometry = SCNGeometry(sources: sources, elements: elements)
-        geometry?.materials = originalMaterials
+        geometry?.materials = terrainMaterials
         centerPivot()
         position = originalPosition
     }
@@ -585,6 +598,8 @@ open class TerrainNode: SCNNode {
                 normals: [SCNVector3](repeating: normal, count: vertices.count),
                 uvList: uvList)
     }
+    
+    //MARK: - Materials
 }
 
 //MARK: - Helpers
@@ -649,6 +664,56 @@ extension TerrainNode {
 
         let terrainHeight = -10000 + ((r * 256 * 256 + g * 256 + b) * 0.1)
         return Double(terrainHeight * multiplier)
+    }
+    
+    //creates materials to match the loading geometry
+    fileprivate static func getLoadingMaterials() -> [SCNMaterial] {
+        let groundImage = SCNMaterial()
+        groundImage.diffuse.contents = UIColor.darkGray
+        groundImage.name = "Ground texture"
+        
+        let sideMaterial = SCNMaterial()
+        sideMaterial.diffuse.contents = UIColor.darkGray
+        //TODO: Some kind of bug with the normals for sides where not having them double-sided has them not show up
+        sideMaterial.isDoubleSided = true
+        sideMaterial.name = "Side"
+        
+        let bottomMaterial = SCNMaterial()
+        bottomMaterial.diffuse.contents = UIColor.black
+        bottomMaterial.name = "Bottom"
+        
+        return [sideMaterial, sideMaterial, sideMaterial, sideMaterial, groundImage, bottomMaterial]
+    }
+    
+    //creates materials to match the final generated geometry
+    fileprivate static func getMaterials(forTerrainElements terrainElements: [TerrainElement]) -> [SCNMaterial] {
+        
+        var materialsList = [SCNMaterial]()
+        
+        //this depends a lot on terrain element ordering from subdivision,
+        //but since we're iterating through the same array for materials and geometry, the indices should match
+        for _ in terrainElements {
+            let elementMaterial = SCNMaterial()
+            elementMaterial.diffuse.contents = UIColor.green
+            elementMaterial.name = "Ground texture"
+            materialsList.append(elementMaterial)
+            //TODO: assign a index name here for more robust lookups (not sure if the same is possible for geometry elements)
+        }
+        
+        //add side elements next
+        let sideMaterial = SCNMaterial()
+        sideMaterial.diffuse.contents = UIColor.darkGray
+        sideMaterial.isDoubleSided = true
+        sideMaterial.name = "Side"
+        materialsList.append(contentsOf: [sideMaterial, sideMaterial, sideMaterial, sideMaterial])
+        
+        //add bottom material
+        let bottomMaterial = SCNMaterial()
+        bottomMaterial.diffuse.contents = UIColor.black
+        bottomMaterial.name = "Bottom"
+        materialsList.append(bottomMaterial)
+        
+        return materialsList
     }
 }
 

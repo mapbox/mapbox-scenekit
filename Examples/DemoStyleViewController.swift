@@ -35,7 +35,6 @@ class DemoStyleViewController: UIViewController {
         let terrainNode = TerrainNode(minLat: 50.044660402821592, maxLat: 50.120873988090956,
                                       minLon: -122.99017089272466, maxLon: -122.86824490727534)
         terrainNode.position = SCNVector3(0, 500, 0)
-        terrainNode.geometry?.materials = defaultMaterials()
         scene.rootNode.addChildNode(terrainNode)
 
         //Now that we've set up the terrain, lets place the lighting and camera in nicer positions
@@ -70,28 +69,10 @@ class DemoStyleViewController: UIViewController {
             }
             if image != nil {
                 NSLog("Texture load complete")
-                terrainNode.geometry?.materials[4].diffuse.contents = image
+//                terrainNode.geometry?.materials[4].diffuse.contents = image
             }
             self.progressView?.isHidden = true
         })
-    }
-
-    private func defaultMaterials() -> [SCNMaterial] {
-        let groundImage = SCNMaterial()
-        groundImage.diffuse.contents = UIColor.darkGray
-        groundImage.name = "Ground texture"
-
-        let sideMaterial = SCNMaterial()
-        sideMaterial.diffuse.contents = UIColor.darkGray
-        //TODO: Some kind of bug with the normals for sides where not having them double-sided has them not show up
-        sideMaterial.isDoubleSided = true
-        sideMaterial.name = "Side"
-
-        let bottomMaterial = SCNMaterial()
-        bottomMaterial.diffuse.contents = UIColor.black
-        bottomMaterial.name = "Bottom"
-
-        return [sideMaterial, sideMaterial, sideMaterial, sideMaterial, groundImage, bottomMaterial]
     }
 
     @IBAction func swtichStyle(_ sender: Any?) {
