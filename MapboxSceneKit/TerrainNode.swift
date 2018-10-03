@@ -614,7 +614,6 @@ open class TerrainNode: SCNNode {
                 uvList: uvList)
     }
     
-    //MARK: - Materials
 }
 
 //MARK: - Helpers
@@ -681,6 +680,8 @@ extension TerrainNode {
         return Double(terrainHeight * multiplier)
     }
     
+    //MARK: - Materials
+
     //creates materials to match the loading geometry
     fileprivate static func getLoadingMaterials() -> [SCNMaterial] {
         let groundImage = SCNMaterial()
@@ -709,7 +710,7 @@ extension TerrainNode {
         //but since we're iterating through the same array for materials and geometry, the indices should match
         for _ in terrainElements {
             let elementMaterial = SCNMaterial()
-            elementMaterial.diffuse.contents = UIColor.green
+            elementMaterial.diffuse.contents = UIColor.darkGray
             elementMaterial.name = "Ground texture"
             materialsList.append(elementMaterial)
             //TODO: assign a index name here for more robust lookups (not sure if the same is possible for geometry elements)
