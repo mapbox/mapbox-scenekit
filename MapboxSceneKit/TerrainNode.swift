@@ -79,7 +79,8 @@ open class TerrainNode: SCNNode {
         //for now, using the automatic zoom level should be the same as returning 1 terrainelement
         
         //initialize the terrain elements
-        self.terrainElements = [TerrainElement(southWestCorner: southWestCorner, northEastCorner: northEastCorner)]
+        let testCoord = Math.centerCoordinate(southWestCorner: southWestCorner, northEastCorner: northEastCorner)
+        self.terrainElements = [TerrainElement(southWestCorner: southWestCorner, northEastCorner: testCoord)]
 
         super.init()
         geometry = SCNBox(width: terrainSizeMeters.width,
@@ -444,9 +445,11 @@ open class TerrainNode: SCNNode {
         let xPixelMin = Int(southWestCornerInMeters.x / Float(metersPerPixelX))
         let xPixelMax = Int(northEastCornerInMeters.x / Float(metersPerPixelX))
         let yPixelMin = Int(northEastCornerInMeters.z / Float(metersPerPixelY))
-        let yPixelMax = Int(southWestCornerInMeters.z / Float(metersPerPixelY))
+        var yPixelMax = Int(southWestCornerInMeters.z / Float(metersPerPixelY))
         let widthInPixels: Int = xPixelMax - xPixelMin
         let heightInPixels: Int = yPixelMax - yPixelMin
+        
+        yPixelMax = min(Int(terrainImageSize.height), yPixelMax)
         
         var vertices = [SCNVector3]()
         var normals = [SCNVector3](repeating: SCNVector3(0, 1, 0), count: widthInPixels * heightInPixels)
@@ -460,7 +463,8 @@ open class TerrainNode: SCNNode {
             let currentRowStart = y * Int(widthInPixels)
             
             for x in 0..<Int(widthInPixels) {
-                guard let z = TerrainNode.heightForPixelCoordinates(heights: terrainHeights, x: x, y: y), let xz = terrainImagePixelsToMeters(imageX: x, imageY: y) else {
+                guard let z = TerrainNode.heightForPixelCoordinates(heights: terrainHeights, x: x + xPixelMin, y: y + yPixelMin),
+                    let xz = terrainImagePixelsToMeters(imageX: x + xPixelMin, imageY: y + yPixelMin) else {
                     NSLog("Couldn't coordinates for \(x),\(y)")
                     continue
                 }
