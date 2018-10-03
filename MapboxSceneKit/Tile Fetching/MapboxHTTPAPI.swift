@@ -26,9 +26,15 @@ enum FetchError: Int {
 }
 
 internal final class MapboxHTTPAPI {
+    
+    private static var dispatchQueue: DispatchQueue = {
+        let dispatchQueue = DispatchQueue(label: "com.mapbox.scenekit.api", attributes: [.concurrent])
+        return dispatchQueue
+    }()
+    
     private static var operationQueue: OperationQueue = {
         var operationQueue = OperationQueue()
-        operationQueue.underlyingQueue = DispatchQueue(label: "com.mapbox.scenekit.api", attributes: [.concurrent])
+        operationQueue.underlyingQueue = dispatchQueue
         operationQueue.name = "Mapbox API Queue"
         operationQueue.maxConcurrentOperationCount = 10
         return operationQueue

@@ -157,7 +157,7 @@ public final class MapboxImageAPI: NSObject {
             }
 
             //Color data gets messed up if the user expectes a PNG back but doesn't get one
-            if format == MapboxImageAPI.TileImageFormatPNG, let image = imageBuilder.makeImage(), let png = UIImagePNGRepresentation(image), let formattedImage = UIImage(data: png) {
+            if format == MapboxImageAPI.TileImageFormatPNG, let image = imageBuilder.makeImage(), let png = image.pngData(), let formattedImage = UIImage(data: png) {
                 DispatchQueue.main.async {
                     completion(formattedImage, nil)
                 }
