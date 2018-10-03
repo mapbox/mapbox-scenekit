@@ -58,7 +58,7 @@ open class TerrainNode: SCNNode {
         fatalError("init(coder:) has not been implemented")
     }
     
-    @objc public init(southWestCorner: CLLocation, northEastCorner: CLLocation, forceZoomLevel: Int) {
+    @objc public init(southWestCorner: CLLocation, northEastCorner: CLLocation, subdivisionFactor: Int = 0) {
         
         assert(CLLocationCoordinate2DIsValid(southWestCorner.coordinate), "TerrainNode southWestCorner coordinates are invalid.")
         assert(CLLocationCoordinate2DIsValid(northEastCorner.coordinate), "TerrainNode northEastCorner coordinates are invalid.")
@@ -78,12 +78,11 @@ open class TerrainNode: SCNNode {
         self.metersPerLat = 1 / Math.metersToDegreesForLat(atLongitude: northEastCorner.coordinate.longitude)
         self.metersPerLon = 1 / Math.metersToDegreesForLon(atLatitude: northEastCorner.coordinate.latitude)
         
-        //TODO: calculate the number of terrainelements needed to draw a node at the specified zoom level
-        //for now, using the automatic zoom level should be the same as returning 1 terrainelement
-        
-        //initialize the terrain elements
+        //limit the subdivision level to avoid memory warnings
+        let terrainSubdivisions = min(Constants.maxTextureSubdivisionFactor, subdivisionFactor)
+        //Calculate the subdivided terrian elements
         self.terrainElements = [TerrainElement(southWestCorner: southWestCorner, northEastCorner: northEastCorner)]
-        while styleZoomLevel < autoZoomLevel + 2 {
+        for _ in 0..<terrainSubdivisions {
             var newElements = [TerrainElement]()
             for element in terrainElements {
                 newElements.append(contentsOf: TerrainNode.subdivideElement(rootElement: element))
@@ -102,13 +101,6 @@ open class TerrainNode: SCNNode {
                           length: terrainSizeMeters.height,
                           chamferRadius: 0.0)
         geometry?.materials = TerrainNode.getLoadingMaterials()
-    }
-    
-    @objc public convenience init(southWestCorner: CLLocation, northEastCorner: CLLocation) {
-        let autoZoomLevel = Math.zoomLevelForBounds(southWestCorner: southWestCorner,
-                                                    northEastCorner: northEastCorner)
-        
-        self.init(southWestCorner: southWestCorner, northEastCorner: northEastCorner, forceZoomLevel: autoZoomLevel)
     }
 
     @objc public convenience init(minLat: CLLocationDegrees, maxLat: CLLocationDegrees, minLon: CLLocationDegrees, maxLon: CLLocationDegrees) {

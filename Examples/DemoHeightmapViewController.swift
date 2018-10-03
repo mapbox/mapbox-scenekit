@@ -42,7 +42,8 @@ class DemoHeightmapViewController: UIViewController {
         sceneView.defaultCameraController.pointOfView = sceneView.pointOfView
         sceneView.defaultCameraController.interactionMode = .orbitTurntable
         sceneView.defaultCameraController.inertiaEnabled = true
-        sceneView.showsStatistics = true
+//        sceneView.showsStatistics = true
+        sceneView.isJitteringEnabled = true
         
         // Big Sur
         // SW: 36.212430, -121.999480
@@ -51,10 +52,12 @@ class DemoHeightmapViewController: UIViewController {
         let minLon = -121.9999
         let maxLat = 36.658087
         let maxLon = -121.700665
+        
+        let southWest = CLLocation(latitude: minLat, longitude: minLon)
+        let northEast = CLLocation(latitude: maxLat, longitude: maxLon)
 
         //Set up initial terrain and materials
-        let terrainNode = TerrainNode(minLat: minLat, maxLat: maxLat,
-                                      minLon: minLon, maxLon: maxLon)
+        let terrainNode = TerrainNode(southWestCorner: southWest, northEastCorner: northEast, subdivisionFactor: 2)
         terrainNode.position = SCNVector3(0, 500, 0)
 //        terrainNode.geometry?.materials = defaultMaterials()
         scene.rootNode.addChildNode(terrainNode)
@@ -126,5 +129,9 @@ class DemoHeightmapViewController: UIViewController {
 
     @IBAction func swtichStyle(_ sender: Any?) {
         applyStyle(styles[stylePicker!.selectedSegmentIndex])
+    }
+    
+    override func didReceiveMemoryWarning() {
+        print("MEMORY WARNING")
     }
 }
