@@ -13,7 +13,7 @@ open class TerrainNode: SCNNode {
     public typealias TerrainLoadCompletion = (NSError?) -> Void
     
     /// Callback typealias for when image elements have loaded, including an inout
-    public typealias TileElementLoadCompletion = (_ materialForTile: SCNMaterial?, _ image: UIImage?, _ error: NSError?) -> SCNMaterial?
+    public typealias TileElementLoadCompletion = (_ materialName: NSString?, _ image: UIImage?, _ error: NSError?) -> Void
     
     /// Basic TerrainNode Information
     private let southWestCorner: CLLocation
@@ -81,7 +81,8 @@ open class TerrainNode: SCNNode {
         //limit the subdivision level to avoid memory warnings
         let terrainSubdivisions = min(Constants.maxTextureSubdivisionFactor, subdivisionFactor)
         //Calculate the subdivided terrian elements
-        self.terrainElements = [TerrainElement(southWestCorner: southWestCorner, northEastCorner: northEastCorner)]
+        self.terrainElements = [TerrainElement(id: NSString(string: "TerrainGeometry"),
+                                               southWestCorner: southWestCorner, northEastCorner: northEastCorner)]
         for _ in 0..<terrainSubdivisions {
             var newElements = [TerrainElement]()
             for element in terrainElements {
@@ -305,9 +306,9 @@ open class TerrainNode: SCNNode {
                                      completion: @escaping TileElementLoadCompletion) {
         
         //for every element, create a separate image request
-
+            let terrainElements = self.terrainElements
             DispatchQueue.global(qos: .userInitiated).async { [weak self] in
-                for (index, element) in (self?.terrainElements.enumerated())! {
+                for element in terrainElements {
                     let southWestCorner = element.southWestCorner
                     let northEastCorner = element.northEastCorner
                     if let taskID = self?.api.image(forStyle: style,
@@ -316,14 +317,9 @@ open class TerrainNode: SCNNode {
                                                     northEastCorner: northEastCorner,
                                                     progress: progress,
                                                     completion: { image, textureFetchError in
-                                                        let inputMaterial = self?.terrainMaterials[index] ?? SCNMaterial()
-                                                        if let outputMaterial = completion(inputMaterial,
+                                                        completion(element.id,
                                                                    textureFetchError == nil ? image : nil,
-                                                                   textureFetchError) {
-                                                            
-                                                            //assign the returned material to the correct material index
-                                                            self?.terrainMaterials[index] = outputMaterial
-                                                        }
+                                                                   textureFetchError)
                                                         
                     }) {
                         self?.pendingFetches.append(taskID)
@@ -708,10 +704,10 @@ extension TerrainNode {
         
         //this depends a lot on terrain element ordering from subdivision,
         //but since we're iterating through the same array for materials and geometry, the indices should match
-        for _ in terrainElements {
+        for element in terrainElements {
             let elementMaterial = SCNMaterial()
             elementMaterial.diffuse.contents = UIColor.darkGray
-            elementMaterial.name = "Ground texture"
+            elementMaterial.name = element.id as String
             materialsList.append(elementMaterial)
             //TODO: assign a index name here for more robust lookups (not sure if the same is possible for geometry elements)
         }
@@ -752,10 +748,14 @@ extension TerrainNode {
                                     longitude: rootElement.southWestCorner.coordinate.longitude)
         
         //define four new elements spanning the root element
-        let southWestElement = TerrainElement(southWestCorner: rootElement.southWestCorner, northEastCorner: centerCoordinate)
-        let southEastElement = TerrainElement(southWestCorner: southCenter, northEastCorner: eastCenter)
-        let northWestElement = TerrainElement(southWestCorner: westCenter, northEastCorner: northCenter)
-        let northEastElement = TerrainElement(southWestCorner: centerCoordinate, northEastCorner: rootElement.northEastCorner)
+        let southWestElement = TerrainElement(id: NSString(string: "\(rootElement.id), 1"),
+                                              southWestCorner: rootElement.southWestCorner, northEastCorner: centerCoordinate)
+        let southEastElement = TerrainElement(id: NSString(string: "\(rootElement.id), 2"),
+                                              southWestCorner: southCenter, northEastCorner: eastCenter)
+        let northWestElement = TerrainElement(id: NSString(string: "\(rootElement.id), 3"),
+                                              southWestCorner: westCenter, northEastCorner: northCenter)
+        let northEastElement = TerrainElement(id: NSString(string: "\(rootElement.id), 4"),
+                                              southWestCorner: centerCoordinate, northEastCorner: rootElement.northEastCorner)
         
         return [southWestElement,
                 southEastElement,
@@ -766,11 +766,8 @@ extension TerrainNode {
 
 fileprivate struct TerrainElement {
     
+    let id: NSString
     let southWestCorner: CLLocation
     let northEastCorner: CLLocation
     
-    init(southWestCorner: CLLocation, northEastCorner: CLLocation) {
-        self.southWestCorner = southWestCorner
-        self.northEastCorner = northEastCorner
-    }
 }

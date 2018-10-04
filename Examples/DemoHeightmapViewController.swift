@@ -86,7 +86,7 @@ class DemoHeightmapViewController: UIViewController {
         let terrainRendererHandler = progressHandler.registerForProgress()
         progressHandler.updateProgress(handlerID: terrainRendererHandler, progress: 0, total: 1)
         let textureFetchHandler = progressHandler.registerForProgress()
-        terrainNode.fetchTerrainAndTexture(minWallHeight: 50.0, multiplier: 1.5, enableDynamicShadows: false, textureStyle: style, heightProgress: { progress, total in
+        terrainNode.fetchTerrainAndTexture(minWallHeight: 50.0, multiplier: 1.5, enableDynamicShadows: true, textureStyle: style, heightProgress: { progress, total in
             self.progressHandler.updateProgress(handlerID: terrainFetcherHandler, progress: progress, total: total)
         }, heightCompletion: { heightFetchError in
             if let heightFetchError = heightFetchError {
@@ -97,15 +97,14 @@ class DemoHeightmapViewController: UIViewController {
             self.progressHandler.updateProgress(handlerID: terrainRendererHandler, progress: 1, total: 1)
         }, textureProgress: { progress, total in
             self.progressHandler.updateProgress(handlerID: textureFetchHandler, progress: progress, total: total)
-        }) { material, image, textureFetchError in
+        }) { materialName, image, textureFetchError in
             if let textureFetchError = textureFetchError {
                 NSLog("Texture load failed: \(textureFetchError.localizedDescription)")
             }
             if image != nil {
                 NSLog("Texture load for \(style) complete")
-                material?.diffuse.contents = image
+                terrainNode.geometry?.material(named: materialName! as String)?.diffuse.contents = image
             }
-            return material
         }
     }
 

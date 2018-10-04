@@ -102,15 +102,14 @@ final class DemoARViewController: UIViewController, ARSCNViewDelegate, ARSession
             } else {
                 NSLog("Terrain load complete")
             }
-        }, textureProgress: nil) { material, image, fetchError in
+        }, textureProgress: nil) { materialName, image, fetchError in
             if let fetchError = fetchError {
                 NSLog("Texture load failed: \(fetchError.localizedDescription)")
             }
             if image != nil {
                 NSLog("Texture load complete")
-                material?.diffuse.contents = image
+                terrainNode.geometry?.material(named: materialName! as String)?.diffuse.contents = image
             }
-            return material
         }
 
         arView!.isUserInteractionEnabled = true

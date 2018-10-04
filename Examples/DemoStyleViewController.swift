@@ -63,7 +63,7 @@ class DemoStyleViewController: UIViewController {
         terrainNode.fetchTerrainTexture(style, progress: { progress, total in
             self.progressView?.progress = progress
 
-        }, completion: { material, image, fetchError in
+        }, completion: { materialName, image, fetchError in
             if let fetchError = fetchError {
                 NSLog("Texture load failed: \(fetchError.localizedDescription)")
             }
@@ -72,7 +72,6 @@ class DemoStyleViewController: UIViewController {
                 // fix this to work without mesh generation
             }
             self.progressView?.isHidden = true
-            return material
         })
     }
 
