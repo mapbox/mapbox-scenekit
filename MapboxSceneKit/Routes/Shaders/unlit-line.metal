@@ -34,6 +34,19 @@ struct Vertex {
     float zOffset;
 };
 
+/*
+ Linear color space conversion happens automatically for sRGBA textures,
+ but not for vertex colors. This conversion method is copied from section
+ 7.7.7 of the Metal Language Spec:
+( https://developer.apple.com/metal/Metal-Shading-Language-Specification.pdf )
+ */
+static float srgbToLinear(float c) {
+    if (c <= 0.04045)
+        return c / 12.92;
+    else
+        return powr((c + 0.055) / 1.055, 2.4);
+}
+
 vertex Vertex lineVert(VertexInput in [[ stage_in ]],
                        constant SCNSceneBuffer& scn_frame [[buffer(0)]],
                        constant NodeBuffer& scn_node [[buffer(1)]])
@@ -42,6 +55,9 @@ vertex Vertex lineVert(VertexInput in [[ stage_in ]],
     vert.position = scn_node.modelViewProjectionTransform * float4(in.position, 1.0);
     vert.texCoords = in.texCoords;
     vert.color = in.color;
+    vert.color.r = srgbToLinear(vert.color.r);
+    vert.color.g = srgbToLinear(vert.color.g);
+    vert.color.b = srgbToLinear(vert.color.b);
     
     //give useful names to line params
     float lineRadius = in.lineParams.y;

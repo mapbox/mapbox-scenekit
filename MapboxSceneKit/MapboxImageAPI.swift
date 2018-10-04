@@ -46,6 +46,9 @@ public final class MapboxImageAPI: NSObject {
     fileprivate static let tileSize = CGSize(width: 256, height: 256)
     fileprivate static let styleSize = CGSize(width: 256, height: 256)
     fileprivate var pendingFetches = [UUID: [UUID]]()
+    public static var tileSizeWidth: Double {
+        get { return Double(MapboxImageAPI.tileSize.width) }
+    }
 
     private static let queue = DispatchQueue(label: "com.mapbox.scenekit.processing", attributes: [.concurrent])
 
@@ -101,10 +104,14 @@ public final class MapboxImageAPI: NSObject {
      Returns a UUID representing the task managing the fetching and stitching together of the tile images. Used for cancellation if needed.
      **/
     @objc
-    public func image(forTileset tileset: String, zoomLevel zoom: Int, minLat: CLLocationDegrees, maxLat: CLLocationDegrees, minLon: CLLocationDegrees, maxLon: CLLocationDegrees, format: String, progress: TileLoadProgressCallback? = nil, completion: @escaping TileLoadCompletion) -> UUID {
-        let latBounds = (minLat, maxLat)
-        let lonBounds = (minLon, maxLon)
-        let bounding = MapboxImageAPI.tiles(zoom: zoom, latBounds: latBounds, lonBounds: lonBounds, tileSize: MapboxImageAPI.tileSize)
+    public func image(forTileset tileset: String,
+                      zoomLevel zoom: Int,
+                      southWestCorner: CLLocation,
+                      northEastCorner: CLLocation,
+                      format: String, progress: TileLoadProgressCallback? = nil,
+                      completion: @escaping TileLoadCompletion) -> UUID {
+
+        let bounding = MapboxImageAPI.tiles(zoom: zoom, southWestCorner: southWestCorner, northEastCorner: northEastCorner, tileSize: MapboxImageAPI.tileSize)
         let imageBuilder = ImageBuilder(xs: bounding.xs.count, ys: bounding.ys.count, tileSize: MapboxImageAPI.tileSize, insets: bounding.insets)
 
         let group = DispatchGroup()
@@ -181,12 +188,10 @@ public final class MapboxImageAPI: NSObject {
      Returns a UUID representing the task managing the fetching and stitching together of the tile images. Used for cancellation if needed.
      **/
     @objc
-    public func image(forStyle style: String, zoomLevel zoom: Int, minLat: CLLocationDegrees, maxLat: CLLocationDegrees, minLon: CLLocationDegrees, maxLon: CLLocationDegrees, progress: TileLoadProgressCallback? = nil, completion: @escaping TileLoadCompletion) -> UUID {
+    public func image(forStyle style: String, zoomLevel zoom: Int, southWestCorner: CLLocation, northEastCorner: CLLocation, progress: TileLoadProgressCallback? = nil, completion: @escaping TileLoadCompletion) -> UUID {
         //Note: this API endpoint returns at 2x the normal tile size (512 covers a bounding box calculated for 256), but relies on the bounding size of the normal size (256)
-        let latBounds = (minLat, maxLat)
-        let lonBounds = (minLon, maxLon)
         let returnedSize = MapboxImageAPI.styleSize * CGFloat(2.0)
-        let bounding = MapboxImageAPI.tiles(zoom: zoom, latBounds: latBounds, lonBounds: lonBounds, tileSize: MapboxImageAPI.styleSize)
+        let bounding = MapboxImageAPI.tiles(zoom: zoom, southWestCorner: southWestCorner, northEastCorner: northEastCorner, tileSize: MapboxImageAPI.styleSize)
         let imageBuilder = ImageBuilder(xs: bounding.xs.count, ys: bounding.ys.count, tileSize: returnedSize, insets: bounding.insets * 2)
 
         let group = DispatchGroup()
@@ -251,27 +256,33 @@ public final class MapboxImageAPI: NSObject {
 
     //MARK: - Helpers
 
-    internal static func tiles(zoom: Int, latBounds: (CLLocationDegrees, CLLocationDegrees), lonBounds: (CLLocationDegrees, CLLocationDegrees), tileSize: CGSize) -> (xs: [Int], ys: [Int], insets: UIEdgeInsets) {
+    internal static func tiles(zoom: Int, southWestCorner: CLLocation, northEastCorner: CLLocation, tileSize: CGSize) -> (xs: [Int], ys: [Int], insets: UIEdgeInsets) {
+        
+        let minLat = southWestCorner.coordinate.latitude
+        let maxLat = northEastCorner.coordinate.latitude
+        let minLon = southWestCorner.coordinate.longitude
+        let maxLon = northEastCorner.coordinate.longitude
+        
         var xs = [Int]()
         var ys = [Int]()
         var insets = UIEdgeInsets.zero
 
-        for lat in [latBounds.0, latBounds.1] {
-            for lon in [lonBounds.0, lonBounds.1] {
+        for lat in [minLat, maxLat] {
+            for lon in [minLon, maxLon] {
                 let tile = Math.latLng2tile(lat: lat, lon: lon, zoom: zoom, tileSize: tileSize)
                 xs.append(tile.xTile)
                 ys.append(tile.yTile)
 
-                if lat == latBounds.0 {
+                if lat == minLat {
                     insets = UIEdgeInsets(top: insets.top, left: insets.left, bottom: tileSize.height - CGFloat(tile.yPos), right: insets.right)
                 }
-                if lat == latBounds.1 {
+                if lat == maxLat {
                     insets = UIEdgeInsets(top: CGFloat(tile.yPos), left: insets.left, bottom: insets.bottom, right: insets.right)
                 }
-                if lon == lonBounds.0 {
+                if lon == minLon {
                     insets = UIEdgeInsets(top: insets.top, left: CGFloat(tile.xPos), bottom: insets.bottom, right: insets.right)
                 }
-                if lon == lonBounds.1 {
+                if lon == maxLon {
                     insets = UIEdgeInsets(top: insets.top, left: insets.left, bottom: insets.bottom, right: tileSize.width - CGFloat(tile.xPos))
                 }
             }
