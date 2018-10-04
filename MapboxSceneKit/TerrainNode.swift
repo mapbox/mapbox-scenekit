@@ -451,9 +451,6 @@ open class TerrainNode: SCNNode {
         sources.append(uvSource)
 
         let originalPosition = position
-        let originalMaterials = geometry?.materials ?? [SCNMaterial]()
-        print("orignial materials count: \(originalMaterials.count)")
-        
         geometry = SCNGeometry(sources: sources, elements: elements)
         geometry?.materials = terrainMaterials
         centerPivot()
