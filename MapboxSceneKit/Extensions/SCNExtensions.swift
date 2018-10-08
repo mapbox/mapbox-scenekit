@@ -160,6 +160,10 @@ internal extension SCNVector3 {
     func length() -> Float {
         return sqrtf(x * x + y * y + z * z)
     }
+
+    func distance(vector: SCNVector3) -> Float {
+        return (self - vector).length()
+    }
 }
 
 

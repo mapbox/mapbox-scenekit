@@ -12,6 +12,8 @@ import UIKit
 internal class BezierSpline3D {
     public let curvePoints: [SCNVector3]
 
+    private var subdividedPoints = [(CGFloat, SCNVector3)]()
+
     public init(curvePoints: [SCNVector3]) {
 
         //ensure the the spline has a minimum of 4 handles.
@@ -58,6 +60,57 @@ internal class BezierSpline3D {
         let spineSegmentStartIndex: Int = min(Int(absoluteProgress), curvePoints.count - 2 - pad * 2) // Integer time for the index of the starting curvePoint
         let t = Float(absoluteProgress) - Float(spineSegmentStartIndex) // The time to evaluate the curve at
         return (absoluteProgress, spineSegmentStartIndex, t)
+    }
+
+    func smallestStepSize(time: CGFloat, stepSize: CGFloat, maxDistance: CGFloat) -> CGFloat {
+        let currentPoint = self.evaluate(progress: time)
+        let nextPoint = self.evaluate(progress: time + stepSize)
+        let distance = CGFloat(currentPoint.distance(vector: nextPoint))
+        if distance < maxDistance {
+            return stepSize
+        } else {
+            return self.smallestStepSize(time: time, stepSize: stepSize / 2.0, maxDistance: maxDistance)
+        }
+    }
+
+    func eval(progress: CGFloat) -> SCNVector3 {
+        let maxDistance = CGFloat(1.0)
+        var time: CGFloat = 0.0
+        let initialStepSize: CGFloat = CGFloat(0.01)
+
+        if subdividedPoints.count == 0 {
+            // find the next time that yields progress less than maxDistance
+            while time < 1.0 {
+                let stepSize = self.smallestStepSize(time: time, stepSize: initialStepSize, maxDistance: maxDistance)
+                let nextPoint = self.evaluate(progress: time + stepSize)
+                time += stepSize
+                if time >= 1.0 {
+                    subdividedPoints.append((1.0, self.evaluate(progress: 1.0)))
+                } else {
+                    subdividedPoints.append((time + stepSize, nextPoint))
+                }
+            }
+        }
+
+        // look for the "bucket" that the requested progress falls into
+        var position = SCNVector3(0, 0, 0)
+        var index = Int(0)
+        for entry in self.subdividedPoints {
+            if entry.0 > progress {
+                guard index > 0 else { return entry.1 }
+                // lerp between the current entry and the previous one
+                let minEntry = self.subdividedPoints[index-1]
+                let maxEntry = entry
+                let lerpValue = Float((progress - minEntry.0) / (maxEntry.0 - minEntry.0))
+                let diffVector = (maxEntry.1 - minEntry.1)
+                let lerpVector = SCNVector3(lerpValue * diffVector.x, lerpValue * diffVector.y, lerpValue * diffVector.z)
+                position = minEntry.1 + lerpVector
+                break
+            }
+            index += 1
+        }
+
+        return position
     }
 }
 
