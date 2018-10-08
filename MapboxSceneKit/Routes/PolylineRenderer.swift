@@ -11,9 +11,11 @@ import SceneKit
 import Metal
 
 /// Implement this protocol to define new line rendering behavior
-internal protocol PolylineRenderer {
+public protocol PolylineRenderer {
 
     func render(_ polyline: PolylineNode, withSampleCount sampleCount: Int)
+    
+    func getSampleCount() -> Int
 
 }
 

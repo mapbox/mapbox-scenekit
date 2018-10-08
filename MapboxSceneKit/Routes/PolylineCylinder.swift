@@ -47,6 +47,10 @@ internal class PolylineCylinder: PolylineRenderer {
             polyline.addChildNode(cylinderNode)
         }
     }
+    
+    public func getSampleCount() -> Int {
+        return sampleCount
+    }
 
     private func progressAtSample(_ sample: Int) -> CGFloat {
         return (CGFloat(sample) / CGFloat(sampleCount - 1))

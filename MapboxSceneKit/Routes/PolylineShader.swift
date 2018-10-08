@@ -40,6 +40,10 @@ internal class PolylineShader: PolylineRenderer {
         //assign materials
         polyline.geometry?.firstMaterial = generateMaterial()
     }
+    
+    public func getSampleCount() -> Int {
+        return sampleCount
+    }
 
     private func progressAtSample(_ sample: Int) -> CGFloat {
         return (CGFloat(sample) / CGFloat(sampleCount - 1))

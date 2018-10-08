@@ -13,7 +13,7 @@ import SceneKit
 @objc(MBPolylineNode)
 public class PolylineNode: SCNNode {
 
-    private var lineRenderer: PolylineRenderer
+    private(set) public var lineRenderer: PolylineRenderer
     private let positionCurve: BezierSpline3D
     private let colorCurve: BezierSpline3D
     private let radiusCurve: BezierSpline3D
