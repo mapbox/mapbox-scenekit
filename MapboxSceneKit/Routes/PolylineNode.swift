@@ -99,8 +99,8 @@ public extension PolylineNode {
     /// - Parameter progress: normalized progress along the polyline.
     ///   0.0 = the beginning, 0.5 = halfway, 1.0 = the end of the line.
     /// - Returns: the local position at the given progress
-    func getPositon(atProgress progress: CGFloat) -> SCNVector3 {
-        return positionCurve.evaluate(progress: progress)
+    func getPosition(atProgress progress: CGFloat) -> SCNVector3 {
+        return positionCurve.evaluateCurveProgress(atProgress: progress)
     }
 
     /// Radius along the polyline
@@ -109,7 +109,7 @@ public extension PolylineNode {
     ///   0.0 = the beginning, 0.5 = halfway, 1.0 = the end of the line.
     /// - Returns: the radius at the given progress
     func getRadius(atProgress progress: CGFloat) -> CGFloat {
-        return radiusCurve.evaluate(progress: progress).toRadius()
+        return radiusCurve.evaluateCurveProgress(atProgress: progress).toRadius()
     }
 
     /// Color along the polyline
@@ -118,7 +118,7 @@ public extension PolylineNode {
     ///   0.0 = the beginning, 0.5 = halfway, 1.0 = the end of the line.
     /// - Returns: the UIColor at the given progress
     func getColor(atProgress progress: CGFloat) -> UIColor {
-        return colorCurve.evaluate(progress: progress).toColor()
+        return colorCurve.evaluateCurveProgress(atProgress: progress).toColor()
     }
 }
 

@@ -75,13 +75,13 @@ internal class PolylineShader: PolylineRenderer {
 
         if let polyline = self.polyline {
             for index in 1..<sampleCount {
-                let lastPosition = polyline.getPositon(atProgress: progressAtSample(index - 1))
-                let position = polyline.getPositon(atProgress: progressAtSample(index))
+                let lastPosition = polyline.getPosition(atProgress: progressAtSample(index - 1))
+                let position = polyline.getPosition(atProgress: progressAtSample(index))
                 addLine(from: lastPosition, toVector: position, withIndex: index)
             }
 
             for index in (0..<sampleCount).reversed() {
-                let position = polyline.getPositon(atProgress: progressAtSample(index))
+                let position = polyline.getPosition(atProgress: progressAtSample(index))
                 addCap(atPosition: position, withIndex: index)
             }
         }

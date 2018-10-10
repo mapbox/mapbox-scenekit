@@ -126,7 +126,7 @@ extension TerrainNode {
                 
                 //create a new point on the segment at a step along the line.
                 let progress = CGFloat(sampleIndex)/CGFloat(samplesInSegment)
-                let samplePosition: SCNVector3 = positionBezier.evaluate(progress: progress)
+                let samplePosition: SCNVector3 = positionBezier.evaluateCurveProgress(atProgress: progress)
                 
                 //sample the height at this position
                 let newPosition  = SCNVector3(samplePosition.x,

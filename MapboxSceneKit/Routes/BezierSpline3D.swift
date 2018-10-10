@@ -12,6 +12,35 @@ import UIKit
 internal class BezierSpline3D {
     public let curvePoints: [SCNVector3]
 
+    private var curveProgressBuckets: [(CGFloat, SCNVector3)] = [(CGFloat, SCNVector3)]()
+    private var curveLength = CGFloat(0.0)
+
+    private var subdividedPoints: [(CGFloat, SCNVector3)] {
+        get {
+            if curveProgressBuckets.count == 0 {
+
+                let bucketCount = 100
+                var time: Float = 0.0
+                let stepSize = 1.0 / Float(bucketCount)
+                var distance = Float(0.0)
+                var index = 0
+                var previousPoint = self.evaluate(progress: 0.0)
+
+                while index < bucketCount {
+                    let currentPoint = self.evaluate(progress: CGFloat(time))
+                    distance = previousPoint.distance(vector: currentPoint)
+                    curveLength += CGFloat(distance)
+                    curveProgressBuckets.append((curveLength, currentPoint))
+                    previousPoint = currentPoint
+                    time += stepSize
+                    index += 1
+                }
+            }
+
+            return curveProgressBuckets
+        }
+    }
+
     public init(curvePoints: [SCNVector3]) {
 
         //ensure the the spline has a minimum of 4 handles.
@@ -53,11 +82,65 @@ internal class BezierSpline3D {
         return (a0 * CGFloat(pow(t, 3))) + (a1 * CGFloat(pow(t, 2))) + (a2 * CGFloat(t)) + (a3)
     }
 
+    public func evaluateCurveProgress(atProgress progress: CGFloat) -> SCNVector3 {
+        // look for the "bucket" that the requested progress falls into
+        var position = SCNVector3(0, 0, 0)
+        var index = Int(0)
+        let lengthProgress = progress * self.curveLength
+        for entry in self.subdividedPoints {
+            if index == self.subdividedPoints.count-1 {
+                let previousEntry = self.subdividedPoints.last!
+                // reached the last entry so it needs to be here
+                let lerpValue = self.lerp(progress: progress, min: previousEntry.0, max: lengthProgress)
+                position = self.interpolatedPosition(progress: lerpValue, minEntry: previousEntry, maxEntry: entry)
+                return position
+            }
+
+            let nextEntry = self.subdividedPoints[index+1]
+
+            // if the progress exactly matches one of the bucket start/end values, return that position
+            if entry.0 == lengthProgress {
+                return entry.1
+            } else if nextEntry.0 == lengthProgress {
+                return nextEntry.1
+            }
+
+            if lengthProgress > entry.0 && lengthProgress < nextEntry.0 {
+                // found the right bucket
+
+                // linear interpolate between the min & max entry position to get the value
+                let lerpValue = self.lerp(progress: lengthProgress, min: entry.0, max: nextEntry.0)
+                position = self.interpolatedPosition(progress: lerpValue, minEntry: entry, maxEntry: nextEntry)
+
+                break
+            }
+
+            // keep looking in the next bucket
+            index += 1
+        }
+
+        return position
+    }
+
     private func getProgressProperties(progress: CGFloat, paddedVertices pad: Int = 0) -> (CGFloat, Int, Float) { // paddedVertices is the number of unused vertices on the ends
         let absoluteProgress = min(max(progress, 0), 1) * CGFloat(curvePoints.count - 1 - pad * 2) // progress through the curvePoints
         let spineSegmentStartIndex: Int = min(Int(absoluteProgress), curvePoints.count - 2 - pad * 2) // Integer time for the index of the starting curvePoint
         let t = Float(absoluteProgress) - Float(spineSegmentStartIndex) // The time to evaluate the curve at
         return (absoluteProgress, spineSegmentStartIndex, t)
+    }
+
+    private func lerp(progress: CGFloat, min: CGFloat, max: CGFloat) -> Float {
+        return Float((progress - min) / (max - min))
+    }
+
+    private func interpolatedPosition(progress:Float, minEntry: (CGFloat, SCNVector3), maxEntry: (CGFloat, SCNVector3)) -> SCNVector3 {
+        var position = SCNVector3(0, 0, 0)
+
+        let diffVector = (maxEntry.1 - minEntry.1)
+        let lerpVector = SCNVector3(progress * diffVector.x, progress * diffVector.y, progress * diffVector.z)
+        position = minEntry.1 + lerpVector
+
+        return position
     }
 }
 
@@ -70,5 +153,9 @@ internal extension SCNVector3 {
 
     func toRadius() -> CGFloat {
         return CGFloat(self.x)
+    }
+
+    func distance(vector: SCNVector3) -> Float {
+        return (self - vector).length()
     }
 }

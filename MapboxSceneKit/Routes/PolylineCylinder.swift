@@ -19,7 +19,7 @@ internal class PolylineCylinder: PolylineRenderer {
         self.sampleCount = sampleCount
         var positions = [SCNVector3]()
         for index in 0..<sampleCount {
-            positions.append(polyline.getPositon(atProgress: progressAtSample(index)))
+            positions.append(polyline.getPosition(atProgress: progressAtSample(index)))
         }
         let radius = polyline.getRadius(atProgress: 0)
         let color = polyline.getColor(atProgress: 0)
