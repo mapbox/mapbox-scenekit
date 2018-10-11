@@ -79,6 +79,22 @@ open class TerrainNode: SCNNode {
         self.init(southWestCorner: CLLocation(latitude: minLat, longitude: minLon),
                   northEastCorner: CLLocation(latitude: maxLat, longitude: maxLon))
     }
+    
+    @objc public convenience init(lat: CLLocationDegrees, lon: CLLocationDegrees, distanceInKm: Double ) {
+        
+        // https://coderwall.com/p/otkscg/geographic-searches-within-a-certain-distances
+        // Generates approximately accurate bounding box around a center latitude longitude point.
+        let earthRadius: Double = 6371
+        
+        let maxLat: Double = lat + Math.radiansToDegrees(distanceInKm / earthRadius)
+        let minLat: Double = lat - Math.radiansToDegrees(distanceInKm / earthRadius)
+        
+        let maxLon: Double  = lon + Math.radiansToDegrees(distanceInKm / earthRadius / cos(Math.degreesToRadians(lat)))
+        let minLon: Double = lon - Math.radiansToDegrees(distanceInKm / earthRadius / cos(Math.degreesToRadians(lat)))
+        
+        self.init(southWestCorner: CLLocation(latitude: minLat, longitude: minLon),
+                  northEastCorner: CLLocation(latitude: maxLat, longitude: maxLon))
+    }
 
     deinit {
         for task in pendingFetches {
