@@ -14,30 +14,42 @@ internal class BezierSpline3D {
 
     private var curveProgressBuckets: [(CGFloat, SCNVector3)] = [(CGFloat, SCNVector3)]()
     private var curveLength = CGFloat(0.0)
+    public var length: CGFloat {
+        get {
+            if curveProgressBuckets.count == 0 {
+                self.calculateProgressBuckets()
+            }
+
+            return curveLength
+        }
+    }
 
     private var subdividedPoints: [(CGFloat, SCNVector3)] {
         get {
             if curveProgressBuckets.count == 0 {
-
-                let bucketCount = 100
-                var time: Float = 0.0
-                let stepSize = 1.0 / Float(bucketCount)
-                var distance = Float(0.0)
-                var index = 0
-                var previousPoint = self.evaluate(progress: 0.0)
-
-                while index < bucketCount {
-                    let currentPoint = self.evaluate(progress: CGFloat(time))
-                    distance = previousPoint.distance(vector: currentPoint)
-                    curveLength += CGFloat(distance)
-                    curveProgressBuckets.append((curveLength, currentPoint))
-                    previousPoint = currentPoint
-                    time += stepSize
-                    index += 1
-                }
+                self.calculateProgressBuckets()
             }
 
             return curveProgressBuckets
+        }
+    }
+
+    private func calculateProgressBuckets() -> Void {
+        let bucketCount = 100
+        var time: Float = 0.0
+        let stepSize = 1.0 / Float(bucketCount)
+        var distance = Float(0.0)
+        var index = 0
+        var previousPoint = self.evaluate(progress: 0.0)
+
+        while index < bucketCount {
+            let currentPoint = self.evaluate(progress: CGFloat(time))
+            distance = previousPoint.distance(vector: currentPoint)
+            curveLength += CGFloat(distance)
+            curveProgressBuckets.append((curveLength, currentPoint))
+            previousPoint = currentPoint
+            time += stepSize
+            index += 1
         }
     }
 
@@ -86,7 +98,7 @@ internal class BezierSpline3D {
         // look for the "bucket" that the requested progress falls into
         var position = SCNVector3(0, 0, 0)
         var index = Int(0)
-        let lengthProgress = progress * self.curveLength
+        let lengthProgress = progress * self.length
         for entry in self.subdividedPoints {
             if index == self.subdividedPoints.count-1 {
                 let previousEntry = self.subdividedPoints.last!

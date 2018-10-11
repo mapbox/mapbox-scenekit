@@ -17,6 +17,11 @@ public class PolylineNode: SCNNode {
     private let positionCurve: BezierSpline3D
     private let colorCurve: BezierSpline3D
     private let radiusCurve: BezierSpline3D
+    public var lineLength: CGFloat {
+        get {
+            return positionCurve.length
+        }
+    }
 
     /// Top-level initializer
     private init( positionCurve: BezierSpline3D,
