@@ -453,7 +453,7 @@ open class TerrainNode: SCNNode {
         let originalPosition = position
         geometry = SCNGeometry(sources: sources, elements: elements)
         geometry?.materials = terrainMaterials
-        centerPivot()
+//        centerPivot()
         position = originalPosition
     }
     
