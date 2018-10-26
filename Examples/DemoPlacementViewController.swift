@@ -61,7 +61,7 @@ class DemoPlacementViewController: UIViewController {
         let terrainFetcherHandler = progressHandler.registerForProgress()
         let textureFetchHandler = progressHandler.registerForProgress()
         
-        terrainNode.fetchTerrainAndTexture(minWallHeight: 50.0, enableDynamicShadows: true, textureStyle: "mapbox/satellite-v9", heightProgress: { progress, total in
+        terrainNode.fetchTerrainAndTexture(minWallHeight: 50.0, enableDynamicShadows: true, textureStyle: MapStyles.satellite.url, heightProgress: { progress, total in
             progressHandler.updateProgress(handlerID: terrainFetcherHandler, progress: progress, total: total)
         }, heightCompletion: { fetchError in
             if let fetchError = fetchError {

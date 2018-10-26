@@ -42,6 +42,7 @@
 		9598A005215EB4E80086CF4E /* StaticConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9598A003215EB4460086CF4E /* StaticConstants.swift */; };
 		959F81622149DE9700A290DF /* PolylineRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 959F81612149DE9700A290DF /* PolylineRenderer.swift */; };
 		95CC6AA4214ADB05000CD0E6 /* SCNExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95CC6AA3214ADB05000CD0E6 /* SCNExtensions.swift */; };
+		B0EACBFC218291060061CB26 /* MapStyles.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0EACBFB218291060061CB26 /* MapStyles.swift */; };
 		F44BB60520C75CBF00CE41C6 /* DemoExtrusionViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = F44BB60420C75CBF00CE41C6 /* DemoExtrusionViewController.m */; };
 /* End PBXBuildFile section */
 
@@ -106,6 +107,7 @@
 		9598A003215EB4460086CF4E /* StaticConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StaticConstants.swift; sourceTree = "<group>"; };
 		959F81612149DE9700A290DF /* PolylineRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolylineRenderer.swift; sourceTree = "<group>"; };
 		95CC6AA3214ADB05000CD0E6 /* SCNExtensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SCNExtensions.swift; sourceTree = "<group>"; };
+		B0EACBFB218291060061CB26 /* MapStyles.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapStyles.swift; sourceTree = "<group>"; };
 		F44BB60220C75CBF00CE41C6 /* Examples-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Examples-Bridging-Header.h"; sourceTree = "<group>"; };
 		F44BB60320C75CBF00CE41C6 /* DemoExtrusionViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DemoExtrusionViewController.h; sourceTree = "<group>"; };
 		F44BB60420C75CBF00CE41C6 /* DemoExtrusionViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DemoExtrusionViewController.m; sourceTree = "<group>"; };
@@ -151,6 +153,7 @@
 				81293BCF20B4A1AE0014A17A /* Main.storyboard */,
 				81293BD420B4A1AE0014A17A /* Info.plist */,
 				F44BB60220C75CBF00CE41C6 /* Examples-Bridging-Header.h */,
+				B0EACBFB218291060061CB26 /* MapStyles.swift */,
 			);
 			path = Examples;
 			sourceTree = "<group>";
@@ -396,6 +399,7 @@
 			files = (
 				81293BF320B4A35C0014A17A /* DemoStyleViewController.swift in Sources */,
 				F44BB60520C75CBF00CE41C6 /* DemoExtrusionViewController.m in Sources */,
+				B0EACBFC218291060061CB26 /* MapStyles.swift in Sources */,
 				81293BF820B4A35C0014A17A /* TerrainDemoScene.swift in Sources */,
 				81293BF720B4A35C0014A17A /* ProgressCompositor.swift in Sources */,
 				8190075F20C07FAD002F23C3 /* AppDelegate.swift in Sources */,

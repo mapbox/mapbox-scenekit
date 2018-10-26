@@ -96,7 +96,7 @@ final class DemoARViewController: UIViewController, ARSCNViewDelegate, ARSession
         terrainNode.geometry?.materials = defaultMaterials()
         arView!.scene.rootNode.addChildNode(terrainNode)
         terrain = terrainNode
-        terrainNode.fetchTerrainAndTexture(minWallHeight: 50.0, enableDynamicShadows: true, textureStyle: "mapbox/satellite-v9", heightProgress: nil, heightCompletion: { fetchError in
+        terrainNode.fetchTerrainAndTexture(minWallHeight: 50.0, enableDynamicShadows: true, textureStyle: MapStyles.satellite.url, heightProgress: nil, heightCompletion: { fetchError in
             if let fetchError = fetchError {
                 NSLog("Terrain load failed: \(fetchError.localizedDescription)")
             } else {
