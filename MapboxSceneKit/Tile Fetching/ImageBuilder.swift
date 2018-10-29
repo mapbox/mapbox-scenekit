@@ -6,6 +6,7 @@ internal final class ImageBuilder {
     private let clippedRect: CGRect
     private let tileSize: CGSize
     private let imageSize: CGSize
+    private var tileImages: [(Int, Int, UIImage)] = [(Int, Int, UIImage)]()
 
     init(xs: Int, ys: Int, tileSize: CGSize, insets: UIEdgeInsets) {
         self.imageSize = CGSize(width: CGFloat(xs) * tileSize.width, height: CGFloat(ys) * tileSize.height)
@@ -23,16 +24,16 @@ internal final class ImageBuilder {
     }
 
     func addTile(x: Int, y: Int, image: UIImage) {
-        if let context = context, let cgImage = image.cgImage {
-            context.draw(cgImage, in: CGRect(origin: CGPoint(x: CGFloat(x) * tileSize.width, y: CGFloat(Int(imageSize.height / tileSize.height) - y - 1) * tileSize.height), size: tileSize))
-        } else if image.cgImage == nil {
-            print("cgimage is nil")
-        } else if context == nil {
-            print("context is nil")
-        }
+        tileImages.append((x, y, image))
     }
 
     func makeImage() -> UIImage? {
+        tileImages.forEach { (tileTuple) in
+            if let context = context, let cgImage = tileTuple.2.cgImage {
+                context.draw(cgImage, in: CGRect(origin: CGPoint(x: CGFloat(tileTuple.0) * tileSize.width, y: CGFloat(Int(imageSize.height / tileSize.height) - tileTuple.1 - 1) * tileSize.height), size: tileSize))
+            }
+        }
+
         guard let fullImageRef = context?.makeImage(), let croppedImageRef = fullImageRef.cropping(to: clippedRect) else {
             return nil
         }

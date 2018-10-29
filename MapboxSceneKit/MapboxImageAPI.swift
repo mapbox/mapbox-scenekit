@@ -50,7 +50,7 @@ public final class MapboxImageAPI: NSObject {
         get { return Double(MapboxImageAPI.tileSize.width) }
     }
 
-    private static let queue = DispatchQueue(label: "com.mapbox.scenekit.processing")
+    private static let queue = DispatchQueue(label: "com.mapbox.scenekit.processing", attributes: [.concurrent])
 
     private let httpAPI: MapboxHTTPAPI
     private var eventsManager: MMEEventsManager = MMEEventsManager.shared()
@@ -117,7 +117,7 @@ public final class MapboxImageAPI: NSObject {
         var completed: Int = 0
         let total = bounding.xs.count * bounding.ys.count
 
-        DispatchQueue.main.sync {
+        DispatchQueue.main.async {
             progress?(Float(0) / Float(total), total)
         }
 
@@ -126,7 +126,7 @@ public final class MapboxImageAPI: NSObject {
             for (yindex, y) in bounding.ys.enumerated() {
                 group.enter()
                 if let task = httpAPI.tileset(tileset, zoomLevel: zoom, xTile: x, yTile: y, format: format, completion: { image, fetchError in
-                    MapboxImageAPI.queue.sync {
+                    MapboxImageAPI.queue.async {
                         defer {
                             completed += 1
                             DispatchQueue.main.async {
@@ -140,9 +140,7 @@ public final class MapboxImageAPI: NSObject {
                             return
                         }
 
-                        DispatchQueue.main.sync {
-                            imageBuilder.addTile(x: xindex, y: yindex, image: image)
-                        }
+                        imageBuilder.addTile(x: xindex, y: yindex, image: image)
                     }
                 }) {
                     self.pendingFetches[groupID]?.append(task)
@@ -208,7 +206,7 @@ public final class MapboxImageAPI: NSObject {
             for (yindex, y) in bounding.ys.enumerated() {
                 group.enter()
                 if let task = httpAPI.style(style, zoomLevel: zoom, xTile: x, yTile: y, tileSize: returnedSize, completion: { image, fetchError in
-                    MapboxImageAPI.queue.sync {
+                    MapboxImageAPI.queue.async {
                         defer {
                             completed += 1
                             DispatchQueue.main.async {
@@ -222,9 +220,7 @@ public final class MapboxImageAPI: NSObject {
                             return
                         }
 
-                        DispatchQueue.main.sync {
-                            imageBuilder.addTile(x: xindex, y: yindex, image: image)
-                        }
+                        imageBuilder.addTile(x: xindex, y: yindex, image: image)
                     }
                 }) {
                     self.pendingFetches[groupID]?.append(task)
