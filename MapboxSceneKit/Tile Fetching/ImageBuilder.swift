@@ -23,7 +23,13 @@ internal final class ImageBuilder {
     }
 
     func addTile(x: Int, y: Int, image: UIImage) {
-        context?.draw(image.cgImage!, in: CGRect(origin: CGPoint(x: CGFloat(x) * tileSize.width, y: CGFloat(Int(imageSize.height / tileSize.height) - y - 1) * tileSize.height), size: tileSize))
+        if let context = context, let cgImage = image.cgImage {
+            context.draw(cgImage, in: CGRect(origin: CGPoint(x: CGFloat(x) * tileSize.width, y: CGFloat(Int(imageSize.height / tileSize.height) - y - 1) * tileSize.height), size: tileSize))
+        } else if image.cgImage == nil {
+            print("cgimage is nil")
+        } else if context == nil {
+            print("context is nil")
+        }
     }
 
     func makeImage() -> UIImage? {

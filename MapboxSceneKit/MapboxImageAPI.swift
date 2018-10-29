@@ -140,7 +140,9 @@ public final class MapboxImageAPI: NSObject {
                             return
                         }
 
-                        imageBuilder.addTile(x: xindex, y: yindex, image: image)
+                        DispatchQueue.main.sync {
+                            imageBuilder.addTile(x: xindex, y: yindex, image: image)
+                        }
                     }
                 }) {
                     self.pendingFetches[groupID]?.append(task)
@@ -220,7 +222,9 @@ public final class MapboxImageAPI: NSObject {
                             return
                         }
 
-                        imageBuilder.addTile(x: xindex, y: yindex, image: image)
+                        DispatchQueue.main.sync {
+                            imageBuilder.addTile(x: xindex, y: yindex, image: image)
+                        }
                     }
                 }) {
                     self.pendingFetches[groupID]?.append(task)
