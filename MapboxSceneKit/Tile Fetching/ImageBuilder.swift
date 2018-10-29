@@ -2,7 +2,6 @@ import Foundation
 import UIKit
 
 internal final class ImageBuilder {
-    private let context: CGContext?
     private var croppedImage: UIImage?
     private let clippedRect: CGRect
     private let tileSize: CGSize
@@ -15,14 +14,8 @@ internal final class ImageBuilder {
                                height: imageSize.height - insets.top - insets.bottom)
         self.clippedRect = CGRect(x: insets.left, y: insets.top, width: finalSize.width, height: finalSize.height)
         self.tileSize = tileSize
-        let colorSpace: CGColorSpace = CGColorSpaceCreateDeviceRGB()
-        let bitmapInfo = CGBitmapInfo(rawValue: CGImageAlphaInfo.premultipliedLast.rawValue)
-        context = CGContext(data: nil, width: Int(imageSize.width), height: Int(imageSize.height), bitsPerComponent: 8, bytesPerRow: 0, space: colorSpace, bitmapInfo: bitmapInfo.rawValue)
-        croppedImage = nil
 
-        if context == nil {
-            NSLog("Error creating CGContext")
-        }
+        croppedImage = nil
     }
 
     func addTile(x: Int, y: Int, image: UIImage) {
@@ -32,6 +25,14 @@ internal final class ImageBuilder {
     func makeImage() -> UIImage? {
 
         guard croppedImage == nil else { return croppedImage }
+        let colorSpace: CGColorSpace = CGColorSpaceCreateDeviceRGB()
+        let bitmapInfo = CGBitmapInfo(rawValue: CGImageAlphaInfo.premultipliedLast.rawValue)
+        let context = CGContext(data: nil, width: Int(imageSize.width), height: Int(imageSize.height), bitsPerComponent: 8, bytesPerRow: 0, space: colorSpace, bitmapInfo: bitmapInfo.rawValue)
+        croppedImage = nil
+
+        if context == nil {
+            NSLog("Error creating CGContext")
+        }
 
         tileImages.forEach { (tileTuple) in
             if let context = context, let cgImage = tileTuple.2.cgImage {
