@@ -111,8 +111,8 @@ extension TerrainNode {
             let lengthInMeters = Double((toPositon - fromPostion).length())
             let maxSamplesInSegment = lengthInMeters / self.metersPerPixelX
             
-            //resample at a 1/5 of the maximum terrain resolution, to save on performance.
-            let samplesInSegment = floor(maxSamplesInSegment * 0.2)
+            //resample at the maximum terrain resolution
+            let samplesInSegment = floor(maxSamplesInSegment)
 
             /*
              If a segment crosses enough terrain, it's samplesInSegment will be > 1.
