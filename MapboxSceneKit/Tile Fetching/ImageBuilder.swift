@@ -2,7 +2,6 @@ import Foundation
 import UIKit
 
 internal final class ImageBuilder {
-    private var croppedImage: UIImage?
     private let clippedRect: CGRect
     private let tileSize: CGSize
     private let imageSize: CGSize
@@ -14,8 +13,6 @@ internal final class ImageBuilder {
                                height: imageSize.height - insets.top - insets.bottom)
         self.clippedRect = CGRect(x: insets.left, y: insets.top, width: finalSize.width, height: finalSize.height)
         self.tileSize = tileSize
-
-        croppedImage = nil
     }
 
     func addTile(x: Int, y: Int, image: UIImage) {
@@ -24,11 +21,9 @@ internal final class ImageBuilder {
 
     func makeImage() -> UIImage? {
 
-        guard croppedImage == nil else { return croppedImage }
         let colorSpace: CGColorSpace = CGColorSpaceCreateDeviceRGB()
         let bitmapInfo = CGBitmapInfo(rawValue: CGImageAlphaInfo.premultipliedLast.rawValue)
         let context = CGContext(data: nil, width: Int(imageSize.width), height: Int(imageSize.height), bitsPerComponent: 8, bytesPerRow: 0, space: colorSpace, bitmapInfo: bitmapInfo.rawValue)
-        croppedImage = nil
 
         if context == nil {
             NSLog("Error creating CGContext")
@@ -45,8 +40,7 @@ internal final class ImageBuilder {
         guard let fullImageRef = context?.makeImage(), let croppedImageRef = fullImageRef.cropping(to: clippedRect) else {
             return nil
         }
-        croppedImage = UIImage(cgImage: croppedImageRef)
 
-        return croppedImage
+        return UIImage(cgImage: croppedImageRef)
     }
 }
