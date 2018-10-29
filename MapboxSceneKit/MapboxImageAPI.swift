@@ -50,7 +50,7 @@ public final class MapboxImageAPI: NSObject {
         get { return Double(MapboxImageAPI.tileSize.width) }
     }
 
-    private static let queue = DispatchQueue(label: "com.mapbox.scenekit.processing", attributes: [.concurrent])
+    private static let queue = DispatchQueue(label: "com.mapbox.scenekit.processing")
 
     private let httpAPI: MapboxHTTPAPI
     private var eventsManager: MMEEventsManager = MMEEventsManager.shared()
@@ -117,7 +117,7 @@ public final class MapboxImageAPI: NSObject {
         var completed: Int = 0
         let total = bounding.xs.count * bounding.ys.count
 
-        DispatchQueue.main.async {
+        DispatchQueue.main.sync {
             progress?(Float(0) / Float(total), total)
         }
 
@@ -126,7 +126,7 @@ public final class MapboxImageAPI: NSObject {
             for (yindex, y) in bounding.ys.enumerated() {
                 group.enter()
                 if let task = httpAPI.tileset(tileset, zoomLevel: zoom, xTile: x, yTile: y, format: format, completion: { image, fetchError in
-                    MapboxImageAPI.queue.async {
+                    MapboxImageAPI.queue.sync {
                         defer {
                             completed += 1
                             DispatchQueue.main.async {
@@ -208,7 +208,7 @@ public final class MapboxImageAPI: NSObject {
             for (yindex, y) in bounding.ys.enumerated() {
                 group.enter()
                 if let task = httpAPI.style(style, zoomLevel: zoom, xTile: x, yTile: y, tileSize: returnedSize, completion: { image, fetchError in
-                    MapboxImageAPI.queue.async {
+                    MapboxImageAPI.queue.sync {
                         defer {
                             completed += 1
                             DispatchQueue.main.async {
