@@ -24,16 +24,10 @@ internal final class ImageBuilder {
     }
 
     func addTile(x: Int, y: Int, image: UIImage) {
-        if let context = context, let cgImage = image.cgImage {
-            compositingDispatchQueue.sync(flags: .barrier) { [weak self] in
-                guard let self = self else { return }
+        compositingDispatchQueue.sync(flags: .barrier) { [weak self] in
+            guard let self = self else { return }
 
-                context.draw(cgImage, in: CGRect(origin: CGPoint(x: CGFloat(x) * self.tileSize.width, y: CGFloat(Int(self.imageSize.height / self.tileSize.height) - y - 1) * self.tileSize.height), size: self.tileSize))
-            }
-        } else if image.cgImage == nil {
-            print("cgimage is nil")
-        } else if context == nil {
-            print("context is nil")
+            context?.draw(image.cgImage!, in: CGRect(origin: CGPoint(x: CGFloat(x) * self.tileSize.width, y: CGFloat(Int(self.imageSize.height / self.tileSize.height) - y - 1) * self.tileSize.height), size: self.tileSize))
         }
     }
 
