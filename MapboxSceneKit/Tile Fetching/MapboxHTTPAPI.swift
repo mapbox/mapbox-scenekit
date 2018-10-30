@@ -37,7 +37,7 @@ internal final class MapboxHTTPAPI {
         var underlyingDispatchQueue = dispatchQueue
         operationQueue.underlyingQueue = underlyingDispatchQueue
         operationQueue.name = "Mapbox API Queue"
-        operationQueue.maxConcurrentOperationCount = 10
+        operationQueue.maxConcurrentOperationCount = 4
         return operationQueue
     }()
 
