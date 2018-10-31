@@ -46,6 +46,7 @@ public final class MapboxImageAPI: NSObject {
     fileprivate static let tileSize = CGSize(width: 256, height: 256)
     fileprivate static let styleSize = CGSize(width: 256, height: 256)
     fileprivate var pendingFetches = [UUID: [UUID]]()
+    fileprivate let pendingFetchesDispatchQueue = DispatchQueue(label: "com.mapbox.SceneKit.pendingFetches", attributes: .concurrent)
     public static var tileSizeWidth: Double {
         get { return Double(MapboxImageAPI.tileSize.width) }
     }
@@ -143,7 +144,10 @@ public final class MapboxImageAPI: NSObject {
                         imageBuilder.addTile(x: xindex, y: yindex, image: image)
                     }
                 }) {
-                    self.pendingFetches[groupID]?.append(task)
+                    pendingFetchesDispatchQueue.sync(flags: .barrier) { [weak self] in
+                        guard let self = self else { return }
+                        self.pendingFetches[groupID]?.append(task)
+                    }
                 }
             }
         }
@@ -223,7 +227,10 @@ public final class MapboxImageAPI: NSObject {
                         imageBuilder.addTile(x: xindex, y: yindex, image: image)
                     }
                 }) {
-                    self.pendingFetches[groupID]?.append(task)
+                    pendingFetchesDispatchQueue.sync(flags: .barrier) { [weak self] in
+                        guard let self = self else { return }
+                        self.pendingFetches[groupID]?.append(task)
+                    }
                 }
             }
         }
