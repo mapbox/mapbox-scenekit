@@ -6,6 +6,7 @@ internal final class ImageBuilder {
     private let clippedRect: CGRect
     private let tileSize: CGSize
     private let imageSize: CGSize
+    private let compositingDispatchQueue = DispatchQueue(label: "com.mapbox.SceneKit.compositing", attributes: .concurrent)
 
     init(xs: Int, ys: Int, tileSize: CGSize, insets: UIEdgeInsets) {
         self.imageSize = CGSize(width: CGFloat(xs) * tileSize.width, height: CGFloat(ys) * tileSize.height)
@@ -23,7 +24,11 @@ internal final class ImageBuilder {
     }
 
     func addTile(x: Int, y: Int, image: UIImage) {
-        context?.draw(image.cgImage!, in: CGRect(origin: CGPoint(x: CGFloat(x) * tileSize.width, y: CGFloat(Int(imageSize.height / tileSize.height) - y - 1) * tileSize.height), size: tileSize))
+        compositingDispatchQueue.sync(flags: .barrier) { [weak self] in
+            guard let self = self else { return }
+
+            context?.draw(image.cgImage!, in: CGRect(origin: CGPoint(x: CGFloat(x) * self.tileSize.width, y: CGFloat(Int(self.imageSize.height / self.tileSize.height) - y - 1) * self.tileSize.height), size: self.tileSize))
+        }
     }
 
     func makeImage() -> UIImage? {
