@@ -43,6 +43,7 @@
 		959F81622149DE9700A290DF /* PolylineRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 959F81612149DE9700A290DF /* PolylineRenderer.swift */; };
 		95CC6AA4214ADB05000CD0E6 /* SCNExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95CC6AA3214ADB05000CD0E6 /* SCNExtensions.swift */; };
 		F44BB60520C75CBF00CE41C6 /* DemoExtrusionViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = F44BB60420C75CBF00CE41C6 /* DemoExtrusionViewController.m */; };
+		F47690A6218D082A00041ACF /* Kingfisher.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F47690A5218D082A00041ACF /* Kingfisher.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -109,6 +110,7 @@
 		F44BB60220C75CBF00CE41C6 /* Examples-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Examples-Bridging-Header.h"; sourceTree = "<group>"; };
 		F44BB60320C75CBF00CE41C6 /* DemoExtrusionViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DemoExtrusionViewController.h; sourceTree = "<group>"; };
 		F44BB60420C75CBF00CE41C6 /* DemoExtrusionViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DemoExtrusionViewController.m; sourceTree = "<group>"; };
+		F47690A5218D082A00041ACF /* Kingfisher.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Kingfisher.framework; path = Carthage/Build/iOS/Kingfisher.framework; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -125,6 +127,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F47690A6218D082A00041ACF /* Kingfisher.framework in Frameworks */,
 				81293C0120B4B4010014A17A /* MapboxMobileEvents.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -158,6 +161,7 @@
 		81293BEB20B4A1FB0014A17A /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				F47690A5218D082A00041ACF /* Kingfisher.framework */,
 				81293BFD20B4B3C10014A17A /* MapboxMobileEvents.framework */,
 			);
 			name = Frameworks;
@@ -377,6 +381,7 @@
 			inputPaths = (
 				"$(SRCROOT)/Carthage/Build/iOS/MapboxMobileEvents.framework",
 				"$(SRCROOT)/Carthage/Build/iOS/Mapbox.framework",
+				"$(SRCROOT)/Carthage/Build/iOS/Kingfisher.framework",
 			);
 			name = "Copy Carthage Dependencies";
 			outputPaths = (

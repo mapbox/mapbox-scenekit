@@ -1,4 +1,5 @@
 import Foundation
+import Kingfisher
 import UIKit
 import CoreLocation
 import MapboxMobileEvents
@@ -90,6 +91,22 @@ public final class MapboxImageAPI: NSObject {
 
     //MARK: - Public API
 
+    func cachedImage(key: String) -> UIImage? {
+        var image: UIImage? = nil
+        switch ImageCache.default.imageCachedType(forKey: key) {
+        case .memory:
+            image = ImageCache.default.retrieveImageInMemoryCache(forKey: key)
+            return image
+        case .disk:
+            image = ImageCache.default.retrieveImageInDiskCache(forKey: key)
+            return image
+        default:
+            image = nil
+        }
+
+        return nil
+    }
+
     /**
      Used to fetch a stitched together set of tiles from the tileset API. The tileset API can be used to fetch images representing data Mapbox datasets, such
      as streets-v10, terrain-rgb, and tilesets a user has uploaded through Mapbox studio.
@@ -125,28 +142,34 @@ public final class MapboxImageAPI: NSObject {
         var error: FetchError?
         for (xindex, x) in bounding.xs.enumerated() {
             for (yindex, y) in bounding.ys.enumerated() {
-                group.enter()
-                if let task = httpAPI.tileset(tileset, zoomLevel: zoom, xTile: x, yTile: y, format: format, completion: { image, fetchError in
-                    MapboxImageAPI.queue.async {
-                        defer {
-                            completed += 1
-                            DispatchQueue.main.async {
-                                progress?(Float(completed) / Float(total), total)
+                let key = "key-\(tileset)-\(format)-\(zoom)-\(x)-\(y)"
+                if let image = cachedImage(key: key) {
+                    imageBuilder.addTile(x: xindex, y: yindex, image: image)
+                } else {
+                    group.enter()
+                    if let task = httpAPI.tileset(tileset, zoomLevel: zoom, xTile: x, yTile: y, format: format, completion: { image, fetchError in
+                        MapboxImageAPI.queue.async {
+                            defer {
+                                completed += 1
+                                DispatchQueue.main.async {
+                                    progress?(Float(completed) / Float(total), total)
+                                }
+                                group.leave()
                             }
-                            group.leave()
-                        }
-                        guard let image = image else {
-                            error = fetchError ?? FetchError.unknown
-                            NSLog("Couldn't get image for tile {\(zoom),\(x),\(y)}")
-                            return
-                        }
+                            guard let image = image else {
+                                error = fetchError ?? FetchError.unknown
+                                NSLog("Couldn't get image for tile {\(zoom),\(x),\(y)}")
+                                return
+                            }
 
-                        imageBuilder.addTile(x: xindex, y: yindex, image: image)
-                    }
-                }) {
-                    pendingFetchesDispatchQueue.sync(flags: .barrier) { [weak self] in
-                        guard let self = self else { return }
-                        self.pendingFetches[groupID]?.append(task)
+                            imageBuilder.addTile(x: xindex, y: yindex, image: image)
+                            ImageCache.default.store(image, forKey: key)
+                        }
+                    }) {
+                        pendingFetchesDispatchQueue.sync(flags: .barrier) { [weak self] in
+                            guard let self = self else { return }
+                            self.pendingFetches[groupID]?.append(task)
+                        }
                     }
                 }
             }
@@ -208,28 +231,34 @@ public final class MapboxImageAPI: NSObject {
         var error: FetchError?
         for (xindex, x) in bounding.xs.enumerated() {
             for (yindex, y) in bounding.ys.enumerated() {
-                group.enter()
-                if let task = httpAPI.style(style, zoomLevel: zoom, xTile: x, yTile: y, tileSize: returnedSize, completion: { image, fetchError in
-                    MapboxImageAPI.queue.async {
-                        defer {
-                            completed += 1
-                            DispatchQueue.main.async {
-                                progress?(Float(completed) / Float(total), total)
+                let key = "key-\(style)-\(zoom)-\(x)-\(y)"
+                if let image = cachedImage(key: key) {
+                    imageBuilder.addTile(x: xindex, y: yindex, image: image)
+                } else {
+                    group.enter()
+                    if let task = httpAPI.style(style, zoomLevel: zoom, xTile: x, yTile: y, tileSize: returnedSize, completion: { image, fetchError in
+                        MapboxImageAPI.queue.async {
+                            defer {
+                                completed += 1
+                                DispatchQueue.main.async {
+                                    progress?(Float(completed) / Float(total), total)
+                                }
+                                group.leave()
                             }
-                            group.leave()
-                        }
-                        guard let image = image else {
-                            error = fetchError ?? FetchError.unknown
-                            NSLog("Couldn't get image for tile {\(zoom),\(x),\(y)}")
-                            return
-                        }
+                            guard let image = image else {
+                                error = fetchError ?? FetchError.unknown
+                                NSLog("Couldn't get image for tile {\(zoom),\(x),\(y)}")
+                                return
+                            }
 
-                        imageBuilder.addTile(x: xindex, y: yindex, image: image)
-                    }
-                }) {
-                    pendingFetchesDispatchQueue.sync(flags: .barrier) { [weak self] in
-                        guard let self = self else { return }
-                        self.pendingFetches[groupID]?.append(task)
+                            imageBuilder.addTile(x: xindex, y: yindex, image: image)
+                            ImageCache.default.store(image, forKey: key)
+                        }
+                    }) {
+                        pendingFetchesDispatchQueue.sync(flags: .barrier) { [weak self] in
+                            guard let self = self else { return }
+                            self.pendingFetches[groupID]?.append(task)
+                        }
                     }
                 }
             }
