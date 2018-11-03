@@ -288,6 +288,7 @@
 				81A436B820A1F68500F42A53 /* Frameworks */,
 				81A436B920A1F68500F42A53 /* Headers */,
 				81A436BA20A1F68500F42A53 /* Resources */,
+				F48FB93E218D52AB00CE5685 /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -391,6 +392,24 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "/usr/local/bin/carthage copy-frameworks\n";
+		};
+		F48FB93E218D52AB00CE5685 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"$(SRCROOT)/Carthage/Build/iOS/Kingfisher.framework",
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Type a script or drag a script file from your workspace to insert its path.\n/usr/local/bin/carthage copy-frameworks\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
