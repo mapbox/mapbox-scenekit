@@ -251,9 +251,8 @@ open class TerrainNode: SCNNode {
     ///   - style: Mapbox style ID for given texture.
     ///   - progress: Handler for fetch progress change.
     ///   - completion: Handler for complete texture update.
-    @available(*, deprecated, message: "DEPRECATED - Please use instead fetchTerrainAndTexture.")
     @objc public func fetchTerrainTexture(_ style: String, progress: MapboxImageAPI.TileLoadProgressCallback? = nil, completion: @escaping MapboxImageAPI.TileLoadCompletion) {
-        fetchTerrainTexture(style, zoom: terrainZoomLevel, progress: progress, completion: completion)
+        fetchTerrainTexture(style, zoom: styleZoomLevel, progress: progress, completion: completion)
     }
     
     private func fetchTerrainTexture(_ style: String, zoom: Int, progress: MapboxImageAPI.TileLoadProgressCallback? = nil, completion: @escaping MapboxImageAPI.TileLoadCompletion) {
