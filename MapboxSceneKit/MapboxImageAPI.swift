@@ -143,7 +143,9 @@ public final class MapboxImageAPI: NSObject {
                         imageBuilder.addTile(x: xindex, y: yindex, image: image)
                     }
                 }) {
-                    self.pendingFetches[groupID]?.append(task)
+                    group.notify(queue: DispatchQueue.main) {
+                        self.pendingFetches[groupID]?.append(task)
+                    }
                 }
             }
         }
@@ -223,7 +225,9 @@ public final class MapboxImageAPI: NSObject {
                         imageBuilder.addTile(x: xindex, y: yindex, image: image)
                     }
                 }) {
-                    self.pendingFetches[groupID]?.append(task)
+                    group.notify(queue: DispatchQueue.main) {
+                        self.pendingFetches[groupID]?.append(task)
+                    }
                 }
             }
         }
@@ -247,7 +251,9 @@ public final class MapboxImageAPI: NSObject {
         for task in tasks {
             httpAPI.cancelRequestWithID(task)
         }
-        pendingFetches.removeValue(forKey: groupID)
+        DispatchQueue.main.async {
+            self.pendingFetches.removeValue(forKey: groupID)
+        }
     }
 
     //MARK: - Helpers
