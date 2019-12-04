@@ -4,11 +4,11 @@
 
 Using Swift, bringing our rich 3D terrain into your iOS app is easy. SceneKit SDK benefits from Apple’s toolchain and tight integration with ARKit. Using Apple's built-in Scene Kit frameworks means you can leverage compelling virtual terrain experiences without bloating your app's size.
 
-**Note this SDK is in its beta phase and will be under heavy development as we move towards our 1.0**
+**Note this SDK is deprecated and no longer officially supported. The samples should continue to work but you should contact Mapbox if you intend to build a product incorporating the SDK**
 
 ## Requirements
 
-The Mapbox Scene Kit SDK are compatible with applications written in Swift 4 or Objective-C in Xcode 9.0, and require iOS 8 or above (the examples require iOS 11 or above).
+The Mapbox SceneKit SDK is compatible with applications written in Swift 4 or Objective-C in Xcode 9.0, and require iOS 8 or above (the examples require iOS 11 or above).
 
 ## Installation
 
