@@ -13,7 +13,7 @@ class DemoHeightmapViewController: UIViewController {
     private weak var terrainNode: TerrainNode?
     private var progressHandler: ProgressCompositor!
 
-    private let styles = ["mapbox/outdoors-v10", "mapbox/satellite-v9", "mapbox/navigation-preview-day-v2"]
+    private let styles = [MapStyles.outdoors.url, MapStyles.satellite.url, MapStyles.navigationPreviewDay.url]
 
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)

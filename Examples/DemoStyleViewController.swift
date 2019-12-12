@@ -12,8 +12,8 @@ class DemoStyleViewController: UIViewController {
     @IBOutlet private weak var stylePicker: UISegmentedControl?
     private weak var terrainNode: TerrainNode?
 
-    private let styles = ["mapbox/outdoors-v10", "mapbox/satellite-v9", "mapbox/navigation-preview-day-v2"]
-
+    private let styles = [MapStyles.outdoors.url, MapStyles.satellite.url, MapStyles.navigationPreviewDay.url]
+    
     override func viewDidLoad() {
         super.viewDidLoad()
 
