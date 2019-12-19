@@ -11,6 +11,51 @@ import SceneKit
 import CoreLocation
 
 extension TerrainNode {
+    
+    /// Normalising locations greatly decreases possibility of the line to go through a mountain or above a lake,
+    /// what could happen when there is eg 10km distance between 2 points and a peek in middle of the line.
+    /// Checks distance between following points in `locations` (in provided order).
+    /// Adds additional point(s) between them if the distance is larger than `maximumDistance`.
+    ///
+    /// - Parameters:
+    ///   - locations: Locations on the TerrainNode.
+    ///   - maximumDistance: The distance [meters] above which the line should be split
+    /// to segments of maximum `maximumDistance` length.
+    /// - Returns: Same array as input `locations` but with added mid-points, so that no difference
+    /// between two following points is bigger than `maximumDistance`.
+    @objc
+    public func normalise(locations: [CLLocation], maximumDistance: CLLocationDistance) -> [CLLocation] {
+        guard locations.count > 0 else { // algorithm has no sense for 0 samples.
+            return locations
+        }
+        
+        var newLocations: [CLLocation] = []
+        for location in locations {
+            guard let previousLocation = newLocations.last else { // first location always fulfills the conditions
+                newLocations.append(location)
+                continue
+            }
+            let distance = location.distance(from: previousLocation)
+            guard distance > maximumDistance else { // distance is small enough to continue
+                newLocations.append(location)
+                continue
+            }
+            // distance is greater than expected, divide it to equal segments lower than maximumDistance
+            let numberOfPoints = Int(ceil(distance / maximumDistance))
+            let previousCoordinate = previousLocation.coordinate
+            let currentCoordinate = location.coordinate
+            let deltaLatitude = (currentCoordinate.latitude - previousCoordinate.latitude) / Double(numberOfPoints)
+            let deltaLongitude = (currentCoordinate.longitude - previousCoordinate.longitude) / Double(numberOfPoints)
+            for pointNumber in 1..<numberOfPoints {
+                let newLocation = CLLocation(latitude: previousCoordinate.latitude + deltaLatitude * Double(pointNumber),
+                                             longitude: previousCoordinate.longitude + deltaLongitude * Double(pointNumber))
+                newLocations.append(newLocation)
+            }
+            newLocations.append(location)
+        }
+        return newLocations
+    }
+    
     /// Converts a set of coordinates to SCNVector3s relative to the TerrainNode,
     /// then adds a PolylineNode through those locations.
     ///
