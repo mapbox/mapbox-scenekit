@@ -56,28 +56,32 @@ public final class MapboxImageAPI: NSObject {
     private let httpAPI: MapboxHTTPAPI
     private var eventsManager: MMEEventsManager = MMEEventsManager.shared()
 
-    @objc
-    public override init() {
-        var mapboxAccessToken: String? = nil
+    @objc convenience public override init() {
+        var mapboxAccessToken = ""
         if let path = Bundle.main.path(forResource: "Info", ofType: "plist"),
             let dict = NSDictionary(contentsOfFile: path) as? [String: AnyObject],
             let token = dict["MGLMapboxAccessToken"] as? String {
             mapboxAccessToken = token
+        } else {
+            assert(false, "`accessToken` must be set in the Info.plist as `MGLMapboxAccessToken` or the `Route` passed into the `RouteController` must have the `accessToken` property set.")
         }
 
-        if let mapboxAccessToken = mapboxAccessToken {
+        self.init(mapboxAccessToken: mapboxAccessToken)
+    }
+    
+    @objc public init(mapboxAccessToken: String) {
+        if mapboxAccessToken.isEmpty {
+            assert(false, "MapBox AccessToken is missing or is empty, the models will not be working properly.")
+        } else {
             eventsManager.isMetricsEnabledInSimulator = true
             eventsManager.isMetricsEnabledForInUsePermissions = false
             eventsManager.initialize(withAccessToken: mapboxAccessToken, userAgentBase: "mapbox-scenekit-ios", hostSDKVersion: String(describing: Bundle(for: MapboxImageAPI.self).object(forInfoDictionaryKey: "CFBundleShortVersionString")!))
             eventsManager.disableLocationMetrics()
             eventsManager.sendTurnstileEvent()
-
-            httpAPI = MapboxHTTPAPI(accessToken: mapboxAccessToken)
-        } else {
-            assert(false, "`accessToken` must be set in the Info.plist as `MGLMapboxAccessToken` or the `Route` passed into the `RouteController` must have the `accessToken` property set.")
-            httpAPI = MapboxHTTPAPI(accessToken: "")
         }
-
+        
+        httpAPI = MapboxHTTPAPI(accessToken: mapboxAccessToken)
+        
         super.init()
     }
 

@@ -44,7 +44,8 @@ open class TerrainNode: SCNNode {
     private(set) var altitudeBounds: (CLLocationDistance, CLLocationDistance) = (0.0, 1.0)
     
     /// APIs and Tile fetching
-    private let api = MapboxImageAPI()
+    private let api: MapboxImageAPI
+
     fileprivate var pendingFetches = [UUID]()
     private static let queue = DispatchQueue(label: "com.mapbox.scenekit.processing", attributes: [.concurrent])
 
@@ -52,13 +53,29 @@ open class TerrainNode: SCNNode {
         fatalError("init(coder:) has not been implemented")
     }
     
-    @objc public init(southWestCorner: CLLocation, northEastCorner: CLLocation) {
-        
+    @objc convenience public init(southWestCorner: CLLocation, northEastCorner: CLLocation) {
+        self.init(api: MapboxImageAPI(), southWestCorner: southWestCorner, northEastCorner: northEastCorner)
+    }
+    
+    @objc convenience public init(mapboxAccessToken: String, southWestCorner: CLLocation, northEastCorner: CLLocation) {
+        self.init(api: MapboxImageAPI(mapboxAccessToken: mapboxAccessToken), southWestCorner: southWestCorner, northEastCorner: northEastCorner)
+    }
+
+    @objc convenience public init(mapboxAccessToken: String, minLat: CLLocationDegrees, maxLat: CLLocationDegrees, minLon: CLLocationDegrees, maxLon: CLLocationDegrees) {
+        self.init(api: MapboxImageAPI(mapboxAccessToken: mapboxAccessToken), southWestCorner: CLLocation(latitude: minLat, longitude: minLon), northEastCorner: CLLocation(latitude: maxLat, longitude: maxLon))
+    }
+
+    @objc public convenience init(minLat: CLLocationDegrees, maxLat: CLLocationDegrees, minLon: CLLocationDegrees, maxLon: CLLocationDegrees) {
+        self.init(api: MapboxImageAPI(), southWestCorner: CLLocation(latitude: minLat, longitude: minLon), northEastCorner: CLLocation(latitude: maxLat, longitude: maxLon))
+    }
+
+    private init(api: MapboxImageAPI, southWestCorner: CLLocation, northEastCorner: CLLocation) {
         assert(CLLocationCoordinate2DIsValid(southWestCorner.coordinate), "TerrainNode southWestCorner coordinates are invalid.")
         assert(CLLocationCoordinate2DIsValid(northEastCorner.coordinate), "TerrainNode northEastCorner coordinates are invalid.")
         assert(southWestCorner.coordinate.latitude < northEastCorner.coordinate.latitude, "southWestCorner must be South of northEastCorner")
         assert(southWestCorner.coordinate.longitude < northEastCorner.coordinate.longitude, "southWestCorner must be West of northEastCorner")
         
+        self.api = api
         self.southWestCorner = southWestCorner
         self.northEastCorner = northEastCorner
         self.styleZoomLevel = Math.zoomLevelForBounds(southWestCorner: southWestCorner,
@@ -73,11 +90,6 @@ open class TerrainNode: SCNNode {
                           height: 10.0,
                           length: terrainSizeMeters.height,
                           chamferRadius: 0.0)
-    }
-
-    @objc public convenience init(minLat: CLLocationDegrees, maxLat: CLLocationDegrees, minLon: CLLocationDegrees, maxLon: CLLocationDegrees) {
-        self.init(southWestCorner: CLLocation(latitude: minLat, longitude: minLon),
-                  northEastCorner: CLLocation(latitude: maxLat, longitude: maxLon))
     }
 
     deinit {
